@@ -50,6 +50,10 @@ These DSC Resources allow you to configure new domains, child domains, and high 
 * **DomainName**: The fully qualified domain name for the domain where the domain controller will be present.
 * **DomainAdministratorCredential**: Specifies the credential for the account used to install the domain controller.
 * **SafemodeAdministratorPassword**: Password for the administrator account when the computer is started in Safe Mode.
+* **DatabasePath**: Specifies the fully qualified, non-Universal Naming Convention (UNC) path to a directory on a fixed disk of the local computer that contains the domain database (optional).
+* **LogPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation will be written (optional).
+* **SysvolPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the Sysvol file will be written. (optional)
+* **SiteName**: Specify the name of an existing site where new domain controller will be placed. (optional)
 
 ### **xADUser**
 
@@ -243,6 +247,7 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 
 * xADUser: Adds 'PasswordAuthentication' option when testing user passwords to support NTLM authentication with Active Directory Certificate Services deployments
 * xADUser: Adds descriptions to user properties within the schema file.
+* xADDomainController: Adds Site option.
 
 
 ### 2.12.0.0

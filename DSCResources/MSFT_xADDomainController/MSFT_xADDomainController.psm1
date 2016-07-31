@@ -21,7 +21,9 @@ function Get-TargetResource
 
         [String]$LogPath,
 
-        [String]$SysvolPath
+        [String]$SysvolPath,
+
+        [String]$SiteName
     )
 
     $returnValue = @{
@@ -44,6 +46,7 @@ function Get-TargetResource
                 {
                     Write-Verbose -Message "Current node '$($dc.Name)' is already a domain controller for domain '$($dc.Domain)'."
                     $returnValue.Ensure = $true
+                    $returnValue.SiteName = $dc.Site
                 }
             }
             catch
@@ -53,7 +56,7 @@ function Get-TargetResource
             }
         }
     }
-    catch
+    catch [System.Management.Automation.CommandNotFoundException]
     {
         if ($error[0]) {Write-Verbose $error[0].Exception}
         Write-Verbose -Message "Current node is not running AD WS, and hence is not a domain controller."
@@ -78,51 +81,87 @@ function Set-TargetResource
 
         [String]$LogPath,
 
-        [String]$SysvolPath
+        [String]$SysvolPath,
+
+        [String]$SiteName
     )
 
     # Debug can pause Install-ADDSDomainController, so we remove it.
     $parameters = $PSBoundParameters.Remove("Debug");
+    $targetResource = Get-TargetResource @PSBoundParameters
 
-    Write-Verbose -Message "Checking if domain '$($DomainName)' is present ..."
-    $domain = $null;
-    try
+    if ($targetResource.Ensure -eq $false)
     {
-        $domain = Get-ADDomain -Identity $DomainName -Credential $DomainAdministratorCredential
-    }
-    catch
-    {
-        if ($error[0]) {Write-Verbose $error[0].Exception}
-        throw (new-object -TypeName System.InvalidOperationException -ArgumentList "Domain '$($DomainName)' could not be found.")
-    }
+        ## Node is not a domain controllr so we promote it
+        Write-Verbose -Message "Checking if domain '$($DomainName)' is present ..."
+        $domain = $null;
+        try
+        {
+            $domain = Get-ADDomain -Identity $DomainName -Credential $DomainAdministratorCredential
+        }
+        catch
+        {
+            if ($error[0]) {Write-Verbose $error[0].Exception}
+            throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Domain '$($DomainName)' could not be found.")
+        }
 
-    Write-Verbose -Message "Verified that domain '$($DomainName)' is present, continuing ..."
-    $params = @{
-        DomainName = $DomainName
-        SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
-        Credential = $DomainAdministratorCredential
-        NoRebootOnCompletion = $true
-        Force = $true
-    }
-    if ($DatabasePath -ne $null)
-    {
-        $params.Add("DatabasePath", $DatabasePath)
-    }
-    if ($LogPath -ne $null)
-    {
-        $params.Add("LogPath", $LogPath)
-    }
-    if ($SysvolPath -ne $null)
-    {
-        $params.Add("SysvolPath", $SysvolPath)
-    }
+        Write-Verbose -Message "Verified that domain '$($DomainName)' is present, continuing ..."
 
-    Install-ADDSDomainController @params
-    Write-Verbose -Message "Node is now a domain controller for '$($DomainName)'."
+        if ($PSBoundParameters.SiteName)
+        {
+            ## To query for sitename we need to discover existing domain controller
+            $existingDC = Get-ADDomainController -Discover -DomainName $DomainName -ForceDiscover
+            try
+            {
+                $site = Get-ADReplicationSite -Identity $SiteName -Server $existingDC.HostName -Credential $DomainAdministratorCredential
+            }
+            catch
+            {
+                if ($error[0]) {Write-Verbose $error[0].Exception}
+                throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Site '$($SiteName)' could not be found.")
+            }
+        }
+        $params = @{
+            DomainName = $DomainName
+            SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
+            Credential = $DomainAdministratorCredential
+            NoRebootOnCompletion = $true
+            Force = $true
+        }
+        if ($DatabasePath -ne $null)
+        {
+            $params.Add("DatabasePath", $DatabasePath)
+        }
+        if ($LogPath -ne $null)
+        {
+            $params.Add("LogPath", $LogPath)
+        }
+        if ($SysvolPath -ne $null)
+        {
+            $params.Add("SysvolPath", $SysvolPath)
+        }
+        if ($SiteName -ne $null)
+        {
+            $params.Add("SiteName", $SiteName)
+        }
 
-    # Signal to the LCM to reboot the node to compensate for the one we
-    # suppressed from Install-ADDSDomainController
-    $global:DSCMachineStatus = 1 
+        Install-ADDSDomainController @params
+        Write-Verbose -Message "Node is now a domain controller for '$($DomainName)'."
+
+        # Signal to the LCM to reboot the node to compensate for the one we
+        # suppressed from Install-ADDSDomainController
+        $global:DSCMachineStatus = 1
+    }
+    elseif ($targetResource.Ensure)
+    {
+        ## Node is a domain controller. We check if other properties are in desired state
+        if ($targetResource.SiteName -ne $SiteName)
+        {
+            ## DC is not in correct site. Move it.
+            Write-Verbose "Moving Domain Controller from '$($targetResource.SiteName)' to '$SiteName'"
+            Move-ADDirectoryServer -Identity $env:COMPUTERNAME -Site $SiteName -Credential $DomainAdministratorCredential
+        }
+    }
 }
 
 function Test-TargetResource
@@ -143,23 +182,39 @@ function Test-TargetResource
 
         [String]$LogPath,
 
-        [String]$SysvolPath
+        [String]$SysvolPath,
+
+        [String]$SiteName
     )
+
+    $isCompliant = $true
 
     try
     {
         $parameters = $PSBoundParameters.Remove("Debug");
+
         $existingResource = Get-TargetResource @PSBoundParameters
-        $existingResource.Ensure
+        $isCompliant = $existingResource.Ensure
+
+        if ([System.String]::IsNullOrEmpty($SiteName))
+        {
+            #If SiteName is not specified confgiuration is compliant
+        }
+        elseif ($existingResource.SiteName -ne $SiteName)
+        {
+            Write-Verbose "Domain Controller Site is not in a desired state. Expected '$SiteName', actual '$($existingResource.SiteName)'"
+            $isCompliant = $false
+        }
     }
     catch
     {
         if ($error[0]) {Write-Verbose $error[0].Exception}
         Write-Verbose -Message "Domain '$($DomainName)' is NOT present on the current node."
-        $false
+        $isCompliant = $false
     }
+
+    $isCompliant
+
 }
 
-
 Export-ModuleMember -Function *-TargetResource
-
