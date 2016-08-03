@@ -55,9 +55,6 @@ try
                     Domain = $correctDomainName
                 }
 
-                #function Get-ADDomain {[CmdletBinding()] param($Identity, $Credential)}
-                #function Get-ADDomainController {[CmdletBinding()] param($Identity, $Credential)}
-
                 Mock Get-ADDomain { return $stubDomain }
                 Mock Get-ADDomainController { return $stubDomainController }
 
@@ -152,7 +149,7 @@ try
 
                 function Move-ADDirectoryServer {
                     param (
-                        $Idintity, $Site, $AuthType, $Confirm, $Credential, $Server
+                        $Identity, $Site, $AuthType, $Confirm, $Credential, $Server
                     )
                 }
 
@@ -178,7 +175,7 @@ try
 
                 function Move-ADDirectoryServer {
                     param (
-                        $Idintity, $Site, $AuthType, $Confirm, $Credential, $Server
+                        $Identity, $Site, $AuthType, $Confirm, $Credential, $Server
                     )
                 }
 
