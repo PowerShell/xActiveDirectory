@@ -106,21 +106,6 @@ function Set-TargetResource
         }
 
         Write-Verbose -Message "Verified that domain '$($DomainName)' is present, continuing ..."
-
-        if ($PSBoundParameters.SiteName)
-        {
-            ## To query for sitename we need to discover existing domain controller
-            $existingDC = Get-ADDomainController -Discover -DomainName $DomainName -ForceDiscover
-            try
-            {
-                $site = Get-ADReplicationSite -Identity $SiteName -Server $existingDC.HostName -Credential $DomainAdministratorCredential
-            }
-            catch
-            {
-                if ($error[0]) {Write-Verbose $error[0].Exception}
-                throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Site '$($SiteName)' could not be found.")
-            }
-        }
         $params = @{
             DomainName = $DomainName
             SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
@@ -186,6 +171,14 @@ function Test-TargetResource
 
         [String]$SiteName
     )
+
+    if ($PSBoundParameters.SiteName)
+    {
+        if (-not (Test-ADReplicationSite -SiteName $SiteName -DomainName $DomainName -Credential $DomainAdministratorCredential))
+        {
+            throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Site '$($SiteName)' could not be found.")
+        }
+    }
 
     $isCompliant = $true
 

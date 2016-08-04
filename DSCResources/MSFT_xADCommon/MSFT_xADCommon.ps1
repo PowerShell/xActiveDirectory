@@ -16,6 +16,7 @@ data localizedString
         MembershipInDesiredState       = Membership is in the desired state.
         MembershipNotDesiredState      = Membership is NOT in the desired state.
         CheckingDomain                 = Checking for domain '{0}'.
+        CheckingSite                   = Checking for site '{0}'.
 '@
 }
 
@@ -565,3 +566,38 @@ function ThrowInvalidArgumentError
     throw $errorRecord;
 
 } #end function ThrowInvalidArgumentError
+
+## Internal function to test site availability
+function Test-ADReplicationSite
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory)]
+        [System.String] $SiteName,
+
+        [Parameter(Mandatory)]
+        [System.String] $DomainName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.CredentialAttribute()]
+        $Credential
+    )
+
+    Write-Verbose -Message ($localizedString.CheckingSite -f $SiteName);
+    
+    $existingDC = "$((Get-ADDomainController -Discover -DomainName $DomainName -ForceDiscover).HostName)";
+
+    try
+    {
+        $site = Get-ADReplicationSite -Identity $SiteName -Server $existingDC -Credential $Credential;
+    }
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+    {
+        return $false;
+    }
+
+    return ($null -ne $site);
+}
