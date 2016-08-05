@@ -129,11 +129,8 @@ try
                 $stubDomain = @{
                     DNSRoot = $correctDomainName
                 }
-                $stubDomainController = @{
-                    HostName = 'ExistingDC'
-                }
-                $stubSite = @{
-                    Name = $existingSiteName
+                $stubTargetResource = @{
+                    Ensure = $false
                 }
 
                 function Install-ADDSDomainController {
@@ -144,7 +141,7 @@ try
                 }
 
                 Mock Get-ADDomain { return $stubDomain }
-                Mock Get-ADDomainController { return $stubDomainController } -ParameterFilter { $Discover -eq $true }
+                Mock Get-TargetResource { return $stubTargetResource }
                 Mock Install-ADDSDomainController -MockWith {} -ParameterFilter { $SiteName -eq $correctSiteName }
 
                 Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
@@ -153,13 +150,9 @@ try
             }
 
             It 'Calls "Move-ADDirectoryServer" when "SiteName" does not match' {
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
-
-                $stubDomainController = @{
-                    Site = $incorrectSiteName
-                    Domain = $correctDomainName
+                $stubTargetResource = @{
+                    Ensure = $true
+                    SiteName = $incorrectSiteName
                 }
 
                 function Move-ADDirectoryServer {
@@ -168,8 +161,7 @@ try
                     )
                 }
 
-                Mock Get-ADDomain { return $stubDomain }
-                Mock Get-ADDomainController { return $stubDomainController }
+                Mock Get-TargetResource { return $stubTargetResource }
                 Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site -eq $correctSiteName }
 
                 Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
@@ -178,14 +170,9 @@ try
             }
 
             It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
-
-                $stubDomainController = @{
-                    Site = $correctSiteName
-                    Domain = $correctDomainName
-                    Name = 'DC'
+                $stubTargetResource = @{
+                    Ensure = $true
+                    SiteName = $correctSiteName
                 }
 
                 function Move-ADDirectoryServer {
@@ -194,8 +181,7 @@ try
                     )
                 }
 
-                Mock Get-ADDomain { return $stubDomain }
-                Mock Get-ADDomainController { return $stubDomainController }
+                Mock Get-TargetResource { return $stubTargetResource }
                 Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site -eq $correctSiteName }
 
                 Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
