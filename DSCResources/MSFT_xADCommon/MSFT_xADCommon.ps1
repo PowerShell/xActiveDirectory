@@ -582,7 +582,6 @@ function Test-ADReplicationSite
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
         $Credential
     )
 
