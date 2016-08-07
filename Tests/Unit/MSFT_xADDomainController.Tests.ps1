@@ -30,9 +30,7 @@ try
         #region Pester Test Initialization
         $correctSiteName = 'PresentSite'
         $incorrectSiteName = 'IncorrectSite'
-        $existingSiteName = 'ExistingSite'
         $correctDomainName = 'present.com'
-        $incorrectDomainName = 'incorrect.com'
         $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
 
         $testDefaultParams = @{
@@ -118,7 +116,8 @@ try
                 Mock Get-ADDomain { return $stubDomain }
                 Mock Get-ADDomainController { return $stubDomainController }
                 Mock Test-ADReplicationSite { return $false }
-                { Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName } | Should Throw
+                { Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName } |
+                    Should Throw "Site '$($incorrectSiteName)' could not be found."
             }
         }
         #endregion
@@ -155,18 +154,13 @@ try
                     SiteName = $incorrectSiteName
                 }
 
-                function Move-ADDirectoryServer {
-                    param (
-                        $Identity, $Site, $AuthType, $Confirm, $Credential, $Server
-                    )
-                }
-
                 Mock Get-TargetResource { return $stubTargetResource }
-                Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site -eq $correctSiteName }
+                Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site.ToString() -eq $correctSiteName }
+                Mock Move-ADDirectoryServer -MockWith {}
 
                 Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-                Assert-MockCalled Move-ADDirectoryServer -Times 1 -Exactly -ParameterFilter { $Site -eq $correctSiteName } -Scope It
+                Assert-MockCalled Move-ADDirectoryServer -Times 1 -Exactly -ParameterFilter { $Site.ToString() -eq $correctSiteName } -Scope It
             }
 
             It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
@@ -175,18 +169,12 @@ try
                     SiteName = $correctSiteName
                 }
 
-                function Move-ADDirectoryServer {
-                    param (
-                        $Identity, $Site, $AuthType, $Confirm, $Credential, $Server
-                    )
-                }
-
                 Mock Get-TargetResource { return $stubTargetResource }
-                Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site -eq $correctSiteName }
+                Mock Move-ADDirectoryServer {}
 
                 Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-                Assert-MockCalled Move-ADDirectoryServer -Times 0 -Exactly -ParameterFilter { $Site -eq $correctSiteName } -Scope It
+                Assert-MockCalled Move-ADDirectoryServer -Times 0 -Exactly -Scope It
             }
         }
     #endregion
