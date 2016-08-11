@@ -26,45 +26,69 @@ $TestEnvironment = Initialize-TestEnvironment `
 # Begin Testing
 try
 {
-    InModuleScope $Global:DSCResourceName {
-        #region Pester Test Initialization
-        $correctSiteName = 'PresentSite'
-        $incorrectSiteName = 'IncorrectSite'
-        $correctDomainName = 'present.com'
-        $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
+    #region Pester Test Initialization
+    $correctSiteName = 'PresentSite'
+    $incorrectSiteName = 'IncorrectSite'
+    $correctDomainName = 'present.com'
+    $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
 
-        $testDefaultParams = @{
-            DomainAdministratorCredential = $testAdminCredential
-            SafemodeAdministratorPassword = $testAdminCredential
+    $testDefaultParams = @{
+        DomainAdministratorCredential = $testAdminCredential
+        SafemodeAdministratorPassword = $testAdminCredential
+    }
+
+    $commonMockParams = @{
+        ModuleName = $Global:DSCResourceName
+    }
+
+    $commonAssertParams = @{
+        ModuleName = $Global:DSCResourceName
+        Scope = 'It'
+        Exactly = $true
+    }
+
+    #Fake function because it is only available on Windows Server
+    function Install-ADDSDomainController {
+        param(
+            $DomainName, $SafeModeAdministratorPassword, $Credential, $NoRebootOnCompletion, $Force, $DatabasePath,
+            $LogPath, $SysvolPath, $SiteName
+        )
+
+        throw [exception] 'Not Implemented'
+    }
+    #endregion Pester Test Initialization
+
+    #region Function Get-TargetResource
+    Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Get-TargetResource" {
+        It 'Returns current "SiteName"' {
+            Mock Get-ADDomain { return $true } @commonMockParams
+            Mock Get-ADDomainController {
+                return $stubDomainController = @{
+                    Site = 'PresentSite'
+                    Domain = 'present.com'
+                }
+            } @commonMockParams
+
+            $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+
+            $result.SiteName | Should Be $correctSiteName
         }
+    }
+    #endregion
 
-        #endregion Pester Test Initialization
+    #region Function Test-TargetResource
+    Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Test-TargetResource" {
+        InModuleScope $Global:DSCResourceName {
+            $correctSiteName = 'PresentSite'
+            $incorrectSiteName = 'IncorrectSite'
+            $correctDomainName = 'present.com'
+            $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
 
-        #region Function Get-TargetResource
-        Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Get-TargetResource" {
-            It 'Returns current "SiteName"' {
-
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
-
-                $stubDomainController = @{
-                    Site = $correctSiteName
-                    Domain = $correctDomainName
-                }
-
-                Mock Get-ADDomain { return $stubDomain }
-                Mock Get-ADDomainController { return $stubDomainController }
-
-                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
-
-                $result.SiteName | Should Be $correctSiteName
+            $testDefaultParams = @{
+                DomainAdministratorCredential = $testAdminCredential
+                SafemodeAdministratorPassword = $testAdminCredential
             }
-        }
-        #endregion
 
-        #region Function Test-TargetResource
-        Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Test-TargetResource" {
             It 'Returns "False" when "SiteName" does not match' {
                 $stubDomain = @{
                     DNSRoot = $correctDomainName
@@ -75,26 +99,22 @@ try
                     Domain = $correctDomainName
                 }
 
-                Mock Get-ADDomain { return $stubDomain }
+                Mock Get-ADDomain { return $true }
                 Mock Get-ADDomainController { return $stubDomainController }
                 Mock Test-ADReplicationSite { return $true }
-
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
                 $result | Should Be $false
             }
 
             It 'Returns "True" when "SiteName" matches' {
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
 
                 $stubDomainController = @{
                     Site = $correctSiteName
                     Domain = $correctDomainName
                 }
 
-                Mock Get-ADDomain { return $stubDomain }
+                Mock Get-ADDomain { return $true }
                 Mock Get-ADDomainController { return $stubDomainController }
                 Mock Test-ADReplicationSite { return $true }
 
@@ -104,81 +124,73 @@ try
             }
 
             It 'Throws if "SiteName" is wrong' {
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
 
                 $stubDomainController = @{
                     Site = $correctSiteName
                     Domain = $correctDomainName
                 }
 
-                Mock Get-ADDomain { return $stubDomain }
+                Mock Get-ADDomain { return $true }
                 Mock Get-ADDomainController { return $stubDomainController }
                 Mock Test-ADReplicationSite { return $false }
                 { Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName } |
                     Should Throw "Site '$($incorrectSiteName)' could not be found."
             }
         }
-        #endregion
+    }
+    #endregion
 
-        #region Function Set-TargetResource
-        Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Set-TargetResource" {
-            It 'Calls "Install-ADDSDomainController" with "Site", if specified' {
-                $stubDomain = @{
-                    DNSRoot = $correctDomainName
-                }
-                $stubTargetResource = @{
+    #region Function Set-TargetResource
+    Describe -Tag 'xADDomainController' "$($Global:DSCResourceName)\Set-TargetResource" {
+        It 'Calls "Install-ADDSDomainController" with "Site", if specified' {
+            Mock Get-ADDomain {
+                return $true
+            } @commonMockParams
+
+            Mock Get-TargetResource {
+                return $stubTargetResource = @{
                     Ensure = $false
                 }
+            } @commonMockParams
+            Mock Install-ADDSDomainController -MockWith {} -ParameterFilter { $SiteName -eq $correctSiteName } @commonMockParams
 
-                function Install-ADDSDomainController {
-                    param(
-                        $DomainName, $SafeModeAdministratorPassword, $Credential, $NoRebootOnCompletion, $Force, $DatabasePath,
-                        $LogPath, $SysvolPath, $SiteName
-                    )
-                }
+            Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-                Mock Get-ADDomain { return $stubDomain }
-                Mock Get-TargetResource { return $stubTargetResource }
-                Mock Install-ADDSDomainController -MockWith {} -ParameterFilter { $SiteName -eq $correctSiteName }
-
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
-
-                Assert-MockCalled Install-ADDSDomainController -Times 1 -Exactly -ParameterFilter { $SiteName -eq $correctSiteName } -Scope It
-            }
-
-            It 'Calls "Move-ADDirectoryServer" when "SiteName" does not match' {
-                $stubTargetResource = @{
-                    Ensure = $true
-                    SiteName = $incorrectSiteName
-                }
-
-                Mock Get-TargetResource { return $stubTargetResource }
-                Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site.ToString() -eq $correctSiteName }
-                Mock Move-ADDirectoryServer -MockWith {}
-
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
-
-                Assert-MockCalled Move-ADDirectoryServer -Times 1 -Exactly -ParameterFilter { $Site.ToString() -eq $correctSiteName } -Scope It
-            }
-
-            It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
-                $stubTargetResource = @{
-                    Ensure = $true
-                    SiteName = $correctSiteName
-                }
-
-                Mock Get-TargetResource { return $stubTargetResource }
-                Mock Move-ADDirectoryServer {}
-
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
-
-                Assert-MockCalled Move-ADDirectoryServer -Times 0 -Exactly -Scope It
-            }
+            Assert-MockCalled Install-ADDSDomainController -Times 1 -ParameterFilter { $SiteName -eq $correctSiteName } @commonAssertParams
         }
-    #endregion
+
+        It 'Calls "Move-ADDirectoryServer" when "SiteName" does not match' {
+            Mock Get-TargetResource {
+                return $stubTargetResource = @{
+                    Ensure = $true
+                    SiteName = 'IncorrectSite'
+                }
+            } @commonMockParams
+
+            Mock Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonMockParams
+            Mock Move-ADDirectoryServer -MockWith {} @commonMockParams
+
+            Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+
+            Assert-MockCalled Move-ADDirectoryServer -Times 1 -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonAssertParams
+        }
+
+        It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
+            Mock Get-TargetResource {
+                return $stubTargetResource = @{
+                    Ensure = $true
+                    SiteName = 'PresentSite'
+                }
+            } @commonMockParams
+
+            Mock Move-ADDirectoryServer {} @commonMockParams
+
+            Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+
+            Assert-MockCalled Move-ADDirectoryServer -Times 0 @commonAssertParams
+        }
     }
+    #endregion
 }
 finally
 {
