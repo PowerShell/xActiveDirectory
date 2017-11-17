@@ -28,6 +28,7 @@ These DSC Resources allow you to configure new domains, child domains, and high 
 * **xADGroup** modifies and removes Active Directory groups.
 * **xADOrganizationalUnit** creates and deletes Active Directory OUs.
 * **xADUser** modifies and removes Active Directory Users.
+* **xADServicePrincipalName** adds or removes the SPN to a user or computer account.
 * **xWaitForDomain** waits for new, remote domain to setup.
 
 (Note: the RSAT tools will not be installed when these resources are used to configure AD.)
@@ -227,6 +228,14 @@ The xADDomainDefaultPasswordPolicy DSC resource will manage an Active Directory 
 * **DomainController**: An existing Active Directory domain controller used to perform the operation (optional).
 * **Credential**: User account credentials used to perform the operation (optional).
 
+### **xADServicePrincipalName**
+
+The xADServicePrincipalName DSC resource will manage service principal names.
+
+* **Ensure**: Define if the SPN should be added or removed (optional).
+* **ServicePrincipalName**: The full SPN to add or remove, e.g. HOST/LON-DC1.
+* **Account**: The user or computer account to add or remove the SPN, e.b. User1 or LON-DC1$ (optional).
+
 ### **xADComputer**
 
 The xADComputer DSC resource will manage computer accounts within Active Directory.
@@ -262,6 +271,7 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 * Opted-In to markdown rule validation.
 * Readme.md modified resolve markdown rule violations.
 * Added CodeCov.io support.
+* Added xADServicePrincipalName resource.
 
 ### 2.16.0.0
 
