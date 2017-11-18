@@ -105,13 +105,13 @@ function Set-TargetResource
     $spnAccounts = Get-ADObject -Filter { ServicePrincipalName -eq $ServicePrincipalName } -Properties 'SamAccountName' |
                        Select-Object -ExpandProperty 'SamAccountName'
 
-    if ([String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
-    {
-        throw "AD object with SamAccountName = '$Account' not found!"
-    }
-
     if ($Ensure -eq 'Present')
     {
+        if ([String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
+        {
+            throw "AD object with SamAccountName = '$Account' not found!"
+        }
+
         foreach ($spnAccount in $spnAccounts)
         {
             if ($spnAccount -ne $Account)
