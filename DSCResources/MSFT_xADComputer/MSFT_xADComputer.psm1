@@ -526,9 +526,14 @@ function Set-TargetResource
             } #end if TargetResource parameter
         } #end foreach PSBoundParameter
 
-        ## Only pass -Remove and/or -Replace if we have something to set/change
-        if ($replaceComputerProperties.Count -or $removeComputerProperties.Count)
+        <#
+            Set-ADComputer is only called if we have something to change, or
+            $setADComputerParams contains more than one value (ignoring parameter
+            'Identity' by itself).
+        #>
+        if ($replaceComputerProperties.Count -or $removeComputerProperties.Count -or $setADComputerParams.Count -gt 1)
         {
+            ## Only pass -Remove and/or -Replace if we have something to set/change
             if ($replaceComputerProperties.Count -gt 0)
             {
                 $setADComputerParams['Replace'] = $replaceComputerProperties;
@@ -539,7 +544,7 @@ function Set-TargetResource
             }
 
             Write-Verbose -Message ($LocalizedData.UpdatingADComputer -f $ComputerName);
-            [ref] $null = Set-ADComputer @setADComputerParams;
+            Set-DscADComputer -SetADComputerParameters $setADComputerParams
         }
     }
     elseif (($Ensure -eq 'Absent') -and ($targetResource.Ensure -eq 'Present'))
@@ -557,5 +562,26 @@ $adCommonFunctions = Join-Path `
     -Path (Split-Path -Path $PSScriptRoot -Parent) `
     -ChildPath '\MSFT_xADCommon\MSFT_xADCommon.ps1';
 . $adCommonFunctions;
+
+<#
+    .SYNOPSIS
+        This is a wrapper for Set-ADComputer. This is needed because of
+        how Pester is unable to handle mocking this cmdlet.
+
+    .PARAMETER SetADComputerParameters
+        A hash table containing all parameters that will be pass trough to
+        Set-ADComputer.
+#>
+function Set-DscADComputer
+{
+    param
+    (
+        [Parameter()]
+        [System.Collections.Hashtable]
+        $SetADComputerParameters
+    )
+
+    [ref] $null = Set-ADComputer @SetADComputerParameters
+}
 
 Export-ModuleMember -Function *-TargetResource

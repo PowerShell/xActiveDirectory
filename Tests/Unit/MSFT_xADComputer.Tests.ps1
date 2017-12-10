@@ -605,6 +605,60 @@ try
                 Assert-MockCalled Remove-ADComputer -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.ComputerName } -Scope It;
             }
 
+            Context 'When a computer account that should be disabled' {
+                BeforeAll {
+                    Mock -CommandName Set-ADComputer
+                    Mock -CommandName Set-DscADComputer
+                    Mock -CommandName New-ADComputer
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return $fakeADComputer
+                    }
+                }
+
+                Context 'When specifying the parameter Enabled with the value $false' {
+                    It 'Should call Set-ADComputer to disable the computer account' {
+                        $setTargetResourceParameters = $testPresentParams.Clone()
+                        $setTargetResourceParameters['Enabled'] = $false
+
+                        Set-TargetResource @setTargetResourceParameters
+
+                        Assert-MockCalled -CommandName New-ADComputer -Scope It -Exactly -Times 0
+                        Assert-MockCalled -CommandName Set-DscADComputer -ParameterFilter {
+                            $SetADComputerParameters.Enabled -eq $false
+                        } -Scope It -Exactly -Times 1
+                    }
+                }
+            }
+
+            Context 'When a computer account that should be enabled' {
+                BeforeAll {
+                    Mock -CommandName Set-ADComputer
+                    Mock -CommandName Set-DscADComputer
+                    Mock -CommandName New-ADComputer
+
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        $disabledFakeADComputer = $fakeADComputer.Clone()
+                        $disabledFakeADComputer['Enabled'] = $false
+                        return $disabledFakeADComputer
+                    }
+                }
+
+                Context 'When specifying the parameter Enabled with the value $true' {
+                    It 'Should call Set-ADComputer to enable the computer account' {
+                        $setTargetResourceParameters = $testPresentParams.Clone()
+                        $setTargetResourceParameters['Enabled'] = $true
+
+                        Set-TargetResource @setTargetResourceParameters
+
+                        Assert-MockCalled -CommandName New-ADComputer -Scope It -Exactly -Times 0
+                        Assert-MockCalled -CommandName Set-DscADComputer -ParameterFilter {
+                            $SetADComputerParameters.Enabled -eq $true
+                        } -Scope It -Exactly -Times 1
+                    }
+                }
+            }
+
             Context 'When creating a computer account that should be enabled' {
                 BeforeAll {
                     Mock -CommandName Set-ADComputer
@@ -623,11 +677,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $true
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -640,11 +694,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $true
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -658,11 +712,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $true
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -676,11 +730,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $true
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -709,11 +763,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $false
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -726,11 +780,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $false
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -744,11 +798,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $false
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
@@ -762,11 +816,11 @@ try
 
                         Set-TargetResource @setTargetResourceParameters
 
-                        Assert-MockCalled New-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName New-ADComputer -ParameterFilter {
                             $Enabled -eq $false
                         } -Scope It -Exactly -Times 1
 
-                        Assert-MockCalled Set-ADComputer -ParameterFilter {
+                        Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
                             $Enabled -eq $true -or $Enabled -eq $false
                         } -Scope It -Exactly -Times 0
                     }
