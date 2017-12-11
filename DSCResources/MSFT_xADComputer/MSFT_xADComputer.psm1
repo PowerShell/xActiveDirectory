@@ -243,7 +243,7 @@ function Test-TargetResource
     }
     else
     {
-        ## Add ensure and enabled as they may not be explicitly passed and we want to enumerate them
+        # Add ensure as it may not be explicitly passed and we want to enumerate it.
         $PSBoundParameters['Ensure'] = $Ensure;
 
         foreach ($parameter in $PSBoundParameters.Keys)
@@ -531,7 +531,7 @@ function Set-TargetResource
             $setADComputerParams contains more than one value (ignoring parameter
             'Identity' by itself).
         #>
-        if ($replaceComputerProperties.Count -or $removeComputerProperties.Count -or $setADComputerParams.Count -gt 1)
+        if ($replaceComputerProperties.Count -gt 0 -or $removeComputerProperties.Count -gt 0 -or $setADComputerParams.Count -gt 1)
         {
             ## Only pass -Remove and/or -Replace if we have something to set/change
             if ($replaceComputerProperties.Count -gt 0)
@@ -576,7 +576,7 @@ function Set-DscADComputer
 {
     param
     (
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.Collections.Hashtable]
         $SetADComputerParameters
     )
