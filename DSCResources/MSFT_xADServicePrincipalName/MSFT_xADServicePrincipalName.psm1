@@ -157,12 +157,9 @@ function Test-TargetResource
         $Account = ''
     )
 
-    [System.Boolean] $desiredConfigurationMatch = $true
-
     $currentConfiguration = Get-TargetResource -ServicePrincipalName $ServicePrincipalName
 
-    $desiredConfigurationMatch = $desiredConfigurationMatch -and
-                                 $currentConfiguration.Ensure -eq $Ensure
+    $desiredConfigurationMatch = $currentConfiguration.Ensure -eq $Ensure
 
     if ($Ensure -eq 'Present')
     {
