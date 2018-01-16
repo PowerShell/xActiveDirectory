@@ -159,7 +159,7 @@ function Test-TargetResource
 
     [System.Boolean] $desiredConfigurationMatch = $true
 
-    $currentConfiguration = Get-TargetResource @PSBoundParameters
+    $currentConfiguration = Get-TargetResource -ServicePrincipalName $ServicePrincipalName
 
     $desiredConfigurationMatch = $desiredConfigurationMatch -and
                                  $currentConfiguration.Ensure -eq $Ensure
