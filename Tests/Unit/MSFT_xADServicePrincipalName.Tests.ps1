@@ -29,18 +29,18 @@ try
         #region Function Get-TargetResource
         Describe "$($Global:DSCResourceName)\Get-TargetResource" {
 
-            $testDefaultParams = @{
+            $testDefaultParameters = @{
                 ServicePrincipalName = 'HOST/demo'
                 Account              = ''
             }
 
             Context 'No SPN set' {
 
-                Mock Get-ADObject
+                Mock -CommandName Get-ADObject
 
-                It 'should return absent' {
+                It 'Should return absent' {
 
-                    $result = Get-TargetResource @testDefaultParams
+                    $result = Get-TargetResource @testDefaultParameters
 
                     $result.Ensure               | Should Be 'Absent'
                     $result.ServicePrincipalName | Should Be 'HOST/demo'
@@ -50,11 +50,11 @@ try
 
             Context 'One SPN set' {
 
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
 
-                It 'should return present with the correct account' {
+                It 'Should return present with the correct account' {
 
-                    $result = Get-TargetResource @testDefaultParams
+                    $result = Get-TargetResource @testDefaultParameters
 
                     $result.Ensure               | Should Be 'Present'
                     $result.ServicePrincipalName | Should Be 'HOST/demo'
@@ -64,11 +64,11 @@ try
 
             Context 'Multiple SPN set' {
 
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
 
-                It 'should return present with the multiple accounts' {
+                It 'Should return present with the multiple accounts' {
 
-                    $result = Get-TargetResource @testDefaultParams
+                    $result = Get-TargetResource @testDefaultParameters
 
                     $result.Ensure               | Should Be 'Present'
                     $result.ServicePrincipalName | Should Be 'HOST/demo'
@@ -81,75 +81,75 @@ try
         #region Function Test-TargetResource
         Describe "$($Global:DSCResourceName)\Test-TargetResource" {
 
-            $testDefaultParams = @{
+            $testDefaultParameters = @{
                 ServicePrincipalName = 'HOST/demo'
                 Account              = 'User'
             }
 
             Context 'No SPN set' {
 
-                Mock Get-ADObject
+                Mock -CommandName Get-ADObject
 
-                It 'should return false for present' {
+                It 'Should return false for present' {
 
-                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
                     $result | Should Be $false
                 }
 
-                It 'should return true for absent' {
+                It 'Should return true for absent' {
 
-                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
                     $result | Should Be $true
                 }
             }
 
             Context 'Correct SPN set' {
 
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
 
-                It 'should return true for present' {
+                It 'Should return true for present' {
 
-                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
                     $result | Should Be $true
                 }
 
-                It 'should return false for absent' {
+                It 'Should return false for absent' {
 
-                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
                     $result | Should Be $false
                 }
             }
 
             Context 'Wrong SPN set' {
 
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'Computer' } }
 
-                It 'should return false for present' {
+                It 'Should return false for present' {
 
-                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
                     $result | Should Be $false
                 }
 
-                It 'should return false for absent' {
+                It 'Should return false for absent' {
 
-                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
                     $result | Should Be $false
                 }
             }
 
             Context 'Multiple SPN set' {
 
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
 
-                It 'should return false for present' {
+                It 'Should return false for present' {
 
-                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
                     $result | Should Be $false
                 }
 
-                It 'should return false for absent' {
+                It 'Should return false for absent' {
 
-                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParams
+                    $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
                     $result | Should Be $false
                 }
             }
@@ -173,9 +173,9 @@ try
 
             Context 'AD Object not existing' {
 
-                Mock Get-ADObject
+                Mock -CommandName Get-ADObject
 
-                It 'should throw an exception' {
+                It 'Should throw the correct exception' {
 
                     { Set-TargetResource @testPresentParams } | Should Throw
                 }
@@ -183,43 +183,45 @@ try
 
             Context 'No SPN set' {
 
-                Mock Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } { }
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' } }
-                Mock Set-ADObject
+                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Set-ADObject
 
-                It 'should call the Set-ADObject' {
+                It 'Should call the Set-ADObject' {
 
                     $result = Set-TargetResource @testPresentParams
 
-                    Assert-MockCalled Set-ADObject -Scope Context -Times 1 -Exactly
+                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly
                 }
             }
 
             Context 'Wrong SPN set' {
 
-                Mock Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } { [PSCustomObject] @{ SamAccountName = 'Computer' } }
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' } }
-                Mock Set-ADObject
+                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith { [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Set-ADObject -ParameterFilter { $null -ne $Add }
+                Mock -CommandName Set-ADObject -ParameterFilter { $null -ne $Remove }
 
-                It 'should call the Set-ADObject twice' {
+                It 'Should call the Set-ADObject twice' {
 
                     $result = Set-TargetResource @testPresentParams
 
-                    Assert-MockCalled Set-ADObject -Scope Context -Times 2 -Exactly
+                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Add }
+                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Remove }
                 }
             }
 
             Context 'Remove all SPNs' {
 
-                Mock Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } { [PSCustomObject] @{ SamAccountName = 'User' } }
-                Mock Get-ADObject { [PSCustomObject] @{ SamAccountName = 'User' } }
-                Mock Set-ADObject
+                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Set-ADObject
 
-                It 'should call the Set-ADObject' {
+                It 'Should call the Set-ADObject' {
 
                     $result = Set-TargetResource @testAbsentParams
 
-                    Assert-MockCalled Set-ADObject -Scope Context -Times 1 -Exactly
+                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly
                 }
             }
         }
