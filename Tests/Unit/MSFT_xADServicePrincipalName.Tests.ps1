@@ -49,7 +49,9 @@ try
 
             Context 'One SPN set' {
 
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' }
+                }
 
                 It 'Should return present with the correct account' {
 
@@ -63,7 +65,10 @@ try
 
             Context 'Multiple SPN set' {
 
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' },
+                    [PSCustomObject] @{ SamAccountName = 'Computer' }
+                }
 
                 It 'Should return present with the multiple accounts' {
 
@@ -104,7 +109,9 @@ try
 
             Context 'Correct SPN set' {
 
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' }
+                }
 
                 It 'Should return true for present' {
 
@@ -121,7 +128,9 @@ try
 
             Context 'Wrong SPN set' {
 
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'Computer' }
+                }
 
                 It 'Should return false for present' {
 
@@ -138,7 +147,10 @@ try
 
             Context 'Multiple SPN set' {
 
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' }, [PSCustomObject] @{ SamAccountName = 'Computer' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' },
+                    [PSCustomObject] @{ SamAccountName = 'Computer' }
+                }
 
                 It 'Should return false for present' {
 
@@ -183,7 +195,9 @@ try
             Context 'No SPN set' {
 
                 Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) }
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' }
+                }
                 Mock -CommandName Set-ADObject
 
                 It 'Should call the Set-ADObject' {
@@ -196,8 +210,12 @@ try
 
             Context 'Wrong SPN set' {
 
-                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith { [PSCustomObject] @{ SamAccountName = 'Computer' } }
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'Computer'; DistinguishedName = 'CN=Computer,OU=Corp,DC=contoso,DC=com' }
+                }
+                Mock -CommandName Get-ADObject -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User' }
+                }
                 Mock -CommandName Set-ADObject -ParameterFilter { $null -ne $Add }
                 Mock -CommandName Set-ADObject -ParameterFilter { $null -ne $Remove }
 
@@ -212,8 +230,9 @@ try
 
             Context 'Remove all SPNs' {
 
-                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
-                Mock -CommandName Get-ADObject -MockWith { [PSCustomObject] @{ SamAccountName = 'User' } }
+                Mock -CommandName Get-ADObject -ParameterFilter { $Filter -eq ([ScriptBlock]::Create(' ServicePrincipalName -eq $ServicePrincipalName ')) } -MockWith {
+                    [PSCustomObject] @{ SamAccountName = 'User'; DistinguishedName = 'CN=User,OU=Corp,DC=contoso,DC=com' }
+                }
                 Mock -CommandName Set-ADObject
 
                 It 'Should call the Set-ADObject' {

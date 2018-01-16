@@ -85,38 +85,43 @@ function Set-TargetResource
         $Account = ''
     )
 
-    $spnAccounts = Get-ADObject -Filter { ServicePrincipalName -eq $ServicePrincipalName } -Properties 'SamAccountName' |
-                       Select-Object -ExpandProperty 'SamAccountName'
+    # Get all Active Directory object having the target SPN configured.
+    $spnAccounts = Get-ADObject -Filter { ServicePrincipalName -eq $ServicePrincipalName } -Properties 'SamAccountName', 'DistinguishedName'
 
     if ($Ensure -eq 'Present')
     {
+        # Throw an exception, if no account was specified or the account does
+        # not exist.
         if ([String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
         {
             throw "AD object with SamAccountName = '$Account' not found!"
         }
 
+        # Remove the SPN(s) from any extra account.
         foreach ($spnAccount in $spnAccounts)
         {
-            if ($spnAccount -ne $Account)
+            if ($spnAccount.SamAccountName -ne $Account)
             {
-                Get-ADObject -Filter { SamAccountName -eq $spnAccount } |
-                    Set-ADObject -Remove @{ ServicePrincipalName = $ServicePrincipalName }
+                Set-ADObject -Identity $spnAccount.DistinguishedName -Remove @{ ServicePrincipalName = $ServicePrincipalName }
             }
         }
 
-        if ($spnAccounts -notcontains $Account)
+        # Add the SPN to the target account. Use Get-ADObject to get the target
+        # object filtered by SamAccountName. Set-ADObject does not support the
+        # field SamAccountName as Identifier.
+        if ($spnAccounts.SamAccountName -notcontains $Account)
         {
             Get-ADObject -Filter { SamAccountName -eq $Account } |
                 Set-ADObject -Add @{ ServicePrincipalName = $ServicePrincipalName }
         }
     }
 
+    # Remove the SPN from any account
     if ($Ensure -eq 'Absent')
     {
         foreach ($spnAccount in $spnAccounts)
         {
-            Get-ADObject -Filter { SamAccountName -eq $spnAccount } |
-                Set-ADObject -Remove @{ ServicePrincipalName = $ServicePrincipalName }
+            Set-ADObject -Identity $spnAccount.DistinguishedName -Remove @{ ServicePrincipalName = $ServicePrincipalName }
         }
     }
 }
