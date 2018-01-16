@@ -31,7 +31,6 @@ try
 
             $testDefaultParameters = @{
                 ServicePrincipalName = 'HOST/demo'
-                Account              = ''
             }
 
             Context 'No SPN set' {
