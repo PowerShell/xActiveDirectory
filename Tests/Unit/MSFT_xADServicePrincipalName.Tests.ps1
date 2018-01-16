@@ -176,7 +176,7 @@ try
 
                 It 'Should throw the correct exception' {
 
-                    { Set-TargetResource @testPresentParams } | Should Throw
+                    { Set-TargetResource @testPresentParams } | Should Throw "AD object with SamAccountName = 'User' not found!"
                 }
             }
 
