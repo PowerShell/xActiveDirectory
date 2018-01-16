@@ -232,9 +232,9 @@ The xADDomainDefaultPasswordPolicy DSC resource will manage an Active Directory 
 
 The xADServicePrincipalName DSC resource will manage service principal names.
 
-* **Ensure**: Specifies if the service principal name should be added or remove (optional).
+* **Ensure**: Specifies if the service principal name should be added or remove. Default value is 'Present'. { *Present* | Absent }.
 * **ServicePrincipalName**: The full SPN to add or remove, e.g. HOST/LON-DC1.
-* **Account**: The user or computer account to add or remove the SPN, e.b. User1 or LON-DC1$ (optional).
+* **Account**: The user or computer account to add or remove the SPN, e.b. User1 or LON-DC1$. Default value is ''. If Ensure is set to Present, a value must be specified.
 
 ### **xADComputer**
 
