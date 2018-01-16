@@ -1,16 +1,17 @@
 
 <#
     .SYNOPSIS
-    Returns the current state of the specified service principal name.
+        Returns the current state of the specified service principal name.
 
     .PARAMETER Ensure
-    Specify if the SPN should be added or removed.
+        Specifies if the service principal name should be added or remove.
 
     .PARAMETER ServicePrincipalName
-    Specify the full service principal name.
+        The full SPN to add or remove, e.g. HOST/LON-DC1.
 
     .PARAMETER Account
-    Specify the target account.
+        The user or computer account to add or remove the SPN, e.b. User1 or
+        LON-DC1$.
 #>
 function Get-TargetResource
 {
@@ -18,20 +19,10 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present',
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $ServicePrincipalName,
-
-        [Parameter()]
-        [AllowEmptyString()]
-        [System.String]
-        $Account = ''
+        $ServicePrincipalName
     )
 
     $spnAccounts = Get-ADObject -Filter { ServicePrincipalName -eq $ServicePrincipalName } -Properties 'SamAccountName' |
@@ -46,18 +37,9 @@ function Get-TargetResource
             Account              = ''
         }
     }
-    elseif ($spnAccounts.Count -eq 1)
-    {
-        # Exactly one SPN found, return the account name
-        $returnValue = @{
-            Ensure               = 'Present'
-            ServicePrincipalName = $ServicePrincipalName
-            Account              = $spnAccounts
-        }
-    }
     else
     {
-        # More then one SPN found, return 
+        # One or more SPN(s) found, return the account name(s)
         $returnValue = @{
             Ensure               = 'Present'
             ServicePrincipalName = $ServicePrincipalName
@@ -70,16 +52,17 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-    Add or remove the service principal name.
+        Add or remove the service principal name.
 
     .PARAMETER Ensure
-    Specify if the SPN should be added or removed.
+        Specifies if the service principal name should be added or remove.
 
     .PARAMETER ServicePrincipalName
-    Specify the full service principal name.
+        The full SPN to add or remove, e.g. HOST/LON-DC1.
 
     .PARAMETER Account
-    Specify the target account.
+        The user or computer account to add or remove the SPN, e.b. User1 or
+        LON-DC1$.
 #>
 function Set-TargetResource
 {
@@ -140,16 +123,17 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-    Tests the service principal name.
+        Tests the service principal name.
 
     .PARAMETER Ensure
-    Specify if the SPN should be added or removed.
+        Specifies if the service principal name should be added or remove.
 
     .PARAMETER ServicePrincipalName
-    Specify the full service principal name.
+        The full SPN to add or remove, e.g. HOST/LON-DC1.
 
     .PARAMETER Account
-    Specify the target account.
+        The user or computer account to add or remove the SPN, e.b. User1 or
+        LON-DC1$.
 #>
 function Test-TargetResource
 {
@@ -175,15 +159,15 @@ function Test-TargetResource
 
     [System.Boolean] $desiredConfigurationMatch = $true
 
-    $currentConfig = Get-TargetResource @PSBoundParameters
+    $currentConfiguration = Get-TargetResource @PSBoundParameters
 
     $desiredConfigurationMatch = $desiredConfigurationMatch -and
-                                 $currentConfig.Ensure -eq $Ensure
+                                 $currentConfiguration.Ensure -eq $Ensure
 
     if ($Ensure -eq 'Present')
     {
         $desiredConfigurationMatch = $desiredConfigurationMatch -and
-                                     $currentConfig.Account -eq $Account
+                                     $currentConfiguration.Account -eq $Account
     }
 
     return $desiredConfigurationMatch
