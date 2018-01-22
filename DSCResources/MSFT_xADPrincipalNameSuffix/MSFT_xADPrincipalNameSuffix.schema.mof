@@ -7,4 +7,3 @@ class MSFT_xADPrincipalNameSuffix : OMI_BaseResource
     [Write, EmbeddedInstance("MSFT_Credential"), Description("Specifies the user account credentials to use to perform this task")] String Credential;
     [Write, Description("Specifies whether the principal name suffixes are added or removed."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
 };
-
