@@ -1,0 +1,10 @@
+[ClassVersion("1.0.0.0"), FriendlyName("xADPrincipalNameSuffix")]
+class MSFT_xADPrincipalNameSuffix : OMI_BaseResource
+{
+    [Key, Description("Specifies the target forest for the change")] String ForestName;
+    [Write, Description("Specifies the User Principal Name (UPN) Suffix to add/remove.")] String UserPrincipalNameSuffix[];
+    [Write, Description("Specifies the Service Principal Name (SPN) Suffix to add/remove.")] String ServicePrincipalNameSuffix[];
+    [Write, EmbeddedInstance("MSFT_Credential"), Description("Specifies the user account credentials to use to perform this task")] String Credential;
+    [Write, Description("Specifies whether the principal name suffixes are added or removed."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+};
+
