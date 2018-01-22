@@ -254,10 +254,24 @@ The xADComputer DSC resource will manage computer accounts within Active Directo
 Note: An ODJ Request file will only be created when a computer account is first created in the domain.
 Setting an ODJ Request file path for a configuration that creates a computer account that already exists will not cause the file to be created.
 
+### **xADPrincipalNameSuffix**
+
+The xADPrincipalNameSuffix DSC resource will manage User Principal Name (UPN) suffixes and Service Principal Name suffixes in a forest.
+
+* **ForestName**: Specifies the target Active Directory forest for the change
+* **UserPrincipalNameSuffix**: Specifies the User Principal Name (UPN) Suffix to add/remove. (optional)
+* **ServicePrincipalNameSuffix**: Specifies the Service Principal Name (SPN) Suffix to add/remove. (optional)
+* **Credential**: "Specifies the user account credentials to use to perform this task. (optional)
+* **Ensure**: Specifies whether the principal name suffixes are added or removed. (optional)
+* **Ensure**: Specifies whether the principal name suffixes are present or absent.
+  * Valid values are 'Present' and 'Absent'.
+  * It not specified, it defaults to 'Present'.
+
 ## Versions
 
 ### Unreleased
 
+* xADPrincipalNameSuffix: Added Resource
 * Converted AppVeyor.yml to use DSCResource.tests shared code.
 * Opted-In to markdown rule validation.
 * Readme.md modified resolve markdown rule violations.
@@ -1184,4 +1198,57 @@ Example_xADComputerAccountODJ -DomainController 'DC01' `
     -ConfigurationData $ConfigurationData
 
 Start-DscConfiguration -Path .\Example_xADComputerAccount -Wait -Verbose
+```
+
+### Create User Principal Name (UPN) suffixes and Service Principal Name suffixes
+
+In this example, we create a 'NANO-200' computer account in the 'Nano' OU of the 'example.com' Active Directory domain as well as creating an Offline Domain Join Request file.
+
+```powershell
+configuration Example_ADPrincipalSuffix
+{
+    Param
+    (
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $TargetName,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $ForestName,
+
+        [parameter(Mandatory = $true)]
+        [String[]]
+        $UserPrincipalNameSuffix,
+
+        [parameter(Mandatory = $true)]
+        [String[]]
+        $ServicePrincipalNameSuffix
+    )
+
+Import-DscResource -ModuleName xActiveDirectory
+
+    node $TargetName
+    {
+        xADPrincipalNameSuffix $ForestName
+        {
+            ForestName = $ForestName
+            UserPrincipalNameSuffix = $UserPrincipalNameSuffix
+            ServicePrincipalNameSuffix = $ServicePrincipalNameSuffix
+            Ensure = 'Present'
+        }
+    }
+}
+
+$params = @{
+    TargetName = "dc.contoso.com"
+    ForestName = "contoso.com"
+    UserPrincipalNameSuffix = "fabrikam.com","industry.com"
+    ServicePrincipalNameSuffix = "corporate.com"
+    OutputPath = c:\output
+}
+
+Example_ADPrincipalSuffix @params
+
+Start-DscConfiguration -Path c:\output -Wait -Verbose
 ```
