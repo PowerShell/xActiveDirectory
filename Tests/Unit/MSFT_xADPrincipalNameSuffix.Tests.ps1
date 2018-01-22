@@ -19,7 +19,7 @@ try
     InModuleScope $Global:DSCResourceName {
 
         $forestName = 'contoso.com'
-        $testCredential = [System.Management.Automation.PSCredential]::Empty;
+        $testCredential = [System.Management.Automation.PSCredential]::Empty
 
         $testpresentParams = @{
             ForestName = $forestName
@@ -28,8 +28,8 @@ try
             Ensure = 'Present'
         }
 
-        $testAbsentParams = $testPresentParams.Clone();
-        $testAbsentParams['Ensure'] = 'Absent';
+        $testAbsentParams = $testPresentParams.Clone()
+        $testAbsentParams['Ensure'] = 'Absent'
 
     
         $presentForestMatch = @{
