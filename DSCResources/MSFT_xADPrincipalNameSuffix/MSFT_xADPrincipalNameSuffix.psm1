@@ -15,7 +15,8 @@ Import-LocalizedData @importLocalizedDataParams
 #endregion
 
 ## Import the common AD functions
-$adCommonFunctions = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath '\MSFT_xADCommon\MSFT_xADCommon.ps1';
+$adCommonResourcePath = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'MSFT_xADCommon'
+$adCommonFunctions = Join-Path -Path $adCommonResourcePath -ChildPath 'MSFT_xADCommon.ps1'
 . $adCommonFunctions
 
 function Get-TargetResource
@@ -46,10 +47,10 @@ function Get-TargetResource
         $Ensure = "Present"
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
-    Import-Module -Name 'ActiveDirectory' -Verbose:$false;
+    Assert-Module -ModuleName 'ActiveDirectory'
+    Import-Module -Name 'ActiveDirectory' -Verbose:$false
 
-    Write-Verbose -Message ($LocalizedData.GetForest -f $ForestName)
+    Write-Verbose -Message ($localizedData.GetForest -f $ForestName)
     $forest = Get-ADForest -Identity $ForestName
 
     $targetResource = @{
@@ -91,8 +92,8 @@ function Test-TargetResource
         $Ensure = "Present"
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
-    Import-Module -Name 'ActiveDirectory' -Verbose:$false;
+    Assert-Module -ModuleName 'ActiveDirectory'
+    Import-Module -Name 'ActiveDirectory' -Verbose:$false
 
     $forest = Get-ADForest -Identity $ForestName
     $inDesiredState = $true
@@ -104,7 +105,7 @@ function Test-TargetResource
             $compare = Compare-Object -ReferenceObject $UserPrincipalNameSuffix -DifferenceObject $forest.UPNSuffixes
             if($compare)
             {
-                Write-Verbose -Message ($LocalizedData.ForestUpnSuffixNotInDesiredState -f $ForestName)
+                Write-Verbose -Message ($localizedData.ForestUpnSuffixNotInDesiredState -f $ForestName)
                 $inDesiredState = $false
             }
         }
@@ -115,15 +116,15 @@ function Test-TargetResource
             {
                 if ($suffix -notin $forest.UPNSuffixes)
                 {
-                    Write-Verbose -Message ($LocalizedData.UpnSuffixNotInDesiredState -f $suffix)
+                    Write-Verbose -Message ($localizedData.UpnSuffixNotInDesiredState -f $suffix)
                     $inDesiredState = $false
                 }
             }
-            else #absent
+            else # Absent
             {
                 if ($suffix -in $forest.UPNSuffixes)
                 {
-                    Write-Verbose -Message ($LocalizedData.UpnSuffixNotInDesiredState -f $suffix)
+                    Write-Verbose -Message ($localizedData.UpnSuffixNotInDesiredState -f $suffix)
                     $inDesiredState = $false
                 }
             }
@@ -137,7 +138,7 @@ function Test-TargetResource
             $compare = Compare-Object -ReferenceObject $ServicePrincipalNameSuffix -DifferenceObject $forest.SPNSuffixes
             if($compare)
             {
-                Write-Verbose -Message ($LocalizedData.ForestSPNSuffixNotInDesiredState -f $ForestName)
+                Write-Verbose -Message ($localizedData.ForestSPNSuffixNotInDesiredState -f $ForestName)
                 $inDesiredState = $false
             }
         }
@@ -148,15 +149,15 @@ function Test-TargetResource
             {
                 if ($suffix -notin $forest.SPNSuffixes)
                 {
-                    Write-Verbose -Message ($LocalizedData.SPNSuffixNotInDesiredState -f $suffix)
+                    Write-Verbose -Message ($localizedData.SPNSuffixNotInDesiredState -f $suffix)
                     $inDesiredState = $false
                 }
             }
-            else #absent
+            else # Absent
             {
                 if ($suffix -in $forest.SPNSuffixes)
                 {
-                    Write-Verbose -Message ($LocalizedData.SPNSuffixNotInDesiredState -f $suffix)
+                    Write-Verbose -Message ($localizedData.SPNSuffixNotInDesiredState -f $suffix)
                     $inDesiredState = $false
                 }
             }
@@ -167,7 +168,6 @@ function Test-TargetResource
 }
 
 function Set-TargetResource
-
 {
     [CmdletBinding()]
     param
@@ -194,8 +194,8 @@ function Set-TargetResource
         $Ensure = "Present"
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
-    Import-Module -Name 'ActiveDirectory' -Verbose:$false;
+    Assert-Module -ModuleName 'ActiveDirectory'
+    Import-Module -Name 'ActiveDirectory' -Verbose:$false
 
     $setParams = @{Identity = $ForestName}
     if($Credential)
@@ -215,13 +215,13 @@ function Set-TargetResource
     if($UserPrincipalNameSuffix)
     {
         $setParams['UPNSuffixes'] = ( @{ $action = $($UserPrincipalNameSuffix) } )
-        Write-Verbose -Message ($LocalizedData.SetUpnSuffix -f $action)
+        Write-Verbose -Message ($localizedData.SetUpnSuffix -f $action)
     }
 
     if($ServicePrincipalNameSuffix)
     {
         $setParams['SPNSuffixes'] = ( @{ $action = $($ServicePrincipalNameSuffix) } )
-        Write-Verbose -Message ($LocalizedData.SetSpnSuffix -f $action)
+        Write-Verbose -Message ($localizedData.SetSpnSuffix -f $action)
     }
 
     Set-ADForest @setParams
