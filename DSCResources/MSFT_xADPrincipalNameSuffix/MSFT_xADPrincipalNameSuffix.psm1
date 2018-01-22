@@ -18,34 +18,6 @@ Import-LocalizedData @importLocalizedDataParams
 $adCommonFunctions = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath '\MSFT_xADCommon\MSFT_xADCommon.ps1';
 . $adCommonFunctions
 
-<#
-.SYNOPSIS
-Short description
-
-.DESCRIPTION
-Long description
-
-.PARAMETER Forest
-Parameter description
-
-.PARAMETER UserPrincipalNameSuffix
-Parameter description
-
-.PARAMETER ServicePrincipalNameSuffix
-Parameter description
-
-.PARAMETER Credential
-Parameter description
-
-.PARAMETER Ensure
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
-#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -77,6 +49,7 @@ function Get-TargetResource
     Assert-Module -ModuleName 'ActiveDirectory';
     Import-Module -Name 'ActiveDirectory' -Verbose:$false;
 
+    Write-Verbose -Message ($LocalizedData.GetForest -f $ForestName)
     $forest = Get-ADForest -Identity $ForestName
 
     $targetResource = @{
@@ -88,43 +61,6 @@ function Get-TargetResource
     }
 
     return $targetResource
-}
-
-function Set-TargetResource
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [String]
-        $ForestName,
-
-        [Parameter()]
-        [String[]]
-        $UserPrincipalNameSuffix,
-
-        [Parameter()]
-        [String[]]
-        $ServicePrincipalNameSuffix,
-
-        [Parameter()]
-        [PSCredential]
-        $Credential,
-
-        [Parameter()]
-        [ValidateSet("Present","Absent")]
-        [String]
-        $Ensure = "Present"
-    )
-
-    #Write-Verbose "Use this cmdlet to deliver information about command processing."
-
-    #Write-Debug "Use this cmdlet to write debug information while troubleshooting."
-
-    #Include this line if the resource requires a system reboot.
-    #$global:DSCMachineStatus = 1
-
-
 }
 
 function Test-TargetResource
@@ -228,4 +164,65 @@ function Test-TargetResource
     }
 
     return $inDesiredState
+}
+
+function Set-TargetResource
+
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [String]
+        $ForestName,
+
+        [Parameter()]
+        [String[]]
+        $UserPrincipalNameSuffix,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffix,
+
+        [Parameter()]
+        [PSCredential]
+        $Credential,
+
+        [Parameter()]
+        [ValidateSet("Present","Absent")]
+        [String]
+        $Ensure = "Present"
+    )
+
+    Assert-Module -ModuleName 'ActiveDirectory';
+    Import-Module -Name 'ActiveDirectory' -Verbose:$false;
+
+    $setParams = @{Identity = $ForestName}
+    if($Credential)
+    {
+        $setParams['Credential'] = $Credential
+    }
+
+    if($Ensure -eq 'Present')
+    {
+        $action = 'Replace'
+    }
+    else #absent
+    {
+        $action = 'Remove'
+    }
+
+    if($UserPrincipalNameSuffix)
+    {
+        $setParams['UPNSuffixes'] = ( @{ $action = $($UserPrincipalNameSuffix) } )
+        Write-Verbose -Message ($LocalizedData.SetUpnSuffix -f $action)
+    }
+
+    if($ServicePrincipalNameSuffix)
+    {
+        $setParams['SPNSuffixes'] = ( @{ $action = $($ServicePrincipalNameSuffix) } )
+        Write-Verbose -Message ($LocalizedData.SetSpnSuffix -f $action)
+    }
+
+    Set-ADForest @setParams
 }
