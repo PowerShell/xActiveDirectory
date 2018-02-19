@@ -1,5 +1,5 @@
 $Global:DSCModuleName   = 'xActiveDirectory' 
-$Global:DSCResourceName = 'MSFT_xADPrincipalNameSuffix'
+$Global:DSCResourceName = 'MSFT_xADForestProperties'
 
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
