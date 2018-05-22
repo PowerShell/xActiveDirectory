@@ -208,14 +208,13 @@ try
                 Assert-MockCalled Set-ADServiceAccount -ParameterFilter { $Credential -eq $testCredentials } -Scope It;
             }
 
-            It "Calls 'Set-ADServiceAccount' with credentials when 'Ensure' is 'Present' and the MSA does not exist  (#106)" {
+            It "Calls 'New-ADServiceAccount' with credentials when 'Ensure' is 'Present' and the MSA does not exist  (#106)" {
                 Mock Get-ADServiceAccount { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
-                Mock Set-ADServiceAccount -ParameterFilter { $Credential -eq $testCredentials }  { }
-                Mock New-ADServiceAccount { return [PSCustomObject] $fakeADMSA; }
+                Mock New-ADServiceAccount -ParameterFilter { $Credential -eq $testCredentials } { return [PSCustomObject] $fakeADMSA; }
 
                 Set-TargetResource @testPresentParams -Credential $testCredentials;
 
-                Assert-MockCalled Set-ADServiceAccount -ParameterFilter { $Credential -eq $testCredentials } -Scope It;
+                Assert-MockCalled New-ADServiceAccount -ParameterFilter { $Credential -eq $testCredentials } -Scope It;
             }
 
             It "Calls 'Move-ADObject' with credentials when specified (#106)" {
