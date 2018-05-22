@@ -30,7 +30,7 @@ try
     InModuleScope $Global:DSCResourceName {
        #region Pester Test Initialization
         $testPresentParams = @{
-            Name = 'TestMSA'
+            ServiceAccountName = 'TestMSA'
             Path = 'OU=Fake,DC=contoso,DC=com'
             Description = 'Test MSA description'
             DisplayName = 'Test MSA display name'
@@ -255,7 +255,7 @@ try
                 Mock Move-ADObject -ParameterFilter { $Credential -eq $testCredentials } { }
                 Mock Get-ADServiceAccount {
                     $duffADMSA = $fakeADMSA.Clone();
-                    $duffADMSA['DistinguishedName'] = "CN=$($testPresentParams.GroupName),OU=WrongPath,DC=contoso,DC=com";
+                    $duffADMSA['DistinguishedName'] = "CN=$($testPresentParams.ServiceAccountName),OU=WrongPath,DC=contoso,DC=com";
                     return $duffADMSA;
                 }
 
