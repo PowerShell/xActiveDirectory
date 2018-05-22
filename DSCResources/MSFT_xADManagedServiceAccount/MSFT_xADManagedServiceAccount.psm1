@@ -19,7 +19,7 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServiceAccountName,
@@ -53,7 +53,8 @@ function Get-TargetResource
     Assert-Module -ModuleName 'ActiveDirectory'
     $adServiceAccountParams = Get-ADCommonParameters @PSBoundParameters
 
-    try {
+    try
+    {
         $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName
 
         $targetResource = @{
@@ -69,7 +70,8 @@ function Get-TargetResource
             $targetResource['Ensure'] = 'Present';
         }
     }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+    {
         Write-Verbose ($LocalizedData.ManagedServiceAccountNotFound -f $ServiceAccountName)
         $targetResource = @{
             ServiceAccountName = $ServiceAccountName
@@ -87,7 +89,7 @@ function Test-TargetResource
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServiceAccountName,
@@ -153,7 +155,7 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ServiceAccountName,
@@ -187,10 +189,12 @@ function Set-TargetResource
     Assert-Module -ModuleName 'ActiveDirectory'
     $adServiceAccountParams = Get-ADCommonParameters @PSBoundParameters
 
-    try {
+    try
+    {
         $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName
 
-        if ($Ensure -eq 'Present') {
+        if ($Ensure -eq 'Present')
+        {
             $setADServiceAccountParams = $adServiceAccountParams.Clone()
             $setADServiceAccountParams['Identity'] = $adServiceAccount.DistinguishedName
 
@@ -211,7 +215,8 @@ function Set-TargetResource
             Set-ADServiceAccount @setADServiceAccountParams
 
             # Move service account if the path is not correct
-            if ($Path -and ($Path -ne (Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName))) {
+            if ($Path -and ($Path -ne (Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName)))
+            {
                 Write-Verbose ($LocalizedData.MovingManagedServiceAccount -f $ServiceAccountName, $Path)
                 $moveADObjectParams = $adServiceAccountParams.Clone()
                 $moveADObjectParams['Identity'] = $adServiceAccount.DistinguishedName
