@@ -47,7 +47,12 @@ function Get-TargetResource
 
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainController
+        $DomainController,
+
+        ## This must be the user's DN
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ManagedBy
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
