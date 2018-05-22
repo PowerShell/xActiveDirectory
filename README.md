@@ -27,6 +27,7 @@ This is the development branch
 to which contributions should be proposed by contributors as pull requests.
 This development branch will periodically be merged to the master branch,
 and be released to [PowerShell Gallery](https://www.powershellgallery.com/).
+
 ## Contributing
 
 Please check out common DSC Resource [contributing guidelines](https://github.com/PowerShell/DscResources/blob/master/CONTRIBUTING.md).
