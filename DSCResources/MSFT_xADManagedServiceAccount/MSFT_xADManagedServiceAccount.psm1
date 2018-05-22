@@ -24,27 +24,33 @@ function Get-TargetResource
         [System.String]
         $ServiceAccountName,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Path,
 
+        [Parameter()]
         [ValidateSet("Present", "Absent")]
         [System.String]
         $Ensure = "Present",
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Description,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DisplayName,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
         $Credential,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DomainController
@@ -94,27 +100,33 @@ function Test-TargetResource
         [System.String]
         $ServiceAccountName,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Path,
 
+        [Parameter()]
         [ValidateSet("Present", "Absent")]
         [System.String]
         $Ensure = "Present",
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Description,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DisplayName,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
         $Credential,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DomainController
@@ -160,27 +172,33 @@ function Set-TargetResource
         [System.String]
         $ServiceAccountName,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Path,
 
+        [Parameter()]
         [ValidateSet("Present", "Absent")]
         [System.String]
         $Ensure = "Present",
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $Description,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DisplayName,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
         $Credential,
 
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DomainController
