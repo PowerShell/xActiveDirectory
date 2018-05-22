@@ -35,7 +35,6 @@ try
             Description = 'Test MSA description'
             DisplayName = 'Test MSA display name'
             Ensure = 'Present'
-            ManagedBy = 'CN=User 1,CN=Users,DC=contoso,DC=com'
         }
 
         $testAbsentParams = $testPresentParams.Clone()
@@ -47,26 +46,6 @@ try
             DistinguishedName = "CN=$($testPresentParams.Name),$($testPresentParams.Path)";
             Description = $testPresentParams.Description
             DisplayName = $testPresentParams.DisplayName
-            ManagedBy = $testPresentParams.ManagedBy
-        }
-
-        $fakeADUser1 = [PSCustomObject] @{
-            DistinguishedName = 'CN=User 1,CN=Users,DC=contoso,DC=com';
-            ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b8e';
-            SamAccountName = 'USER1';
-            SID = 'S-1-5-21-1131554080-2861379300-292325817-1106'
-        }
-        $fakeADUser2 = [PSCustomObject] @{
-            DistinguishedName = 'CN=User 2,CN=Users,DC=contoso,DC=com';
-            ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b8f';
-            SamAccountName = 'USER2';
-            SID = 'S-1-5-21-1131554080-2861379300-292325817-1107'
-        }
-        $fakeADUser3 = [PSCustomObject] @{
-            DistinguishedName = 'CN=User 3,CN=Users,DC=contoso,DC=com';
-            ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b90';
-            SamAccountName = 'USER3';
-            SID = 'S-1-5-21-1131554080-2861379300-292325817-1108'
         }
 
         $testDomainController = 'TESTDC';
@@ -154,16 +133,6 @@ try
                 Test-TargetResource @testPresentParams | Should Be $false;
             }
 
-            It "Fails when MSA exists, 'Ensure' is 'Present' but 'ManagedBy' is wrong" {
-                Mock Get-TargetResource {
-                    $duffADMSA = $testPresentParams.Clone();
-                    $duffADMSA['ManagedBy'] = $fakeADUser3.DistinguishedName;
-                    return $duffADMSA;
-                }
-
-                Test-TargetResource @testPresentParams | Should Be $false;
-            }
-
             It "Fails when MSA exists and 'Ensure' is 'Absent'" {
                 Mock Get-TargetResource { return $testPresentParams }
 
@@ -202,7 +171,6 @@ try
 
             $testProperties = @{
                 Description = 'Test AD MSA description is wrong';
-                ManagedBy = $fakeADUser3.DistinguishedName;
                 DisplayName = 'Test DisplayName';
             }
 

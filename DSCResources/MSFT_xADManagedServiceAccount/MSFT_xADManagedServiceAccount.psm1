@@ -47,26 +47,20 @@ function Get-TargetResource
 
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainController,
-
-        ## This must be the user's DN
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ManagedBy
+        $DomainController
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
     $adServiceAccountParams = Get-ADCommonParameters @PSBoundParameters
 
     try {
-        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName,ManagedBy
+        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName
 
         $targetResource = @{
             ServiceAccountName = $adServiceAccount.Name
             Path = Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName
             Description = $adServiceAccount.Description
             DisplayName = $adServiceAccount.DisplayName
-            ManagedBy = $adServiceAccount.ManagedBy
             Ensure = 'Absent'
         }
 
@@ -82,7 +76,6 @@ function Get-TargetResource
             Path = $Path
             Description = $Description
             DisplayName = $DisplayName
-            ManagedBy = $ManagedBy
             Ensure = 'Absent'
         }
     }
@@ -122,12 +115,7 @@ function Test-TargetResource
 
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainController,
-
-        ## This must be the user's DN
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ManagedBy
+        $DomainController
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters
@@ -148,12 +136,6 @@ function Test-TargetResource
     if ($DisplayName -and ($targetResource.DisplayName -ne $DisplayName))
     {
         Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'DisplayName', $DisplayName, $targetResource.DisplayName)
-        $targetResourceInCompliance = $false
-    }
-
-    if ($ManagedBy -and ($targetResource.ManagedBy -ne $ManagedBy))
-    {
-        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'ManagedBy', $ManagedBy, $targetResource.ManagedBy)
         $targetResourceInCompliance = $false
     }
 
@@ -199,19 +181,14 @@ function Set-TargetResource
 
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainController,
-
-        ## This must be the user's DN
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ManagedBy
+        $DomainController
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
     $adServiceAccountParams = Get-ADCommonParameters @PSBoundParameters
 
     try {
-        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName,ManagedBy
+        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName
 
         if ($Ensure -eq 'Present') {
             $setADServiceAccountParams = $adServiceAccountParams.Clone()
@@ -228,12 +205,6 @@ function Set-TargetResource
             {
                 Write-Verbose ($LocalizedData.UpdatingManagedServiceAccountProperty -f 'DisplayName', $DisplayName)
                 $setADServiceAccountParams['DisplayName'] = $DisplayName
-            }
-
-            if ($ManagedBy -and ($ManagedBy -ne $adServiceAccount.ManagedBy))
-            {
-                Write-Verbose ($LocalizedData.UpdatingManagedServiceAccountProperty -f 'ManagedBy', $ManagedBy)
-                $setADServiceAccountParams['ManagedBy'] = $ManagedBy
             }
 
             Write-Verbose ($LocalizedData.UpdatingManagedServiceAccount -f $ServiceAccountName)
@@ -272,11 +243,6 @@ function Set-TargetResource
             if ($DisplayName)
             {
                 $adServiceAccountParams['DisplayName'] = $DisplayName
-            }
-
-            if ($ManagedBy)
-            {
-                $adServiceAccountParams['ManagedBy'] = $ManagedBy
             }
 
             if ($Path)
