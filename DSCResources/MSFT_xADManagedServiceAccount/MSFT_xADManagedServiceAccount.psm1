@@ -22,7 +22,7 @@ function Get-TargetResource
         [parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Name,
+        $ServiceAccountName,
 
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -62,7 +62,7 @@ function Get-TargetResource
         $adServiceAccount = Get-ADServiceAccount @adServiceAccountParams -Property Name,DistinguishedName,Description,DisplayName,ManagedBy
 
         $targetResource = @{
-            Name = $adServiceAccount.Name
+            ServiceAccountName = $adServiceAccount.Name
             Path = Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName
             Description = $adServiceAccount.Description
             DisplayName = $adServiceAccount.DisplayName
@@ -76,9 +76,9 @@ function Get-TargetResource
         }
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
-        Write-Verbose ($LocalizedData.ManagedServiceAccountNotFound -f $Name)
+        Write-Verbose ($LocalizedData.ManagedServiceAccountNotFound -f $ServiceAccountName)
         $targetResource = @{
-            Name = $Name
+            ServiceAccountName = $ServiceAccountName
             Path = $Path
             Description = $Description
             DisplayName = $DisplayName
@@ -97,7 +97,7 @@ function Test-TargetResource
         [parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Name,
+        $ServiceAccountName,
 
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -174,7 +174,7 @@ function Set-TargetResource
         [parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Name,
+        $ServiceAccountName,
 
         [ValidateNotNullOrEmpty()]
         [System.String]
@@ -236,12 +236,12 @@ function Set-TargetResource
                 $setADServiceAccountParams['ManagedBy'] = $ManagedBy
             }
 
-            Write-Verbose ($LocalizedData.UpdatingManagedServiceAccount -f $Name)
+            Write-Verbose ($LocalizedData.UpdatingManagedServiceAccount -f $ServiceAccountName)
             Set-ADServiceAccount @setADServiceAccountParams
 
             # Move service account if the path is not correct
             if ($Path -and ($Path -ne (Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName))) {
-                Write-Verbose ($LocalizedData.MovingManagedServiceAccount -f $Name, $Path)
+                Write-Verbose ($LocalizedData.MovingManagedServiceAccount -f $ServiceAccountName, $Path)
                 $moveADObjectParams = $adServiceAccountParams.Clone()
                 $moveADObjectParams['Identity'] = $adServiceAccount.DistinguishedName
                 Move-ADObject @moveADObjectParams -TargetPath $Path
@@ -250,7 +250,7 @@ function Set-TargetResource
         elseif ($Ensure -eq 'Absent')
         {
             # Remove existing service account
-            Write-Verbose ($LocalizedData.RemovingManagedServiceAccount -f $Name)
+            Write-Verbose ($LocalizedData.RemovingManagedServiceAccount -f $ServiceAccountName)
             Remove-ADServiceAccount @adServiceAccountParams -Confirm:$false
         }
     }
@@ -259,8 +259,8 @@ function Set-TargetResource
         ## The service account doesn't exist
         if ($Ensure -eq 'Present')
         {
-            Write-Verbose ($LocalizedData.ManagedServiceAccountNotFound -f $Name)
-            Write-Verbose ($LocalizedData.AddingManagedServiceAccount -f $Name)
+            Write-Verbose ($LocalizedData.ManagedServiceAccountNotFound -f $ServiceAccountName)
+            Write-Verbose ($LocalizedData.AddingManagedServiceAccount -f $ServiceAccountName)
 
             $adServiceAccountParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
 

@@ -452,7 +452,7 @@ function Get-ADCommonParameters
     (
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [Alias('UserName','GroupName','ComputerName')]
+        [Alias('UserName','GroupName','ComputerName','ServiceAccountName')]
         [System.String]
         $Identity,
 
@@ -585,7 +585,7 @@ function Test-ADReplicationSite
     )
 
     Write-Verbose -Message ($localizedString.CheckingSite -f $SiteName);
-    
+
     $existingDC = "$((Get-ADDomainController -Discover -DomainName $DomainName -ForceDiscover).HostName)";
 
     try
