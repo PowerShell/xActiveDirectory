@@ -43,6 +43,7 @@ try
 
         $fakeADMSA = @{
             Name = $testPresentParams.Name;
+            Identity = $testPresentParams.Name;
             DistinguishedName = "CN=$($testPresentParams.Name),$($testPresentParams.Path)";
             Description = $testPresentParams.Description
             DisplayName = $testPresentParams.DisplayName
@@ -54,6 +55,18 @@ try
             ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b8e';
             SamAccountName = 'USER1';
             SID = 'S-1-5-21-1131554080-2861379300-292325817-1106'
+        }
+        $fakeADUser2 = [PSCustomObject] @{
+            DistinguishedName = 'CN=User 2,CN=Users,DC=contoso,DC=com';
+            ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b8f';
+            SamAccountName = 'USER2';
+            SID = 'S-1-5-21-1131554080-2861379300-292325817-1107'
+        }
+        $fakeADUser3 = [PSCustomObject] @{
+            DistinguishedName = 'CN=User 3,CN=Users,DC=contoso,DC=com';
+            ObjectGUID = 'a97cc867-0c9e-4928-8387-0dba0c883b90';
+            SamAccountName = 'USER3';
+            SID = 'S-1-5-21-1131554080-2861379300-292325817-1108'
         }
 
         $testDomainController = 'TESTDC';
