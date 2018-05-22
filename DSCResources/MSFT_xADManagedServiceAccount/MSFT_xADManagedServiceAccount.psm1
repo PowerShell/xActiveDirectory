@@ -251,7 +251,7 @@ function Set-TargetResource
             }
 
             ## Create service account
-            $adServiceAccount = New-ADServiceAccount @adServiceAccountParams -RestrictToSingleComputer -Enabled -PassThru
+            $adServiceAccount = New-ADServiceAccount @adServiceAccountParams -RestrictToSingleComputer -Enabled $true -PassThru
         }
     } #end catch
 } #end function Set-TargetResource
