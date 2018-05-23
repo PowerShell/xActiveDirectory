@@ -73,7 +73,7 @@ function Get-TargetResource
 
         if ($adServiceAccount)
         {
-            $targetResource['Ensure'] = 'Present';
+            $targetResource['Ensure'] = 'Present'
         }
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
@@ -87,7 +87,7 @@ function Get-TargetResource
             Ensure = 'Absent'
         }
     }
-    return $targetResource;
+    return $targetResource
 } #end function Get-TargetResource
 
 function Test-TargetResource
