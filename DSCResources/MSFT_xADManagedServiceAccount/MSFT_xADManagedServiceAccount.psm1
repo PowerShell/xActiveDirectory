@@ -3,13 +3,13 @@ data LocalizedData
 {
     # culture="en-US"
     ConvertFrom-StringData @'
-        AddingManagedServiceAccount           = Adding AD Managed Service Account '{0}'
-        UpdatingManagedServiceAccount         = Updating AD Managed Service Account '{0}'
-        RemovingManagedServiceAccount         = Removing AD Managed Service Account '{0}'
-        MovingManagedServiceAccount           = Moving AD Managed Service Account '{0}' to '{1}'
-        ManagedServiceAccountNotFound         = AD Managed Service Account '{0}' was not found
-        NotDesiredPropertyState               = AD Managed Service Account '{0}' is not correct. Expected '{1}', actual '{2}'
-        UpdatingManagedServiceAccountProperty = Updating AD Managed Service Account property '{0}' to '{1}'
+        AddingManagedServiceAccount           = Adding AD Managed Service Account '{0}'.
+        UpdatingManagedServiceAccount         = Updating AD Managed Service Account '{0}'.
+        RemovingManagedServiceAccount         = Removing AD Managed Service Account '{0}'.
+        MovingManagedServiceAccount           = Moving AD Managed Service Account '{0}' to '{1}'.
+        ManagedServiceAccountNotFound         = AD Managed Service Account '{0}' was not found.
+        NotDesiredPropertyState               = AD Managed Service Account '{0}' is not correct. Expected '{1}', actual '{2}'.
+        UpdatingManagedServiceAccountProperty = Updating AD Managed Service Account property '{0}' to '{1}'.
 '@
 }
 
