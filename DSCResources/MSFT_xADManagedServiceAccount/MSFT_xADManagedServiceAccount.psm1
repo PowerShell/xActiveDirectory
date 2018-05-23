@@ -1,3 +1,7 @@
+## Import the common AD functions
+$adCommonFunctions = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath '\MSFT_xADCommon\MSFT_xADCommon.ps1'
+. $adCommonFunctions
+
 # Localized messages
 data LocalizedData
 {
@@ -278,9 +282,5 @@ function Set-TargetResource
         }
     } #end catch
 } #end function Set-TargetResource
-
-## Import the common AD functions
-$adCommonFunctions = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath '\MSFT_xADCommon\MSFT_xADCommon.ps1'
-. $adCommonFunctions
 
 Export-ModuleMember -Function *-TargetResource
