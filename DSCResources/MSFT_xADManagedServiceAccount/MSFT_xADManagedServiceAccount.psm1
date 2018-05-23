@@ -132,30 +132,30 @@ function Test-TargetResource
         $DomainController
     )
 
-    $targetResource = Get-TargetResource @PSBoundParameters
+    $getTargetResource = Get-TargetResource @PSBoundParameters
     $targetResourceInCompliance = $true
 
-    if ($Path -and ($targetResource.Path -ne $Path))
+    if ($Path -and ($getTargetResource.Path -ne $Path))
     {
-        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Path', $Path, $targetResource.Path)
+        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Path', $Path, $getTargetResource.Path)
         $targetResourceInCompliance = $false
     }
 
-    if ($Description -and ($targetResource.Description -ne $Description))
+    if ($Description -and ($getTargetResource.Description -ne $Description))
     {
-        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Description', $Description, $targetResource.Description)
+        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Description', $Description, $getTargetResource.Description)
         $targetResourceInCompliance = $false
     }
 
-    if ($DisplayName -and ($targetResource.DisplayName -ne $DisplayName))
+    if ($DisplayName -and ($getTargetResource.DisplayName -ne $DisplayName))
     {
-        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'DisplayName', $DisplayName, $targetResource.DisplayName)
+        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'DisplayName', $DisplayName, $getTargetResource.DisplayName)
         $targetResourceInCompliance = $false
     }
 
-    if ($targetResource.Ensure -ne $Ensure)
+    if ($getTargetResource.Ensure -ne $Ensure)
     {
-        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Ensure', $Ensure, $targetResource.Ensure)
+        Write-Verbose ($LocalizedData.NotDesiredPropertyState -f 'Ensure', $Ensure, $getTargetResource.Ensure)
         $targetResourceInCompliance = $false
     }
 
