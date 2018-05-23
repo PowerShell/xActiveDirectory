@@ -1,7 +1,7 @@
 # Localized messages
 data LocalizedData
 {
-    # culture="en-US"
+    # culture='en-US'
     ConvertFrom-StringData @'
         AddingManagedServiceAccount           = Adding AD Managed Service Account '{0}'.
         UpdatingManagedServiceAccount         = Updating AD Managed Service Account '{0}'.
@@ -30,9 +30,9 @@ function Get-TargetResource
         $Path,
 
         [Parameter()]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -106,9 +106,9 @@ function Test-TargetResource
         $Path,
 
         [Parameter()]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -178,9 +178,9 @@ function Set-TargetResource
         $Path,
 
         [Parameter()]
-        [ValidateSet("Present", "Absent")]
+        [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = "Present",
+        $Ensure = 'Present',
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
