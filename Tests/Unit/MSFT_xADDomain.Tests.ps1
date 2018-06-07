@@ -52,7 +52,7 @@ try
             Mock Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } { }
 
             It 'Calls "Assert-Module" to check "ADDSDeployment" module is installed' {
-                Mock Get-ADDomain { }
+                Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest { }
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -60,7 +60,7 @@ try
             }
 
             It 'Returns "System.Collections.Hashtable" object type' {
-                Mock Get-ADDomain { }
+                Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest { }
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -69,7 +69,7 @@ try
 
             It 'Calls "Get-ADDomain" without credentials if domain member' {
                 Mock Test-DomainMember { $true; }
-                Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } {  }
+                Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -78,7 +78,7 @@ try
 
             It 'Calls "Get-ADForest" without credentials if domain member' {
                 Mock Test-DomainMember { $true; }
-                Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } {  }
+                Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest -ParameterFilter { $Credential -eq $null } {  }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
