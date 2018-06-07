@@ -101,10 +101,10 @@ function Get-TargetResource
         [Parameter()] [ValidateNotNullOrEmpty()]
         [String] $SysvolPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()] [ValidateSet(3,4,5,6,7)]
         [UInt16] $ForestMode,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()] [ValidateSet(3,4,5,6,7)]
         [UInt16] $DomainMode
     )
 
@@ -141,8 +141,8 @@ function Get-TargetResource
             ParentDomainName = $domain.ParentDomain;
             DomainNetBIOSName = $domain.NetBIOSName;
             ForestName = $forest.Name
-            ForestMode = [int]$forest.ForestMode
-            DomainMode = [int]$domain.DomainMode
+            ForestMode = [uint16]$forest.ForestMode
+            DomainMode = [uint16]$domain.DomainMode
         }
 
         return $targetResource;
@@ -220,10 +220,10 @@ function Test-TargetResource
         [Parameter()] [ValidateNotNullOrEmpty()]
         [String] $SysvolPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()] [ValidateSet(3,4,5,6,7)]
         [UInt16] $ForestMode,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()]  [ValidateSet(3,4,5,6,7)]
         [UInt16] $DomainMode
     )
 
@@ -299,10 +299,10 @@ function Set-TargetResource
         [Parameter()] [ValidateNotNullOrEmpty()]
         [String] $SysvolPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()] [ValidateSet(3,4,5,6,7)]
         [UInt16] $ForestMode,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
+        [Parameter()] [ValidateSet(3,4,5,6,7)]
         [UInt16] $DomainMode
     )
 
