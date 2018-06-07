@@ -53,6 +53,7 @@ try
 
             It 'Calls "Assert-Module" to check "ADDSDeployment" module is installed' {
                 Mock Get-ADDomain { }
+                Mock Get-ADForest { }
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
                 Assert-MockCalled Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } -Scope It;
@@ -60,6 +61,7 @@ try
 
             It 'Returns "System.Collections.Hashtable" object type' {
                 Mock Get-ADDomain { }
+                Mock Get-ADForest { }
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
                 $result -is [System.Collections.Hashtable] | Should Be $true;
@@ -74,10 +76,21 @@ try
                 Assert-MockCalled Get-ADDomain -ParameterFilter { $Credential -eq $null } -Scope It;
             }
 
+            It 'Calls "Get-ADForest" without credentials if domain member' {
+                Mock Test-DomainMember { $true; }
+                Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } {  }
+                Mock Get-ADForest -ParameterFilter { $Credential -eq $null } {  }
+
+                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
+
+                Assert-MockCalled Get-ADDomain -ParameterFilter { $Credential -eq $null } -Scope It;
+            }
+
             It 'Throws "Invalid credentials" when domain is available but authentication fails' {
                 Mock Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
                     Write-Error -Exception (New-Object System.Security.Authentication.AuthenticationException);
                 }
+                Mock Get-ADForest { }
                 ## Match operator is case-sensitive!
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'invalid credentials';
             }
@@ -86,6 +99,7 @@ try
                 Mock Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException);
                 }
+                Mock Get-ADForest { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'Computer is already a domain member';
             }
@@ -94,6 +108,7 @@ try
                 Mock Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $missingDomainName } -MockWith {
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADServerDownException);
                 }
+                Mock Get-ADForest { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should Not Throw;
             }
@@ -186,20 +201,21 @@ try
                 param (
                      $DomainName, $SafeModeAdministratorPassword, $CreateDnsDelegation, $DatabasePath,
                      $DnsDelegationCredential, $InstallDns, $LogPath, $NoRebootOnCompletion, $SysvolPath,
-                     $DomainNetbiosName
+                     $DomainNetbiosName, $ForestMode, $DomainMode
                  )
             }
             function Install-ADDSDomain {
                 param (
                     $NewDomainName, $ParentDomainName, $SafeModeAdministratorPassword, $CreateDnsDelegation,
                     $Credential, $DatabasePath, $DnsDelegationCredential, $DomainType, $InstallDns, $LogPath,
-                    $NewDomainNetbiosName, $NoRebootOnCompletion, $SysvolPath
+                    $NewDomainNetbiosName, $NoRebootOnCompletion, $SysvolPath, $DomainMode
                 )
             }
 
             $testDomainName = 'present.com';
             $testParentDomainName = 'parent.com';
             $testDomainNetBIOSNameName = 'PRESENT';
+            $testDomainForestMode = 7;
             $testAdminCredential = New-Object System.Management.Automation.PSCredential 'Admin', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
             $testSafemodePassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
             $testSafemodeCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testSafemodePassword;
@@ -222,6 +238,9 @@ try
                 DomainName = $testDomainName;
                 ParentDomainName = $testParentDomainName;
                 DomainNetBIOSName = $testDomainNetBIOSNameName;
+                ForestName = $testParentDomainName
+                ForestMode = $testDomainForestMode
+                DomainMode = $testDomainForestMode
             }
             Mock Get-TargetResource { return $stubTargetResource; }
 
@@ -290,6 +309,22 @@ try
                 Set-TargetResource @newForestParams -DomainNetBIOSName $testDomainNetBIOSNameName;
 
                 Assert-MockCalled Install-ADDSForest -ParameterFilter { $DomainNetbiosName -eq $testDomainNetBIOSNameName } -Scope It;
+            }
+
+            It 'Calls "Install-ADDSForest" with "ForestMode" when creating forest, if specified' {
+                Mock Install-ADDSForest -ParameterFilter { $ForestMode -eq $testDomainForestMode } { }
+
+                Set-TargetResource @newForestParams -ForestMode $testDomainForestMode;
+
+                Assert-MockCalled Install-ADDSForest -ParameterFilter { $ForestMode -eq $testDomainForestMode } -Scope It;
+            }
+
+            It 'Calls "Install-ADDSForest" with "DomainMode" when creating forest, if specified' {
+                Mock Install-ADDSForest -ParameterFilter { $DomainMode -eq $testDomainForestMode } { }
+
+                Set-TargetResource @newForestParams -DomainMode $testDomainForestMode;
+
+                Assert-MockCalled Install-ADDSForest -ParameterFilter { $DomainMode -eq $testDomainForestMode } -Scope It;
             }
 
             #### ADDSDomain
@@ -391,6 +426,14 @@ try
                 Set-TargetResource @newDomainParams -DomainNetBIOSName $testDomainNetBIOSNameName;
 
                 Assert-MockCalled Install-ADDSDomain -ParameterFilter { $NewDomainNetbiosName -eq $testDomainNetBIOSNameName } -Scope It;
+            }
+
+            It 'Calls "Install-ADDSDomain" with "DomainMode" when creating child domain, if specified' {
+                Mock Install-ADDSDomain -ParameterFilter { $DomainMode -eq $testDomainForestMode } { }
+
+                Set-TargetResource @newDomainParams -DomainMode $testDomainForestMode;
+
+                Assert-MockCalled Install-ADDSDomain -ParameterFilter { $DomainMode -eq $testDomainForestMode } -Scope It;
             }
         }
         #endregion
