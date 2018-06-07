@@ -102,6 +102,8 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 * **DatabasePath**: Specifies the fully qualified, non-Universal Naming Convention (UNC) path to a directory on a fixed disk of the local computer that contains the domain database (optional).
 * **LogPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation will be written (optional).
 * **SysvolPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the Sysvol file will be written. (optional)
+* **ForestMode**: Specifies the forest mode if a new forest is deployed. ForestMode will not be raised by this resource for existing forests. (optional)
+* **DomainMode**: Specifies the domain mode if a new domain is deployed. DomainMode will not be raised by this resource for existing domains. (optional)
 
 ### **xADDomainController**
 

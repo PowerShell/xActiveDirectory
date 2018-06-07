@@ -21,7 +21,7 @@ data localizedData
         ResourceNotInDesiredState            = Resource '{0}' is NOT in the desired state.
         RetryingGetADDomain                  = Attempt {0} of {1} to call Get-ADDomain failed, retrying in {2} seconds.
         UnhandledError                       = Unhandled error occured, detail here: {0}
-        FaultExceptionAndDomainShouldExist = ServiceModel FaultException detected and domain should exist, performing retry...
+        FaultExceptionAndDomainShouldExist   = ServiceModel FaultException detected and domain should exist, performing retry...
 '@
 }
 
@@ -93,7 +93,13 @@ function Get-TargetResource
         [String] $LogPath,
 
         [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath
+        [String] $SysvolPath,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $ForestMode,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $DomainMode
     )
     
     Assert-Module -ModuleName 'ADDSDeployment';
@@ -111,10 +117,12 @@ function Get-TargetResource
             ## We're already a domain member, so take the credentials out of the equation
             Write-Verbose ($localizedData.QueryDomainADWithLocalCredentials -f $domainFQDN);
             $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop;
+            $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
         }
         else {
             Write-Verbose ($localizedData.QueryDomainWithCredential -f $domainFQDN);
             $domain = Get-ADDomain -Identity $domainFQDN -Credential $DomainAdministratorCredential -ErrorAction Stop;
+            $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
         }
 
         ## No need to check whether the node is actually a domain controller. If we don't throw an exception,
@@ -126,6 +134,9 @@ function Get-TargetResource
             DomainName = $domain.DnsRoot;
             ParentDomainName = $domain.ParentDomain;
             DomainNetBIOSName = $domain.NetBIOSName;
+            ForestName = $forest.Name
+            ForestMode = [int]$forest.ForestMode
+            DomainMode = [int]$domain.DomainMode
         }
         
         return $targetResource;
@@ -201,7 +212,13 @@ function Test-TargetResource
         [String] $LogPath,
 
         [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath
+        [String] $SysvolPath,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $ForestMode,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $DomainMode
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters
@@ -274,7 +291,13 @@ function Set-TargetResource
         [String] $LogPath,
 
         [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath
+        [String] $SysvolPath,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $ForestMode,
+
+        [Parameter()] [ValidateNotNullOrEmpty()]
+        [UInt16] $DomainMode
     )
 
     # Debug can pause Install-ADDSForest/Install-ADDSDomain, so we remove it.
@@ -305,6 +328,10 @@ function Set-TargetResource
     {
         $installADDSParams['SysvolPath'] = $SysvolPath;
     }
+    if ($PSBoundParameters.ContainsKey('DomainMode'))
+    {
+        $installADDSParams['DomainMode'] = $DomainMode;
+    }
     
     if ($PSBoundParameters.ContainsKey('ParentDomainName'))
     {
@@ -327,6 +354,10 @@ function Set-TargetResource
         if ($PSBoundParameters.ContainsKey('DomainNetbiosName'))
         {
             $installADDSParams['DomainNetbiosName'] = $DomainNetBIOSName;
+        }
+        if ($PSBoundParameters.ContainsKey('ForestMode'))
+        {
+            $installADDSParams['ForestMode'] = $ForestMode
         }
         Install-ADDSForest @installADDSParams;
         Write-Verbose -Message ($localizedData.CreatedForest -f $DomainName); 

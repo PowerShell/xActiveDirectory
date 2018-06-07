@@ -10,4 +10,6 @@ class MSFT_xADDomain : OMI_BaseResource
     [Write, Description("Path to a directory that contains the domain database")] String DatabasePath;
     [Write, Description("Path to a directory for the log file that will be written")] String LogPath;
     [Write, Description("Path to a directory where the Sysvol file will be written")] String SysvolPath;
+    [Write, Description("The Forest Functional Level for the entire forest"), ValueMap{"3","4","5","6","7"}, Values{"Win2008", "Win2008R2", "Win2012", "Win2012R2", "WinThreshold"}] UInt16 ForestMode;
+    [Write, Description("The Domain Functional Level for the entire domain"), ValueMap{"3","4","5","6","7"}, Values{"Win2008", "Win2008R2", "Win2012", "Win2012R2", "WinThreshold"}] UInt16 DomainMode;
 };
