@@ -36,6 +36,7 @@ try
         $correctDomainName = 'present.com';
         $incorrectDomainName = 'incorrect.com';
         $missingDomainName = 'missing.com';
+        $mode = 'WinThreshold';
         $testAdminCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
         $invalidCredential = New-Object System.Management.Automation.PSCredential 'Invalid', (ConvertTo-SecureString 'InvalidPassword' -AsPlainText -Force);
 
@@ -50,10 +51,15 @@ try
         Describe "$($Global:DSCResourceName)\Get-TargetResource" {
 
             Mock Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } { }
+            function ConvertTo-DeploymentForestMode { }
+            function ConvertTo-DeploymentDomainMode { }
 
             It 'Calls "Assert-Module" to check "ADDSDeployment" module is installed' {
                 Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
-                Mock Get-ADForest { }
+                Mock Get-ADForest { }                
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
+
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
                 Assert-MockCalled Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } -Scope It;
@@ -62,6 +68,9 @@ try
             It 'Returns "System.Collections.Hashtable" object type' {
                 Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest { }
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
+
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
                 $result -is [System.Collections.Hashtable] | Should Be $true;
@@ -70,6 +79,8 @@ try
             It 'Calls "Get-ADDomain" without credentials if domain member' {
                 Mock Test-DomainMember { $true; }
                 Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -80,6 +91,8 @@ try
                 Mock Test-DomainMember { $true; }
                 Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest -ParameterFilter { $Credential -eq $null } {  }
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -91,6 +104,9 @@ try
                     Write-Error -Exception (New-Object System.Security.Authentication.AuthenticationException);
                 }
                 Mock Get-ADForest { }
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
+
                 ## Match operator is case-sensitive!
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'invalid credentials';
             }
@@ -100,6 +116,8 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException);
                 }
                 Mock Get-ADForest { }
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'Computer is already a domain member';
             }
@@ -109,10 +127,47 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADServerDownException);
                 }
                 Mock Get-ADForest { }
+                Mock ConvertTo-DeploymentForestMode { }
+                Mock ConvertTo-DeploymentDomainMode { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should Not Throw;
             }
 
+            It 'Returns the correct domain mode' {
+                Mock ConvertTo-DeploymentDomainMode { return $mode }
+
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should Be $mode
+
+                Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
+                Assert-MockCalled -CommandName ConvertTo-DeploymentForestMode
+            }
+
+            It 'Returns the correct forest mode' {
+                Mock ConvertTo-DeploymentForestMode { return $mode}
+
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should Be $mode
+
+                Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
+                Assert-MockCalled -CommandName ConvertTo-DeploymentForestMode
+            }
+
+            It 'Does not return $null as forest or domain mode' {
+                Mock ConvertTo-DeploymentDomainMode { return $mode }
+                Mock ConvertTo-DeploymentForestMode { return $mode}
+
+                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
+
+                $result.DomainMode | Should Not Be $null
+                $result.ForestMode | Should Not Be $null
+
+                Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
+                Assert-MockCalled -CommandName ConvertTo-DeploymentForestMode
+            }
+
+            It 'Calls ConvertTo-DeploymentForestMode and ConvertTo-DeploymentDomainMode' {
+                Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
+                Assert-MockCalled -CommandName ConvertTo-DeploymentForestMode
+            }
         }
         #endregion
 
@@ -215,7 +270,7 @@ try
             $testDomainName = 'present.com';
             $testParentDomainName = 'parent.com';
             $testDomainNetBIOSNameName = 'PRESENT';
-            $testDomainForestMode = 7;
+            $testDomainForestMode = 'WinThreshold';
             $testAdminCredential = New-Object System.Management.Automation.PSCredential 'Admin', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
             $testSafemodePassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
             $testSafemodeCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testSafemodePassword;
