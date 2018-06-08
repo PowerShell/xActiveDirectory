@@ -322,7 +322,7 @@ The xADServicePrincipalName DSC resource will manage service principal names.
   * The helper function script file MSFT_xADCommon.ps1 was renamed to
     MSFT_xADCommon.psm1 to be a module script file instead. This makes it
     possible to report code coverage for the helper functions ([issue #201](https://github.com/PowerShell/xActiveDirectory/issues/201)).
-  * xADDomain is now capable of setting the forest and domain functional level ([issue #187](https://github.com/PowerShell/xActiveDirectory/issues/187)).
+  * xADDomain is now capable of setting the forest and domain functional level ([issue #187](https://github.com/PowerShell/xActiveDirectory/issues/187)). [Jan-Hendrik Peters (@nyanhp)](https://github.com/nyanhp)
 
 ### 2.18.0.0
 
