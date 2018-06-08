@@ -96,7 +96,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
-                Assert-MockCalled Get-ADDomain -ParameterFilter { $Credential -eq $null } -Scope It;
+                Assert-MockCalled Get-ADForest -ParameterFilter { $Credential -eq $null } -Scope It;
             }
 
             It 'Throws "Invalid credentials" when domain is available but authentication fails' {
