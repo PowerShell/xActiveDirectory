@@ -53,12 +53,12 @@ try
             Mock Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } { }
             function ConvertTo-DeploymentForestMode { }
             function ConvertTo-DeploymentDomainMode { }
+            Mock ConvertTo-DeploymentDomainMode { return $mode }
+            Mock ConvertTo-DeploymentForestMode { return $mode }
 
             It 'Calls "Assert-Module" to check "ADDSDeployment" module is installed' {
                 Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
-                Mock Get-ADForest { }                
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
+                Mock Get-ADForest { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -68,8 +68,6 @@ try
             It 'Returns "System.Collections.Hashtable" object type' {
                 Mock Get-ADDomain { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest { }
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -79,8 +77,6 @@ try
             It 'Calls "Get-ADDomain" without credentials if domain member' {
                 Mock Test-DomainMember { $true; }
                 Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -91,8 +87,6 @@ try
                 Mock Test-DomainMember { $true; }
                 Mock Get-ADDomain -ParameterFilter { $Credential -eq $null } { [psobject]@{Forest = $correctDomainName}}
                 Mock Get-ADForest -ParameterFilter { $Credential -eq $null } {  }
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName;
 
@@ -104,8 +98,6 @@ try
                     Write-Error -Exception (New-Object System.Security.Authentication.AuthenticationException);
                 }
                 Mock Get-ADForest { }
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 ## Match operator is case-sensitive!
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'invalid credentials';
@@ -116,8 +108,6 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException);
                 }
                 Mock Get-ADForest { }
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'Computer is already a domain member';
             }
@@ -127,15 +117,11 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADServerDownException);
                 }
                 Mock Get-ADForest { }
-                Mock ConvertTo-DeploymentForestMode { }
-                Mock ConvertTo-DeploymentDomainMode { }
 
                 { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should Not Throw;
             }
 
             It 'Returns the correct domain mode' {
-                Mock ConvertTo-DeploymentDomainMode { return $mode }
-
                 (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should Be $mode
 
                 Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
@@ -143,8 +129,6 @@ try
             }
 
             It 'Returns the correct forest mode' {
-                Mock ConvertTo-DeploymentForestMode { return $mode}
-
                 (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should Be $mode
 
                 Assert-MockCalled -CommandName ConvertTo-DeploymentDomainMode
@@ -152,9 +136,6 @@ try
             }
 
             It 'Does not return $null as forest or domain mode' {
-                Mock ConvertTo-DeploymentDomainMode { return $mode }
-                Mock ConvertTo-DeploymentForestMode { return $mode}
-
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                 $result.DomainMode | Should Not Be $null
