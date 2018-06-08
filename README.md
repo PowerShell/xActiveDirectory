@@ -87,6 +87,8 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 
 ### **xADDomain**
 
+The xADDomain resource creates a new domain in a new forest or a child domain in an existing forest. While it is possible to set the forest functional level and the domain functional level during deployment with this resource the restrictions. For more information see [TechNet](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels)
+
 * **DomainName**: Name of the domain.
   * If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
 * **ParentDomainName**: Fully qualified name of the parent domain (optional).
@@ -103,7 +105,9 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 * **LogPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation will be written (optional).
 * **SysvolPath**: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the Sysvol file will be written. (optional)
 * **ForestMode**: Specifies the forest mode if a new forest is deployed. ForestMode will not be raised by this resource for existing forests. (optional)
+  * Valid values are Win2008, Win2008R2, Win2012, Win2012R2 and WinThreshold (for Windows Server 2016 FFL)
 * **DomainMode**: Specifies the domain mode if a new domain is deployed. DomainMode will not be raised by this resource for existing domains. (optional)
+  * Valid values are Win2008, Win2008R2, Win2012, Win2012R2 and WinThreshold (for Windows Server 2016 DFL)
 
 ### **xADDomainController**
 
@@ -318,6 +322,7 @@ The xADServicePrincipalName DSC resource will manage service principal names.
   * The helper function script file MSFT_xADCommon.ps1 was renamed to
     MSFT_xADCommon.psm1 to be a module script file instead. This makes it
     possible to report code coverage for the helper functions ([issue #201](https://github.com/PowerShell/xActiveDirectory/issues/201)).
+  * xADDomain is now capable of setting the forest and domain functional level ([issue #187](https://github.com/PowerShell/xActiveDirectory/issues/187)).
 
 ### 2.18.0.0
 
