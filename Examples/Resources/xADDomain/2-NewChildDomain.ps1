@@ -34,7 +34,7 @@ configuration Example
         $DomainAdministratorCredential
     )
 
-    Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName PSDscResources
     Import-DscResource -ModuleName xActiveDirectory
     node $AllNodes.NodeName
     {
