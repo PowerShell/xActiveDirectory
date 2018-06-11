@@ -629,7 +629,7 @@ function ConvertTo-DeploymentForestMode
         $ModeId = [UInt16] $Mode
     }
 
-    $convertedMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode] $Mode
+    $convertedMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode] $ModeId
 
     if ([enum]::GetValues([Microsoft.DirectoryServices.Deployment.Types.ForestMode]) -notcontains $convertedMode)
     {
