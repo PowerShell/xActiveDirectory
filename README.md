@@ -87,7 +87,7 @@ Setting an ODJ Request file path for a configuration that creates a computer acc
 
 ### **xADDomain**
 
-The xADDomain resource creates a new domain in a new forest or a child domain in an existing forest. While it is possible to set the forest functional level and the domain functional level during deployment with this resource the restrictions. For more information see [TechNet](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels)
+The xADDomain resource creates a new domain in a new forest or a child domain in an existing forest. While it is possible to set the forest functional level and the domain functional level during deployment with this resource the common restrictions apply. For more information see [TechNet](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels)
 
 * **DomainName**: Name of the domain.
   * If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
