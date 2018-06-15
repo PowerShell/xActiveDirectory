@@ -21,8 +21,17 @@ $TestEnvironment = Initialize-TestEnvironment `
 #endregion
 
 function Invoke-TestSetup {
-    Add-Type -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests') -ChildPath 'Unit') -ChildPath 'Stubs') -ChildPath 'Microsoft.DirectoryServices.Deployment.Types.cs') -ErrorAction SilentlyContinue
-    Add-Type -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests') -ChildPath 'Unit') -ChildPath 'Stubs') -ChildPath 'Microsoft.ActiveDirectory.Management.cs') -ErrorAction SilentlyContinue
+    # If one type does not exist, it's assumed the other ones does not exist either.
+    if (-not ('Microsoft.DirectoryServices.Deployment.Types.ForestMode' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests') -ChildPath 'Unit') -ChildPath 'Stubs') -ChildPath 'Microsoft.DirectoryServices.Deployment.Types.cs')
+    }
+
+    # If one type does not exist, it's assumed the other ones does not exist either.
+    if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'Tests') -ChildPath 'Unit') -ChildPath 'Stubs') -ChildPath 'Microsoft.ActiveDirectory.Management.cs')
+    }
 }
 
 # Begin Testing
