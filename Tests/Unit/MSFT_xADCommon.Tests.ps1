@@ -553,11 +553,23 @@ try
             }
 
             It 'Throws an exception when an invalid forest mode is selected' {
-                {ConvertTo-DeploymentForestMode -Mode Nonexistant } | Should Throw
+                { ConvertTo-DeploymentForestMode -Mode Nonexistant } | Should Throw
             }
 
-            It 'Throws an exception when an invalid mode id is selected' {
-                {ConvertTo-DeploymentForestMode -ModeId 666 } | Should Throw
+            It 'Throws no exception when a null value is passed' {
+                { ConvertTo-DeploymentForestMode -Mode $null } | Should Not Throw
+            }
+            
+            It 'Throws no exception when an invalid mode id is selected' {
+                { ConvertTo-DeploymentForestMode -ModeId 666 } | Should Not Throw
+            }
+
+            It 'Returns $null when a null value is passed' {
+                ConvertTo-DeploymentForestMode -Mode $null | Should Be $null
+            }
+
+            It 'Returns $null when an invalid mode id is selected' {
+                ConvertTo-DeploymentForestMode -ModeId 666 | Should Be $null
             }
         }
         #endregion
@@ -580,12 +592,24 @@ try
                 ConvertTo-DeploymentDomainMode -ModeId 5 | Should Be ([Microsoft.DirectoryServices.Deployment.Types.DomainMode]::Win2012)
             }
 
-            It 'Throws an exception when an invalid forest mode is selected' {
-                {ConvertTo-DeploymentDomainMode -Mode Nonexistant } | Should Throw
+            It 'Throws an exception when an invalid domain mode is selected' {
+                { ConvertTo-DeploymentDomainMode -Mode Nonexistant } | Should Throw
             }
 
-            It 'Throws an exception when an invalid mode id is selected' {
-                {ConvertTo-DeploymentDomainMode -ModeId 666 } | Should Throw
+            It 'Throws no exception when a null value is passed' {
+                { ConvertTo-DeploymentDomainMode -Mode $null } | Should Not Throw
+            }
+            
+            It 'Throws no exception when an invalid mode id is selected' {
+                { ConvertTo-DeploymentDomainMode -ModeId 666 } | Should Not Throw
+            }
+
+            It 'Returns $null when a null value is passed' {
+                ConvertTo-DeploymentDomainMode -Mode $null | Should Be $null
+            }
+
+            It 'Returns $null when an invalid mode id is selected' {
+                ConvertTo-DeploymentDomainMode -ModeId 666 | Should Be $null
             }
         }
         #endregion
