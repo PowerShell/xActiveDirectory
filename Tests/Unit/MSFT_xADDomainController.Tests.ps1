@@ -180,7 +180,7 @@ try
                     Ensure = $false
                 }
             } @commonMockParams
-            Mock -CommandName Install-ADDSDomainController -MockWith {} -ParameterFilter { $SiteName -eq $correctSiteName } @commonMockParams
+            Mock -CommandName Install-ADDSDomainController ParameterFilter { $SiteName -eq $correctSiteName } @commonMockParams
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
@@ -195,8 +195,8 @@ try
                 }
             } @commonMockParams
 
-            Mock -CommandName Move-ADDirectoryServer -MockWith {} -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonMockParams
-            Mock -CommandName Move-ADDirectoryServer -MockWith {} @commonMockParams
+            Mock -CommandName Move-ADDirectoryServer ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonMockParams
+            Mock -CommandName Move-ADDirectoryServer @commonMockParams
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
@@ -211,7 +211,7 @@ try
                 }
             } @commonMockParams
 
-            Mock -CommandName Move-ADDirectoryServer {} @commonMockParams
+            Mock -CommandName Move-ADDirectoryServer @commonMockParams
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
@@ -226,7 +226,7 @@ try
                 }
             } @commonMockParams
 
-            Mock -CommandName Move-ADDirectoryServer {} @commonMockParams
+            Mock -CommandName Move-ADDirectoryServer @commonMockParams
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName
 

@@ -288,8 +288,8 @@ try
                 $newAbsentParams['UserName'] = $newUserName;
                 $newPresentParams = $testPresentParams.Clone();
                 $newPresentParams['UserName'] = $newUserName;
-                Mock -CommandName New-ADUser -ParameterFilter { $Name -eq $newUserName } { }
-                Mock -CommandName Set-ADUser { }
+                Mock -CommandName New-ADUser -ParameterFilter { $Name -eq $newUserName }
+                Mock -CommandName Set-ADUser
                 Mock -CommandName Get-TargetResource -ParameterFilter { $Username -eq $newUserName } { return $newAbsentParams; }
 
                 Set-TargetResource @newPresentParams;
@@ -299,7 +299,7 @@ try
 
             It "Calls 'Move-ADObject' when 'Ensure' is 'Present', the account exists but Path is incorrect" {
                 $testTargetPath = 'CN=Users,DC=contoso,DC=com';
-                Mock -CommandName Set-ADUser { }
+                Mock -CommandName Set-ADUser
                 Mock -CommandName Get-ADUser -MockWith {
                     $duffADUser = $fakeADUser.Clone();
                     $duffADUser['DistinguishedName'] = "CN=$($testPresentParams.UserName),OU=WrongPath,DC=contoso,DC=com";
@@ -314,7 +314,7 @@ try
 
             It "Calls 'Rename-ADObject' when 'Ensure' is 'Present', the account exists but 'CommonName' is incorrect" {
                 $testCommonName = 'Test Common Name';
-                Mock -CommandName Set-ADUser { }
+                Mock -CommandName Set-ADUser
                 Mock -CommandName Get-ADUser -MockWith { return $fakeADUser; }
                 Mock -CommandName Rename-ADObject -ParameterFilter { $NewName -eq $testCommonName }
 
@@ -325,7 +325,7 @@ try
 
             It "Calls 'Set-ADAccountPassword' when 'Password' parameter is specified" {
                 Mock -CommandName Get-ADUser -MockWith { return $fakeADUser; }
-                Mock -CommandName Set-ADUser { }
+                Mock -CommandName Set-ADUser
                 Mock -CommandName Set-ADAccountPassword -ParameterFilter { $NewPassword -eq $testCredential.Password }
 
                 Set-TargetResource @testPresentParams -Password $testCredential;

@@ -398,8 +398,8 @@ try
                 $newPresentParams['ComputerName'] = $newComputerName;
                 $newPresentParams['RequestFile'] = 'c:\ODJTest.txt';
                 Mock -CommandName New-ADComputer -ParameterFilter { $Name -eq $newComputerName }
-                Mock djoin.exe { $LASTEXITCODE = 0; 'OK' }
-                Mock -CommandName Set-ADComputer { }
+                Mock -CommandName djoin.exe -MockWith { $LASTEXITCODE = 0; 'OK' }
+                Mock -CommandName Set-ADComputer
                 Mock -CommandName Get-TargetResource -ParameterFilter { $ComputerName -eq $newComputerName } -MockWith { return $newAbsentParams; }
 
                 Set-TargetResource @newPresentParams;
@@ -416,7 +416,7 @@ try
                 $newPresentParams['ComputerName'] = $newComputerName;
                 $targetPath = 'OU=Test,DC=contoso,DC=com';
                 Mock -CommandName New-ADComputer -ParameterFilter { $Path -eq $targetPath }
-                Mock -CommandName Set-ADComputer { }
+                Mock -CommandName Set-ADComputer
                 Mock -CommandName Get-TargetResource -ParameterFilter { $ComputerName -eq $newComputerName } -MockWith { return $newAbsentParams; }
 
                 Set-TargetResource @newPresentParams -Path $targetPath;
@@ -426,7 +426,7 @@ try
 
             It "Calls 'Move-ADObject' when 'Ensure' is 'Present', the computer account exists but Path is incorrect" {
                 $testTargetPath = 'OU=NewPath,DC=contoso,DC=com';
-                Mock -CommandName Set-ADComputer { }
+                Mock -CommandName Set-ADComputer
                 Mock -CommandName Get-ADComputer -MockWith {
                     $duffADComputer = $fakeADComputer.Clone();
                     $duffADComputer['DistinguishedName'] = 'CN={0},OU=WrongPath,DC=contoso,DC=com' -f $testPresentParams.ComputerName;
@@ -443,7 +443,7 @@ try
 
                 It "Calls 'Set-ADComputer' with 'Remove' when '$testParameter' is `$null" {
                     Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                    Mock -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey($testParameter) } { }
+                    Mock -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey($testParameter) }
 
                     $setTargetResourceParams = $testPresentParams.Clone();
                     $setTargetResourceParams[$testParameter] = '';
@@ -454,7 +454,7 @@ try
 
                 It "Calls 'Set-ADComputer' with 'Replace' when existing '$testParameter' is not `$null" {
                     Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                    Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey($testParameter) } { }
+                    Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey($testParameter) }
 
                     $setTargetResourceParams = $testPresentParams.Clone();
                     $setTargetResourceParams[$testParameter] = 'NewStringValue';
@@ -468,7 +468,7 @@ try
             It "Calls 'Set-ADComputer' with 'Remove' when 'Manager' is `$null" {
                 ## Manager translates to AD attribute 'managedBy'
                 Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                Mock -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey('ManagedBy') } { }
+                Mock -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey('ManagedBy') }
 
                 $setTargetResourceParams = $testPresentParams.Clone();
                 $setTargetResourceParams['Manager'] = '';
@@ -480,7 +480,7 @@ try
             It "Calls 'Set-ADComputer' with 'Replace' when existing 'Manager' is not `$null" {
                 ## Manager translates to AD attribute 'managedBy'
                 Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ManagedBy') } { }
+                Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ManagedBy') }
 
                 $setTargetResourceParams = $testPresentParams.Clone();
                 $setTargetResourceParams['Manager'] = 'NewValue';
@@ -491,7 +491,7 @@ try
 
             It "Calls 'Set-ADComputer' with 'Enabled' = 'True' by default" {
                 Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                Mock -CommandName Set-ADComputer -ParameterFilter { $Enabled -eq $true } { }
+                Mock -CommandName Set-ADComputer -ParameterFilter { $Enabled -eq $true }
 
                 $setTargetResourceParams = $testPresentParams.Clone();
                 $setTargetResourceParams[$testParameter] = -not $fakeADComputer.$testParameter;
@@ -503,7 +503,7 @@ try
             It "Calls 'Set-ADComputer' with 'ServicePrincipalNames' when specified" {
                 $testSPNs = @('spn/a','spn/b');
                 Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer; }
-                Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ServicePrincipalName') } { }
+                Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ServicePrincipalName') }
 
                 Set-TargetResource @testPresentParams -ServicePrincipalNames $testSPNs;
 

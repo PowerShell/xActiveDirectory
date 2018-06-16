@@ -58,7 +58,7 @@ try
         #region Function Get-TargetResource
         Describe "$($Global:DSCResourceName)\Get-TargetResource" {
 
-            Mock -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } { }
+            Mock -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' }
 
             It 'Calls "Assert-Module" to check "ActiveDirectory" module is installed' {
                 Mock -CommandName Get-ADDefaultDomainPasswordPolicy { return $fakePasswordPolicy; }
@@ -219,10 +219,10 @@ try
                 ReversibleEncryptionEnabled = $true;
             }
 
-            Mock -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } { }
+            Mock -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' }
 
             It 'Calls "Assert-Module" to check "ActiveDirectory" module is installed' {
-                Mock -CommandName Set-ADDefaultDomainPasswordPolicy { }
+                Mock -CommandName Set-ADDefaultDomainPasswordPolicy
 
                 $result = Set-TargetResource @testDefaultParams;
 
