@@ -50,10 +50,10 @@ try
         $correctDomainName = 'present.com';
         $incorrectDomainName = 'incorrect.com';
         $missingDomainName = 'missing.com';
-        $forestMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode]::WinThreshold
-        $mgmtForestMode = [Microsoft.ActiveDirectory.Management.ADForestMode]::Windows2016Forest
-        $domainMode = [Microsoft.DirectoryServices.Deployment.Types.DomainMode]::WinThreshold
-        $mgmtDomainMode = [Microsoft.ActiveDirectory.Management.ADDomainMode]::Windows2016Domain
+        $forestMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode]::Win2012R2
+        $mgmtForestMode = [Microsoft.ActiveDirectory.Management.ADForestMode]::Windows2012R2Forest
+        $domainMode = [Microsoft.DirectoryServices.Deployment.Types.DomainMode]::Win2012R2
+        $mgmtDomainMode = [Microsoft.ActiveDirectory.Management.ADDomainMode]::Windows2012R2Domain
         $testAdminCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
         $invalidCredential = New-Object System.Management.Automation.PSCredential 'Invalid', (ConvertTo-SecureString 'InvalidPassword' -AsPlainText -Force);
 
@@ -161,7 +161,7 @@ try
                 }
                 Mock -CommandName Get-ADForest -MockWith { [psobject]@{ForestMode = $mgmtForestMode} }  
 
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should Be $domainMode.ToString()
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should Be $domainMode
             }
 
             It 'Returns the correct forest mode' {
@@ -173,7 +173,7 @@ try
                 }
                 Mock -CommandName Get-ADForest -MockWith { [psobject]@{ForestMode = $mgmtForestMode} }
 
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should Be $forestMode.ToString()
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should Be $forestMode
             }
         }
         #endregion
