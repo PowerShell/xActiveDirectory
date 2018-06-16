@@ -140,8 +140,8 @@ function Get-TargetResource
             DomainName = $domain.DnsRoot;
             ParentDomainName = $domain.ParentDomain;
             DomainNetBIOSName = $domain.NetBIOSName;
-            ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode).ToString()
-            DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode).ToString()
+            ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [String]
+            DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [String]
         }
 
         return $targetResource;
