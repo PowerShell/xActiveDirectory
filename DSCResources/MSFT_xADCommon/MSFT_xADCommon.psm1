@@ -8,7 +8,7 @@ data localizedString
         MembersIsEmptyError            = The Members parameter is empty.  At least one group member must be provided.
         IncludeAndExcludeConflictError = The member '{0}' is included in both '{1}' and '{2}' parameter values. The same member must not be included in both '{1}' and '{2}' parameter values.
         IncludeAndExcludeAreEmptyError = The '{0}' and '{1}' parameters are either both null or empty.  At least one member must be specified in one of these parameters.
-        InvalidTypeError               = Type {0} is not a {1}.
+        ModeConversionError            = Converted mode {0} is not a {1}.
 
         CheckingMembers                = Checking for '{0}' members.
         MembershipCountMismatch        = Membership count is not correct. Expected '{0}' members, actual '{1}' members.
@@ -616,7 +616,8 @@ function ConvertTo-DeploymentForestMode
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'ByName')]
-        [Microsoft.ActiveDirectory.Management.ADForestMode]
+            [AllowNull()]
+            [System.Nullable``1[Microsoft.ActiveDirectory.Management.ADForestMode]]
         $Mode,
 
         [ValidateNotNullOrEmpty()]
@@ -624,19 +625,23 @@ function ConvertTo-DeploymentForestMode
         $ModuleName = 'xActiveDirectory'
     )
 
-    if ($Mode)
-    {
-        $ModeId = [UInt16] $Mode
-    }
+    $convertedMode = $null
 
-    $convertedMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode] $ModeId
+    if ($PSCmdlet.ParameterSetName -eq 'ByName' -and $Mode)
+    {
+        $convertedMode = $Mode -as [Microsoft.DirectoryServices.Deployment.Types.ForestMode]
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq 'ById')
+    {
+        $convertedMode = $ModeId -as [Microsoft.DirectoryServices.Deployment.Types.ForestMode]
+    }
 
     if ([enum]::GetValues([Microsoft.DirectoryServices.Deployment.Types.ForestMode]) -notcontains $convertedMode)
     {
         $errorId = '{0}_InvalidObjectType' -f $ModuleName
-        $errorMessage = $localizedString.InvalidTypeError -f ($DomainMode.GetType().FullName), 'Microsoft.DirectoryServices.Deployment.Types.ForestMode'
+        $errorMessage = $localizedString.ModeConversionError -f $convertedMode, 'Microsoft.DirectoryServices.Deployment.Types.ForestMode'
         ThrowInvalidArgumentError -ErrorId $errorId -ErrorMessage $errorMessage
-        return
     }
 
     return $convertedMode
@@ -657,27 +662,32 @@ function ConvertTo-DeploymentDomainMode
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'ByName')]
-        [Microsoft.ActiveDirectory.Management.ADDomainMode]
+        [AllowNull()]
+        [System.Nullable``1[Microsoft.ActiveDirectory.Management.ADDomainMode]]
         $Mode,
 
         [ValidateNotNullOrEmpty()]
         [System.String]
         $ModuleName = 'xActiveDirectory'
     )
+    
+    $convertedMode = $null
 
-    if ($Mode)
+    if ($PSCmdlet.ParameterSetName -eq 'ByName' -and $Mode)
     {
-        $ModeId = [UInt16] $Mode
+        $convertedMode = $Mode -as [Microsoft.DirectoryServices.Deployment.Types.DomainMode]
     }
     
-    $convertedMode = [Microsoft.DirectoryServices.Deployment.Types.DomainMode] $ModeId
+    if ($PSCmdlet.ParameterSetName -eq 'ById')
+    {
+        $convertedMode = $ModeId -as [Microsoft.DirectoryServices.Deployment.Types.DomainMode]
+    }
 
     if ([enum]::GetValues([Microsoft.DirectoryServices.Deployment.Types.DomainMode]) -notcontains $convertedMode)
     {
         $errorId = '{0}_InvalidObjectType' -f $ModuleName
-        $errorMessage = $localizedString.InvalidTypeError -f ($DomainMode.GetType().FullName), 'Microsoft.DirectoryServices.Deployment.Types.DomainMode'
+        $errorMessage = $localizedString.ModeConversionError -f $convertedMode, 'Microsoft.DirectoryServices.Deployment.Types.DomainMode'
         ThrowInvalidArgumentError -ErrorId $errorId -ErrorMessage $errorMessage
-        return
     }
 
     return $convertedMode
