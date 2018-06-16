@@ -639,9 +639,7 @@ function ConvertTo-DeploymentForestMode
 
     if ([enum]::GetValues([Microsoft.DirectoryServices.Deployment.Types.ForestMode]) -notcontains $convertedMode)
     {
-        $errorId = '{0}_InvalidObjectType' -f $ModuleName
-        $errorMessage = $localizedString.ModeConversionError -f $convertedMode, 'Microsoft.DirectoryServices.Deployment.Types.ForestMode'
-        ThrowInvalidArgumentError -ErrorId $errorId -ErrorMessage $errorMessage
+        return $null
     }
 
     return $convertedMode
@@ -685,9 +683,7 @@ function ConvertTo-DeploymentDomainMode
 
     if ([enum]::GetValues([Microsoft.DirectoryServices.Deployment.Types.DomainMode]) -notcontains $convertedMode)
     {
-        $errorId = '{0}_InvalidObjectType' -f $ModuleName
-        $errorMessage = $localizedString.ModeConversionError -f $convertedMode, 'Microsoft.DirectoryServices.Deployment.Types.DomainMode'
-        ThrowInvalidArgumentError -ErrorId $errorId -ErrorMessage $errorMessage
+        return $null
     }
 
     return $convertedMode
