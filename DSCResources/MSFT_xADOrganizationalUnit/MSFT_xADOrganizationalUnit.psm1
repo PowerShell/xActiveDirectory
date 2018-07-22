@@ -14,6 +14,7 @@ data LocalizedData
         UpdatingOU               = Updating OU '{0}'
         DeletingOU               = Deleting OU '{0}'
         CreatingOU               = Creating OU '{0}'
+        RestoringOU              = Attempting to restore OU {0} from recycle bin
         OUInDesiredState         = OU '{0}' exists and is in the desired state
         OUNotInDesiredState      = OU '{0}' exists but is not in the desired state
         OUExistsButShouldNot     = OU '{0}' exists when it should not exist
@@ -74,7 +75,10 @@ function Test-TargetResource
         [System.Boolean] $ProtectedFromAccidentalDeletion = $true,
 
         [ValidateNotNull()]
-        [System.String] $Description = ''
+        [System.String] $Description = '',
+
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     $targetResource = Get-TargetResource -Name $Name -Path $Path
@@ -154,7 +158,10 @@ function Set-TargetResource
         [System.Boolean] $ProtectedFromAccidentalDeletion = $true,
 
         [ValidateNotNull()]
-        [System.String] $Description = ''
+        [System.String] $Description = '',
+
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     Assert-Module -ModuleName 'ActiveDirectory';
@@ -202,6 +209,22 @@ function Set-TargetResource
             }
             Remove-ADOrganizationalUnit @removeADOrganizationalUnitParams
         }
+    }
+    elseif ($RestoreFromRecycleBin)
+    {
+        Write-Verbose -Message ($LocalizedData.RestoringOu -f $Name)
+        $restoreParams = @{
+            Identity = $Name
+            ObjectClass = 'OrganizationalUnit'
+            ErrorAction = 'Stop'
+        }
+
+        if ($Credential)
+        {
+            $restoreParams['Credential'] = $Credential
+        }
+
+        Restore-ADCommonObject @restoreParams
     }
     else
     {

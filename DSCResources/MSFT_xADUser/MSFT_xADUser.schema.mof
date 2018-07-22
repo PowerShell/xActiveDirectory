@@ -46,5 +46,6 @@ class MSFT_xADUser : OMI_BaseResource
     [Write, Description("Specifies the Active Directory Domain Services instance to use to perform the task.")] String DomainController;
     [Write, Description("Specifies the user account credentials to use to perform this task"), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
     [Write, Description("Specifies the authentication context type used when testing passwords"), ValueMap{"Default","Negotiate"},Values{"Default","Negotiate"}] String PasswordAuthentication;
+    [Write, Description("Indicates whether or not objects should be restored from recycle bin instead of recreating them")] Boolean RestoreFromRecycleBin;
     [Read, Description("Returns the X.500 path of the object")] String DistinguishedName;
 };

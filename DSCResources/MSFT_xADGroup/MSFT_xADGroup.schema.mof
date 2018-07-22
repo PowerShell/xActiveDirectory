@@ -16,4 +16,5 @@ class MSFT_xADGroup : OMI_BaseResource
     [Write, Description("Active Directory attribute used to perform membership operations"), ValueMap{"SamAccountName","DistinguishedName","ObjectGUID","SID"}, Values{"SamAccountName","DistinguishedName","ObjectGUID","SID"}] String MembershipAttribute;
     [Write, Description("Active Directory managed by attribute specified as a DistinguishedName")] String ManagedBy;
     [Write, Description("Active Directory group notes field")] String Notes;
+    [Write, Description("Indicates whether or not objects should be restored from recycle bin instead of recreating them")] Boolean RestoreFromRecycleBin;
 };

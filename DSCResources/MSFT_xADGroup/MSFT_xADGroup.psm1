@@ -19,6 +19,7 @@ data LocalizedData
         UpdatingGroup                  = Updating AD Group '{0}'
         RemovingGroup                  = Removing AD Group '{0}'
         MovingGroup                    = Moving AD Group '{0}' to '{1}'
+        RestoringGroup                 = Attempting to restore group {0} from recycle bin
         GroupNotFound                  = AD Group '{0}' was not found
         NotDesiredPropertyState        = AD Group '{0}' is not correct. Expected '{1}', actual '{2}'
         UpdatingGroupProperty          = Updating AD Group property '{0}' to '{1}'
@@ -103,7 +104,12 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Notes
+        $Notes,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $RestoreFromRecycleBin
     )
     Assert-Module -ModuleName 'ActiveDirectory'
     $adGroupParams = Get-ADCommonParameters @PSBoundParameters
@@ -232,7 +238,12 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Notes
+        $Notes,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $RestoreFromRecycleBin
     )
     # Validate parameters before we even attempt to retrieve anything
     $assertMemberParameters = @{}
@@ -378,7 +389,12 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $Notes
+        $Notes,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $RestoreFromRecycleBin
 
     )
     Assert-Module -ModuleName 'ActiveDirectory'
@@ -484,7 +500,6 @@ function Set-TargetResource
         if ($Ensure -eq 'Present')
         {
             Write-Verbose -Message ($LocalizedData.GroupNotFound -f $GroupName)
-            Write-Verbose -Message ($LocalizedData.AddingGroup -f $GroupName)
 
             $adGroupParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
             if ($Description)
@@ -504,7 +519,19 @@ function Set-TargetResource
                 $adGroupParams['Path'] = $Path
             }
             # Create group
-            $adGroup = New-ADGroup @adGroupParams -GroupCategory $Category -GroupScope $GroupScope -PassThru
+            # Try to restore account first if it exists
+            if($RestoreFromRecycleBin)
+            {
+                Write-Verbose -Message ($LocalizedData.RestoringGroup -f $GroupName)
+                $restoreParams = Get-ADCommonParameters @PSBoundParameters
+                $adGroup = Restore-ADCommonObject @restoreParams -ObjectClass Group -ErrorAction Stop -PassThru
+            }
+
+            if (-not $adGroup)
+            {
+                Write-Verbose -Message ($LocalizedData.AddingGroup -f $GroupName)
+                $adGroup = New-ADGroup @adGroupParams -GroupCategory $Category -GroupScope $GroupScope -PassThru
+            }
 
             # Only the New-ADGroup cmdlet takes a -Name parameter. Refresh
             # the parameters with the -Identity parameter rather than -Name

@@ -31,6 +31,7 @@ data LocalizedData
         RemovingADUserProperty         = Removing user property '{0}' with '{1}'.
         MovingADUser                   = Moving user from '{0}' to '{1}'.
         RenamingADUser                 = Renaming user from '{0}' to '{1}'.
+        RestoringUser                  = Attempting to restore user {0} from recycle bin
 '@
 }
 
@@ -265,7 +266,11 @@ function Get-TargetResource
 
         ## Specifies the authentication context type when testing user passwords #61
         [ValidateSet('Default','Negotiate')]
-        [System.String] $PasswordAuthentication = 'Default'
+        [System.String] $PasswordAuthentication = 'Default',
+
+        ## Indicates whether or not objects should be restored from recycle bin instead of recreating them
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     Assert-Module -ModuleName 'ActiveDirectory';
@@ -526,7 +531,11 @@ function Test-TargetResource
 
         ## Specifies the authentication context type when testing user passwords #61
         [ValidateSet('Default','Negotiate')]
-        [System.String] $PasswordAuthentication = 'Default'
+        [System.String] $PasswordAuthentication = 'Default',
+
+        ## Indicates whether or not objects should be restored from recycle bin instead of recreating them
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     Assert-Parameters @PSBoundParameters;
@@ -775,7 +784,11 @@ function Set-TargetResource
 
         ## Specifies the authentication context type when testing user passwords #61
         [ValidateSet('Default','Negotiate')]
-        [System.String] $PasswordAuthentication = 'Default'
+        [System.String] $PasswordAuthentication = 'Default',
+
+        ## Indicates whether or not objects should be restored from recycle bin instead of recreating them
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     Assert-Parameters @PSBoundParameters;
@@ -788,16 +801,28 @@ function Set-TargetResource
     if ($Ensure -eq 'Present')
     {
         if ($targetResource.Ensure -eq 'Absent') {
-            ## User does not exist and needs creating
-            $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter;
-            if ($PSBoundParameters.ContainsKey('Path'))
+
+            ## Try to restore account if it exists
+            if($RestoreFromRecycleBin)
             {
-                $newADUserParams['Path'] = $Path;
+                Write-Verbose -Message ($LocalizedData.RestoringUser -f $UserName)
+                $restoreParams = Get-ADCommonParameters @PSBoundParameters
+                $restorationSuccessful = Restore-ADCommonObject @restoreParams -ObjectClass User -ErrorAction Stop -PassThru
             }
-            Write-Verbose -Message ($LocalizedData.AddingADUser -f $UserName);
-            New-ADUser @newADUserParams -SamAccountName $UserName;
-            ## Now retrieve the newly created user
-            $targetResource = Get-TargetResource @PSBoundParameters;
+
+            if (-not $RestoreFromRecycleBin -or ($RestoreFromRecycleBin -and -not $restorationSuccessful))
+            {
+                ## User does not exist and needs creating
+                $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter;
+                if ($PSBoundParameters.ContainsKey('Path'))
+                {
+                    $newADUserParams['Path'] = $Path;
+                }
+                Write-Verbose -Message ($LocalizedData.AddingADUser -f $UserName);
+                New-ADUser @newADUserParams -SamAccountName $UserName;
+                ## Now retrieve the newly created user
+                $targetResource = Get-TargetResource @PSBoundParameters;
+            }
         }
 
         $setADUserParams = Get-ADCommonParameters @PSBoundParameters;

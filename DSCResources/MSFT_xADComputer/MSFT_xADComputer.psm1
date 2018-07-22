@@ -88,7 +88,10 @@ function Get-TargetResource
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
-        $DomainAdministratorCredential
+        $DomainAdministratorCredential,
+
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     Assert-Module -ModuleName 'ActiveDirectory';
@@ -223,7 +226,10 @@ function Test-TargetResource
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
-        $DomainAdministratorCredential
+        $DomainAdministratorCredential,
+
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters;
@@ -343,7 +349,10 @@ function Set-TargetResource
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
-        $DomainAdministratorCredential
+        $DomainAdministratorCredential,
+
+        [ValidateNotNull()]
+        [System.Boolean] $RestoreFromRecycleBin
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters;
@@ -355,8 +364,17 @@ function Set-TargetResource
     if ($Ensure -eq 'Present')
     {
         if ($targetResource.Ensure -eq 'Absent') {
+            ## Try to restore account if it exists
+            if($RestoreFromRecycleBin)
+            {
+                Write-Verbose -Message ($LocalizedData.RestoringADComputer -f $ComputerName)
+                $restoreParams = Get-ADCommonParameters @PSBoundParameters
+                $restorationSuccessful = Restore-ADCommonObject @restoreParams -ObjectClass Computer -ErrorAction Stop -PassThru
+            }
+
             ## Computer does not exist and needs creating
-            if ($RequestFile)
+            ## or account not present in recycle bin
+            if ((-not $RestoreFromRecycleBin -and $RequestFile) -or ($RestoreFromRecycleBin -and -not $restorationSuccessful -and $RequestFile))
             {
                 ## Use DJOIN to create the computer account as well as the ODJ Request file.
                 Write-Verbose -Message ($LocalizedData.ODJRequestStartMessage -f `
@@ -392,7 +410,7 @@ function Set-TargetResource
                 Write-Verbose -Message ($LocalizedData.ODJRequestCompleteMessage -f `
                         $DomainName,$ComputerName,$RequestFile)
             }
-            else
+            elseif (-not ($RequestFile -or $RestoreFromRecycleBin) -or (-not $RequestFile -and $RestoreFromRecycleBin -and -not $restorationSuccessful))
             {
                 ## Create the computer account using New-ADComputer
                 $newADComputerParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter;

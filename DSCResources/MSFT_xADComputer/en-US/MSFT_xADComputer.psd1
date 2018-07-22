@@ -18,6 +18,7 @@ ConvertFrom-StringData @'
     RemovingADComputerProperty        = Removing computer property '{0}' with '{1}'.
     MovingADComputer                  = Moving computer from '{0}' to '{1}'.
     RenamingADComputer                = Renaming computer from '{0}' to '{1}'.
+    RestoringADComputer               = Attempting to restore computer {0} from recycle bin
 
     ODJRequestStartMessage=Attempting to create the ODJ request file '{2}' for computer '{1}' in Domain '{0}'.
     ODJRequestCompleteMessage=The ODJ request file '{2}' for computer '{1}' in Domain '{0}' has been provisioned successfully.
