@@ -91,7 +91,7 @@ try
 
                 Get-TargetResource @testPresentParams -DomainController $testDomainController;
 
-                Assert-MockCalled Get-ADComputer -ParameterFilter { $Server -eq $testDomainController } -Scope It
+                Assert-MockCalled -CommandName Get-ADComputer -ParameterFilter { $Server -eq $testDomainController } -Scope It
             }
 
             It "Calls 'Get-ADComputer' with 'Credential' parameter when 'DomainAdministratorCredential' specified" {
@@ -99,7 +99,7 @@ try
 
                 Get-TargetResource @testPresentParams -DomainAdministratorCredential $testCredential;
 
-                Assert-MockCalled Get-ADComputer -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Get-ADComputer -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
         }
@@ -567,6 +567,30 @@ try
                 Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
                 Assert-MockCalled -CommandName New-ADComputer -Scope It
                 Assert-MockCalled -CommandName Set-ADComputer -Scope It
+            }
+
+            It 'Throws when object cannot be restored from recycle bin' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject -MockWith {throw (New-Object -TypeName System.InvalidOperationException)}
+                Mock -CommandName New-ADComputer
+                Mock -CommandName Set-ADComputer -ParameterFilter { $true} # Had to overwrite parameter filter from an earlier test
+
+                {Set-TargetResource @restoreParam} | Should -Throw
+
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADComputer -Scope It -Exactly -Times 0
+                Assert-MockCalled -CommandName Set-ADComputer -Scope It -Exactly -Times 0
             }
         }
         #endregion
