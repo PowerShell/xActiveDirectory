@@ -614,6 +614,61 @@ try
         }
         #endregion
 
+        #region Function Restore-ADCommonObject
+        Describe "$($Global:DSCResourceName)\Restore-ADCommonObject" {
+            $getAdObjectReturnValue = [PSCustomObject]@{
+                Deleted           = $True
+                DistinguishedName = 'CN=a375347\0ADEL:d3c8b8c1-c42b-4533-af7d-3aa73ecd2216,CN=Deleted Objects,DC=contoso,DC=com'
+                Name              = 'a375347'
+                ObjectClass       = 'user'
+                ObjectGUID        = 'd3c8b8c1-c42b-4533-af7d-3aa73ecd2216'
+            }
+            function Restore-ADObject { }
+
+            $getAdCommonParameterReturnValue = @{Identity = 'something'}
+            $restoreIdentity = 'SomeObjectName'
+            $restoreObjectClass = 'user'
+            $restoreObjectWrongClass = 'wrong'
+
+            Context 'Objects in recycle bin' {
+                Mock -CommandName Get-ADObject -MockWith { return $getAdObjectReturnValue}
+                Mock -CommandName Get-ADCommonParameters -MockWith { return $getAdCommonParameterReturnValue}
+                Mock -CommandName Restore-ADObject
+
+                It 'Does not throw when called with the correct parameters' {
+                    {Restore-ADCommonObject -Identity $restoreIdentity -ObjectClass $restoreObjectClass} | Should -Not -Throw
+                }
+
+                It 'Returns $null if PassThru is not specified' {
+                    Restore-ADCommonObject -Identity $restoreIdentity -ObjectClass $restoreObjectClass | Should -Be $null
+                }
+
+                It 'Returns objects if PassThru is specified' {
+                    Mock -CommandName Restore-ADObject -MockWith { return $getAdObjectReturnValue}
+                    Restore-ADCommonObject -Identity $restoreIdentity -ObjectClass $restoreObjectClass -PassThru | Should -Not -Be $null
+                }
+
+                It 'Throws when invalid parameters are used' {
+                    {Restore-ADCommonObject -Identity $restoreIdentity -ObjectClass $restoreObjectWrongClass} | Should -Throw
+                }
+
+                It 'Calls Get-ADObject as well as Restore-ADObject' {
+                    Assert-VerifiableMock
+                }
+            }
+            
+            Context 'Objects not in recycle bin' {
+                Mock -CommandName Get-ADObject
+                Mock -CommandName Get-ADCommonParameters -MockWith { return $getAdCommonParameterReturnValue}
+                Mock -CommandName Restore-ADObject
+
+                It 'Should not call Restore-ADObject' {
+                    Assert-MockCalled -CommandName Restore-ADObject -Exactly -Times 0
+                }
+            }
+        }
+        #endregion
+
     }
     #endregion
 }
