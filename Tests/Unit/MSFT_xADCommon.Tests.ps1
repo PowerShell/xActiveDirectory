@@ -655,6 +655,12 @@ try
                 It 'Calls Get-ADObject as well as Restore-ADObject' {
                     Assert-VerifiableMock
                 }
+
+                It 'Throws Microsoft.ActiveDirectory.Management.ADException when object parent does not exist' {
+                    Mock -CommandName Restore-ADObject -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADException)}
+
+                    {Restore-ADCommonObject -Identity $restoreIdentity -ObjectClass $restoreObjectClass} | Should -Throw
+                }
             }
             
             Context 'Objects not in recycle bin' {
