@@ -209,14 +209,17 @@ function Set-TargetResource
             }
             Remove-ADOrganizationalUnit @removeADOrganizationalUnitParams
         }
+
+        return # return from Set method to make it easier to test for a succesful restore
     }
     elseif ($RestoreFromRecycleBin)
     {
         Write-Verbose -Message ($LocalizedData.RestoringOu -f $Name)
         $restoreParams = @{
-            Identity = $Name
+            Identity    = $Name
             ObjectClass = 'OrganizationalUnit'
             ErrorAction = 'Stop'
+            PassThru    = $true
         }
 
         if ($Credential)
@@ -224,9 +227,10 @@ function Set-TargetResource
             $restoreParams['Credential'] = $Credential
         }
 
-        Restore-ADCommonObject @restoreParams
+        $restoreSuccessful = Restore-ADCommonObject @restoreParams
     }
-    else
+    
+    if (-not $RestoreFromRecycleBin -or ($RestoreFromRecycleBin -and -not $restoreSuccessful))
     {
         Write-Verbose ($LocalizedData.CreatingOU -f $targetResource.Name)
         $newADOrganizationalUnitParams = @{
