@@ -426,6 +426,79 @@ try
                 Assert-MockCalled -CommandName Remove-ADUser -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.UserName } -Scope It
             }
 
+            It 'Calls Restore-AdCommonObject when RestoreFromRecycleBin is used' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+    
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject -MockWith { return [PSCustomObject]@{
+                    ObjectClass = 'computer'
+                }}
+                Mock -CommandName New-ADUser
+                Mock -CommandName Set-ADUser -ParameterFilter { $true}
+    
+                Set-TargetResource @restoreParam
+    
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADUser -Times 0 -Exactly -Scope It
+                Assert-MockCalled -CommandName Set-ADUser -Scope It
+            }
+    
+            It 'Calls New-ADUser when RestoreFromRecycleBin is used and if no object was found in the recycle bin' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+    
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject
+                Mock -CommandName New-ADUser
+                Mock -CommandName Set-ADUser -ParameterFilter { $true}
+    
+                Set-TargetResource @restoreParam
+    
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADUser -Scope It
+                Assert-MockCalled -CommandName Set-ADUser -Scope It
+            }
+    
+            It 'Throws when object cannot be restored from recycle bin' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+    
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject -MockWith {throw (New-Object -TypeName System.InvalidOperationException)}
+                Mock -CommandName New-ADUser
+                Mock -CommandName Set-ADUser -ParameterFilter { $true}
+    
+                {Set-TargetResource @restoreParam} | Should -Throw
+    
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADUser -Scope It -Exactly -Times 0
+                Assert-MockCalled -CommandName Set-ADUser -Scope It -Exactly -Times 0
+            }
         }
         #endregion
 
