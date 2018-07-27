@@ -387,7 +387,7 @@ try
 
                 Set-TargetResource @newPresentParams;
 
-                Assert-MockCalled New-ADComputer -ParameterFilter { $Name -eq $newComputerName } -Scope It
+                Assert-MockCalled -CommandName New-ADComputer -ParameterFilter { $Name -eq $newComputerName } -Scope It
             }
 
             It "Calls 'New-ADComputer' when 'Ensure' is 'Present' and the account does not exist, RequestFile is set, DJOIN OK" {
@@ -404,8 +404,8 @@ try
 
                 Set-TargetResource @newPresentParams;
 
-                Assert-MockCalled New-ADComputer -ParameterFilter { $Name -eq $newComputerName } -Scope It -Exactly 0;
-                Assert-MockCalled djoin.exe -Exactly 1;
+                Assert-MockCalled -CommandName New-ADComputer -ParameterFilter { $Name -eq $newComputerName } -Scope It -Exactly 0;
+                Assert-MockCalled -CommandName djoin.exe -Exactly 1;
             }
 
             It "Calls 'New-ADComputer' with 'Path' when specified" {
@@ -421,7 +421,7 @@ try
 
                 Set-TargetResource @newPresentParams -Path $targetPath;
 
-                Assert-MockCalled New-ADComputer -ParameterFilter { $Path -eq $targetPath } -Scope It
+                Assert-MockCalled -CommandName New-ADComputer -ParameterFilter { $Path -eq $targetPath } -Scope It
             }
 
             It "Calls 'Move-ADObject' when 'Ensure' is 'Present', the computer account exists but Path is incorrect" {
@@ -436,7 +436,7 @@ try
 
                 Set-TargetResource @testPresentParams -Path $testTargetPath;
 
-                Assert-MockCalled Move-ADObject -ParameterFilter { $TargetPath -eq $testTargetPath } -Scope It
+                Assert-MockCalled -CommandName Move-ADObject -ParameterFilter { $TargetPath -eq $testTargetPath } -Scope It
             }
 
             foreach ($testParameter in $testStringProperties) {
@@ -449,7 +449,7 @@ try
                     $setTargetResourceParams[$testParameter] = '';
                     Set-TargetResource @setTargetResourceParams;
 
-                    Assert-MockCalled Set-ADComputer -ParameterFilter { $Remove.ContainsKey($testParameter) } -Scope It -Exactly 1;
+                    Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey($testParameter) } -Scope It -Exactly 1;
                 }
 
                 It "Calls 'Set-ADComputer' with 'Replace' when existing '$testParameter' is not `$null" {
@@ -460,7 +460,7 @@ try
                     $setTargetResourceParams[$testParameter] = 'NewStringValue';
                     Set-TargetResource @setTargetResourceParams;
 
-                    Assert-MockCalled Set-ADComputer -ParameterFilter { $Replace.ContainsKey($testParameter) } -Scope It -Exactly 1;
+                    Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey($testParameter) } -Scope It -Exactly 1;
                 }
 
             } #end foreach string parameter
@@ -474,7 +474,7 @@ try
                 $setTargetResourceParams['Manager'] = '';
                 Set-TargetResource @setTargetResourceParams;
 
-                Assert-MockCalled Set-ADComputer -ParameterFilter { $Remove.ContainsKey('ManagedBy') } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Remove.ContainsKey('ManagedBy') } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADComputer' with 'Replace' when existing 'Manager' is not `$null" {
@@ -486,7 +486,7 @@ try
                 $setTargetResourceParams['Manager'] = 'NewValue';
                 Set-TargetResource @setTargetResourceParams;
 
-                Assert-MockCalled Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ManagedBy') } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ManagedBy') } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADComputer' with 'Enabled' = 'True' by default" {
@@ -497,7 +497,7 @@ try
                 $setTargetResourceParams[$testParameter] = -not $fakeADComputer.$testParameter;
                 Set-TargetResource @setTargetResourceParams;
 
-                Assert-MockCalled Set-ADComputer -ParameterFilter { $Enabled -eq $true } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Enabled -eq $true } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADComputer' with 'ServicePrincipalNames' when specified" {
@@ -507,7 +507,7 @@ try
 
                 Set-TargetResource @testPresentParams -ServicePrincipalNames $testSPNs;
 
-                Assert-MockCalled Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ServicePrincipalName') } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ServicePrincipalName') } -Scope It -Exactly 1;
             }
 
             It "Calls 'Remove-ADComputer' when 'Ensure' is 'Absent' and computer account exists" {
@@ -516,9 +516,58 @@ try
 
                 Set-TargetResource @testAbsentParams;
 
-                Assert-MockCalled Remove-ADComputer -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.ComputerName } -Scope It
+                Assert-MockCalled -CommandName Remove-ADComputer -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.ComputerName } -Scope It
             }
 
+            It 'Calls Restore-AdCommonObject when RestoreFromRecycleBin is used' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject -MockWith { return [PSCustomObject]@{
+                    ObjectClass = 'computer'
+                }}
+                Mock -CommandName New-ADComputer
+                Mock -CommandName Set-ADComputer -ParameterFilter { $true} # Had to overwrite parameter filter from an earlier test
+
+                Set-TargetResource @restoreParam
+
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADComputer -Times 0 -Exactly -Scope It
+                Assert-MockCalled -CommandName Set-ADComputer -Scope It
+            }
+
+            It 'Calls New-ADComputer when RestoreFromRecycleBin is used and if no object was found in the recycle bin' {
+                $restoreParam = $testPresentParams.Clone()
+                $restoreParam.RestoreFromRecycleBin = $true
+                $script:mockCounter = 0
+                Mock -CommandName Get-TargetResource -MockWith {
+                    if ($script:mockCounter -gt 0)
+                    {
+                        return @{Ensure = 'Present'}
+                    }
+
+                    $script:mockCounter++
+                    return @{Ensure = 'Absent'}
+                }
+                Mock -CommandName Restore-ADCommonObject
+                Mock -CommandName New-ADComputer
+                Mock -CommandName Set-ADComputer -ParameterFilter { $true} # Had to overwrite parameter filter from an earlier test
+
+                Set-TargetResource @restoreParam
+
+                Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
+                Assert-MockCalled -CommandName New-ADComputer -Scope It
+                Assert-MockCalled -CommandName Set-ADComputer -Scope It
+            }
         }
         #endregion
     }
