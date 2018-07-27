@@ -194,7 +194,7 @@ try
                 Mock -CommandName New-ADOrganizationalUnit -ParameterFilter { $Name -eq $testPresentParams.Name }
 
                 Set-TargetResource @testPresentParams
-                Assert-MockCalled New-ADOrganizationalUnit -ParameterFilter { $Name -eq $testPresentParams.Name } -Scope It
+                Assert-MockCalled -CommandName New-ADOrganizationalUnit -ParameterFilter { $Name -eq $testPresentParams.Name } -Scope It
             }
 
             It 'Calls "New-ADOrganizationalUnit" with credentials when specified' {
@@ -203,7 +203,7 @@ try
                 Mock -CommandName New-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential }
 
                 Set-TargetResource @testPresentParams -Credential $testCredential
-                Assert-MockCalled New-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName New-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Set-ADOrganizationalUnit" when "Ensure" = "Present" and OU does exist' {
@@ -212,7 +212,7 @@ try
                 Mock -CommandName Set-ADOrganizationalUnit
 
                 Set-TargetResource @testPresentParams
-                Assert-MockCalled Set-ADOrganizationalUnit -Scope It
+                Assert-MockCalled -CommandName Set-ADOrganizationalUnit -Scope It
             }
 
             It 'Calls "Set-ADOrganizationalUnit" with credentials when specified' {
@@ -221,7 +221,7 @@ try
                 Mock -CommandName Set-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential }
 
                 Set-TargetResource @testPresentParams -Credential $testCredential
-                Assert-MockCalled Set-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Set-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Remove-ADOrganizationalUnit" when "Ensure" = "Absent" and OU does exist but is unprotected' {
@@ -234,7 +234,7 @@ try
                 Mock -CommandName Remove-ADOrganizationalUnit
 
                 Set-TargetResource @testAbsentParams
-                Assert-MockCalled Remove-ADOrganizationalUnit -Scope It
+                Assert-MockCalled -CommandName Remove-ADOrganizationalUnit -Scope It
             }
 
             It 'Calls "Remove-ADOrganizationalUnit" when "Ensure" = "Absent" and OU does exist and is protected' {
@@ -243,7 +243,7 @@ try
                 Mock -CommandName Remove-ADOrganizationalUnit
 
                 Set-TargetResource @testAbsentParams
-                Assert-MockCalled Remove-ADOrganizationalUnit -Scope It
+                Assert-MockCalled -CommandName Remove-ADOrganizationalUnit -Scope It
             }
 
             It 'Calls "Remove-ADOrganizationalUnit" with credentials when specified' {
@@ -252,7 +252,7 @@ try
                 Mock -CommandName Remove-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential }
 
                 Set-TargetResource @testAbsentParams -Credential $testCredential
-                Assert-MockCalled Remove-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Remove-ADOrganizationalUnit -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Set-ADOrganizationalUnit" when "Ensure" = "Absent", OU does exist but is protected' {
@@ -262,7 +262,7 @@ try
                 Mock -CommandName Set-ADOrganizationalUnit
 
                 Set-TargetResource @testAbsentParams
-                Assert-MockCalled Set-ADOrganizationalUnit -Scope It
+                Assert-MockCalled -CommandName Set-ADOrganizationalUnit -Scope It
             }
 
             It 'Does not call "Set-ADOrganizationalUnit" when "Ensure" = "Absent", OU does exist but is unprotected' {
@@ -276,7 +276,7 @@ try
                 Mock -CommandName Set-ADOrganizationalUnit
 
                 Set-TargetResource @testAbsentParams
-                Assert-MockCalled Set-ADOrganizationalUnit -Scope It -Exactly 0
+                Assert-MockCalled -CommandName Set-ADOrganizationalUnit -Scope It -Exactly 0
             }
 
         }

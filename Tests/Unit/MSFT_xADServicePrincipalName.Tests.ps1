@@ -204,7 +204,7 @@ try
 
                     $result = Set-TargetResource @testPresentParams
 
-                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Set-ADObject -Scope It -Times 1 -Exactly
                 }
             }
 
@@ -223,8 +223,8 @@ try
 
                     $result = Set-TargetResource @testPresentParams
 
-                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Add }
-                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Remove }
+                    Assert-MockCalled -CommandName Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Add }
+                    Assert-MockCalled -CommandName Set-ADObject -Scope It -Times 1 -Exactly -ParameterFilter { $null -ne $Remove }
                 }
             }
 
@@ -239,7 +239,7 @@ try
 
                     $result = Set-TargetResource @testAbsentParams
 
-                    Assert-MockCalled Set-ADObject -Scope It -Times 1 -Exactly
+                    Assert-MockCalled -CommandName Set-ADObject -Scope It -Times 1 -Exactly
                 }
             }
         }

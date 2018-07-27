@@ -87,7 +87,7 @@ try
 
                 Get-TargetResource @testPresentParams -DomainController $testDomainController;
 
-                Assert-MockCalled Get-ADUser -ParameterFilter { $Server -eq $testDomainController } -Scope It
+                Assert-MockCalled -CommandName Get-ADUser -ParameterFilter { $Server -eq $testDomainController } -Scope It
             }
 
             It "Calls 'Get-ADUser' with 'Credential' parameter when 'DomainAdministratorCredential' specified" {
@@ -95,7 +95,7 @@ try
 
                 Get-TargetResource @testPresentParams -DomainAdministratorCredential $testCredential;
 
-                Assert-MockCalled Get-ADUser -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Get-ADUser -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
         }
@@ -148,7 +148,7 @@ try
 
                 Test-TargetResource @testPresentParams -Password $testCredential;
 
-                Assert-MockCalled Test-Password -ParameterFilter { $PasswordAuthentication -eq 'Default' } -Scope It
+                Assert-MockCalled -CommandName Test-Password -ParameterFilter { $PasswordAuthentication -eq 'Default' } -Scope It
             }
 
             It "Calls 'Test-Password' with 'Negotiate' PasswordAuthentication when specified" {
@@ -157,7 +157,7 @@ try
 
                 Test-TargetResource @testPresentParams -Password $testCredential -PasswordAuthentication 'Negotiate';
 
-                Assert-MockCalled Test-Password -ParameterFilter { $PasswordAuthentication -eq 'Negotiate' } -Scope It
+                Assert-MockCalled -CommandName Test-Password -ParameterFilter { $PasswordAuthentication -eq 'Negotiate' } -Scope It
             }
 
             foreach ($testParameter in $testStringProperties) {
@@ -294,7 +294,7 @@ try
 
                 Set-TargetResource @newPresentParams;
 
-                Assert-MockCalled New-ADUser -ParameterFilter { $Name -eq $newUserName } -Scope It
+                Assert-MockCalled -CommandName New-ADUser -ParameterFilter { $Name -eq $newUserName } -Scope It
             }
 
             It "Calls 'Move-ADObject' when 'Ensure' is 'Present', the account exists but Path is incorrect" {
@@ -309,7 +309,7 @@ try
 
                 Set-TargetResource @testPresentParams -Path $testTargetPath -Enabled $true;
 
-                Assert-MockCalled Move-ADObject -ParameterFilter { $TargetPath -eq $testTargetPath } -Scope It
+                Assert-MockCalled -CommandName Move-ADObject -ParameterFilter { $TargetPath -eq $testTargetPath } -Scope It
             }
 
             It "Calls 'Rename-ADObject' when 'Ensure' is 'Present', the account exists but 'CommonName' is incorrect" {
@@ -320,7 +320,7 @@ try
 
                 Set-TargetResource @testPresentParams -CommonName $testCommonName -Enabled $true;
 
-                Assert-MockCalled Rename-ADObject -ParameterFilter { $NewName -eq $testCommonName } -Scope It
+                Assert-MockCalled -CommandName Rename-ADObject -ParameterFilter { $NewName -eq $testCommonName } -Scope It
             }
 
             It "Calls 'Set-ADAccountPassword' when 'Password' parameter is specified" {
@@ -330,7 +330,7 @@ try
 
                 Set-TargetResource @testPresentParams -Password $testCredential;
 
-                Assert-MockCalled Set-ADAccountPassword -ParameterFilter { $NewPassword -eq $testCredential.Password } -Scope It
+                Assert-MockCalled -CommandName Set-ADAccountPassword -ParameterFilter { $NewPassword -eq $testCredential.Password } -Scope It
             }
 
             It "Calls 'Set-ADUser' with 'Replace' when existing matching AD property is null" {
@@ -344,7 +344,7 @@ try
 
                 Set-TargetResource @testPresentParams -Description 'My custom description';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADUser' with 'Replace' when existing matching AD property is empty" {
@@ -358,7 +358,7 @@ try
 
                 Set-TargetResource @testPresentParams -Description 'My custom description';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADUser' with 'Remove' when new matching AD property is empty" {
@@ -372,7 +372,7 @@ try
 
                 Set-TargetResource @testPresentParams -Description '';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Remove.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Remove.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADUser' with 'Replace' when existing mismatched AD property is null" {
@@ -386,7 +386,7 @@ try
 
                 Set-TargetResource @testPresentParams -JobTitle 'Gaffer';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADUser' with 'Replace' when existing mismatched AD property is empty" {
@@ -400,7 +400,7 @@ try
 
                 Set-TargetResource @testPresentParams -JobTitle 'Gaffer';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Replace.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Set-ADUser' with 'Remove' when new mismatched AD property is empty" {
@@ -414,7 +414,7 @@ try
 
                 Set-TargetResource @testPresentParams -JobTitle '';
 
-                Assert-MockCalled Set-ADUser -ParameterFilter { $Remove.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
+                Assert-MockCalled -CommandName Set-ADUser -ParameterFilter { $Remove.ContainsKey($testADPropertyName) } -Scope It -Exactly 1;
             }
 
             It "Calls 'Remove-ADUser' when 'Ensure' is 'Absent' and user account exists" {
@@ -423,7 +423,7 @@ try
 
                 Set-TargetResource @testAbsentParams;
 
-                Assert-MockCalled Remove-ADUser -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.UserName } -Scope It
+                Assert-MockCalled -CommandName Remove-ADUser -ParameterFilter { $Identity.ToString() -eq $testAbsentParams.UserName } -Scope It
             }
 
         }

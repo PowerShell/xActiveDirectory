@@ -65,7 +65,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } -Scope It
+                Assert-MockCalled -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } -Scope It
             }
 
             It 'Returns "System.Collections.Hashtable" object type' {
@@ -81,7 +81,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $null } -Scope It
+                Assert-MockCalled -CommandName Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $null } -Scope It
             }
 
             It 'Calls "Get-ADDefaultDomainPasswordPolicy" with credentials when specified' {
@@ -89,7 +89,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams -Credential $testCredential;
 
-                Assert-MockCalled Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Get-ADDefaultDomainPasswordPolicy" without server by default' {
@@ -97,7 +97,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $null } -Scope It
+                Assert-MockCalled -CommandName Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $null } -Scope It
             }
 
             It 'Calls "Get-ADDefaultDomainPasswordPolicy" with server when specified' {
@@ -105,7 +105,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams -DomainController $testDomainController;
 
-                Assert-MockCalled Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $testDomainController } -Scope It
+                Assert-MockCalled -CommandName Get-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $testDomainController } -Scope It
             }
 
         }
@@ -147,7 +147,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -Credential $testCredential;
 
-                Assert-MockCalled Get-TargetResource -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Get-TargetResource -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Get-TargetResource" with "DomainController" parameter when specified' {
@@ -155,7 +155,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainController $testDomainController;
 
-                Assert-MockCalled Get-TargetResource -ParameterFilter { $DomainController -eq $testDomainController } -Scope It
+                Assert-MockCalled -CommandName Get-TargetResource -ParameterFilter { $DomainController -eq $testDomainController } -Scope It
             }
 
             foreach ($propertyName in $stubPasswordPolicy.Keys)
@@ -226,7 +226,7 @@ try
 
                 $result = Set-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } -Scope It
+                Assert-MockCalled -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } -Scope It
             }
 
             It 'Calls "Set-ADDefaultDomainPasswordPolicy" without "Credential" parameter by default' {
@@ -234,7 +234,7 @@ try
 
                 $result = Set-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $null } -Scope It
+                Assert-MockCalled -CommandName Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $null } -Scope It
             }
 
             It 'Calls "Set-ADDefaultDomainPasswordPolicy" with "Credential" parameter when specified' {
@@ -242,7 +242,7 @@ try
 
                 $result = Set-TargetResource @testDefaultParams -Credential $testCredential;
 
-                Assert-MockCalled Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $testCredential } -Scope It
+                Assert-MockCalled -CommandName Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Credential -eq $testCredential } -Scope It
             }
 
             It 'Calls "Set-ADDefaultDomainPasswordPolicy" without "Server" parameter by default' {
@@ -250,7 +250,7 @@ try
 
                 $result = Set-TargetResource @testDefaultParams;
 
-                Assert-MockCalled Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $null } -Scope It
+                Assert-MockCalled -CommandName Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $null } -Scope It
             }
 
             It 'Calls "Set-ADDefaultDomainPasswordPolicy" with "Server" parameter when specified' {
@@ -258,7 +258,7 @@ try
 
                 $result = Set-TargetResource @testDefaultParams -DomainController $testDomainController;
 
-                Assert-MockCalled Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $testDomainController } -Scope It
+                Assert-MockCalled -CommandName Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $Server -eq $testDomainController } -Scope It
             }
 
             foreach ($propertyName in $stubPasswordPolicy.Keys)
@@ -270,7 +270,7 @@ try
 
                     $result = Set-TargetResource @propertyDefaultParams;
 
-                    Assert-MockCalled Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $PSBoundParameters.ContainsKey($propertyName) } -Scope It
+                    Assert-MockCalled -CommandName Set-ADDefaultDomainPasswordPolicy -ParameterFilter { $PSBoundParameters.ContainsKey($propertyName) } -Scope It
                 }
 
             } #end foreach property name

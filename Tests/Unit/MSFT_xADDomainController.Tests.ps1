@@ -184,7 +184,7 @@ try
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-            Assert-MockCalled Install-ADDSDomainController -Times 1 -ParameterFilter { $SiteName -eq $correctSiteName } @commonAssertParams
+            Assert-MockCalled -CommandName Install-ADDSDomainController -Times 1 -ParameterFilter { $SiteName -eq $correctSiteName } @commonAssertParams
         }
 
         It 'Calls "Move-ADDirectoryServer" when "SiteName" does not match' {
@@ -200,7 +200,7 @@ try
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-            Assert-MockCalled Move-ADDirectoryServer -Times 1 -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonAssertParams
+            Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 1 -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonAssertParams
         }
 
         It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
@@ -215,7 +215,7 @@ try
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-            Assert-MockCalled Move-ADDirectoryServer -Times 0 @commonAssertParams
+            Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
         }
 
         It 'Does not call "Move-ADDirectoryServer" when "SiteName" is not specified' {
@@ -230,7 +230,7 @@ try
 
             Set-TargetResource @testDefaultParams -DomainName $correctDomainName
 
-            Assert-MockCalled Move-ADDirectoryServer -Times 0 @commonAssertParams
+            Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
         }
     }
     #endregion
