@@ -331,18 +331,18 @@ The xADServicePrincipalName DSC resource will manage service principal names.
 * **`[UInt32]` RetryCount** _(Write)_: Maximum number of retries to check for the domain's existence.
 * **`[UInt32]` RebootRetryCount** _(Write)_: Maximum number of reboots to process in order to wait for a domain's existence.
 
-### **xADPrincipalNameSuffix**
+### **xADForestProperties**
 
-The xADPrincipalNameSuffix DSC resource will manage User Principal Name (UPN) suffixes and Service Principal Name suffixes in a forest.
+The xADForestProperties DSC resource will manage User Principal Name (UPN) suffixes and Service Principal Name suffixes in a forest.
 
-* **ForestName**: Specifies the target Active Directory forest for the change.
-* **UserPrincipalNameSuffix**: (optional) Specifies one or more User Principal Name (UPN) Suffix to add/remove.
-* **ServicePrincipalNameSuffix**: (optional) Specifies one or more Service Principal Name (SPN) Suffix to add/remove.
 * **Credential**: (optional) "Specifies the user account credentials to use to perform this task.
-* **Ensure**: (optional) Specifies whether the principal name suffixes are added or removed.
-* **Ensure**: Specifies whether the principal name suffixes are present or absent.
-  * Valid values are 'Present' and 'Absent'.
-  * It not specified, it defaults to 'Present'.
+* **ForestName**: Specifies the target Active Directory forest for the change.
+* **ServicePrincipalNameSuffix**: (optional) Specifies one or more Service Principal Name (SPN) Suffix to add/remove.
+* **ServicePrincipalNameSuffixToExclude**: (optional) The Service Principal Name Suffix(es) to exclude in the forest.
+* **ServicePrincipalNameSuffixToInclude**: (optional) The Service Principal Name Suffix(es) to include in the forest.
+* **UserPrincipalNameSuffix**: (optional) The User Principal Name Suffix(es) to be explicitly defined in the forest.
+* **UserPrincipalNameSuffixToExclude**: (optional) The User Principal Name Suffix(es) to exclude in the forest.
+* **UserPrincipalNameSuffixToInclude**: (optional) The User Principal Name Suffix(es) to include in the forest.
 
 ## Versions
 
@@ -1147,7 +1147,6 @@ Start-DscConfiguration -Path .\Example_xADComputerAccount -Wait -Verbose
 
 In this example the User Principal name suffixes "fabrikam.com" and "industry.com" and Service Principal name suffixes "corporate.com" are added to the Contoso forest.
 
-
 ```powershell
 configuration Example_ADPrincipalSuffix
 {
@@ -1174,12 +1173,11 @@ Import-DscResource -ModuleName xActiveDirectory
 
     node $TargetName
     {
-        xADPrincipalNameSuffix $ForestName
+        xADForestProperties $ForestName
         {
             ForestName = $ForestName
             UserPrincipalNameSuffix = $UserPrincipalNameSuffix
             ServicePrincipalNameSuffix = $ServicePrincipalNameSuffix
-            Ensure = 'Present'
         }
     }
 }

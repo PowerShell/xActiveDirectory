@@ -1,124 +1,174 @@
-$Global:DSCModuleName   = 'xActiveDirectory' 
-$Global:DSCResourceName = 'MSFT_xADForestProperties'
+$script:DSCModuleName = 'xActiveDirectory' 
+$script:DSCResourceName = 'MSFT_xADForestProperties'
 
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))
 }
 
 Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -Path 'DSCResource.Tests' -ChildPath 'TestHelper.psm1')) -Force
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $Global:DSCModuleName `
-    -DSCResourceName $Global:DSCResourceName `
+    -DSCModuleName $script:DSCModuleName `
+    -DSCResourceName $script:DSCResourceName `
     -TestType Unit
 
 try
 {
-    InModuleScope $Global:DSCResourceName {
+    InModuleScope $script:DSCResourceName {
 
         $forestName = 'contoso.com'
         $testCredential = [System.Management.Automation.PSCredential]::Empty
 
-        $testpresentParams = @{
-            ForestName = $forestName
-            UserPrincipalNameSuffix = 'cloudapp.net','fabrikam.com'
+        $replaceParameters = @{
+            ForestName                 = $forestName
             ServicePrincipalNameSuffix = 'test.net'
-            Ensure = 'Present'
+            UserPrincipalNameSuffix    = 'cloudapp.net', 'fabrikam.com'
+            Credential                 = $testCredential
         }
 
-        $testAbsentParams = $testPresentParams.Clone()
-        $testAbsentParams['Ensure'] = 'Absent'
+        $includeExcludeParameters = @{
+            ForestName                          = $forestName
+            ServicePrincipalNameSuffixToExclude = 'test.com'
+            ServicePrincipalNameSuffixToInclude = 'test.net'
+            UserPrincipalNameSuffixToExclude    = 'pester.net'
+            UserPrincipalNameSuffixToInclude    = 'cloudapp.net', 'fabrikam.com'
+            Credential                          = $testCredential
+        }
 
-    
-        $presentForestMatch = @{
-            Name = $forestName
-            UPNSuffixes = @('cloudapp.net','fabrikam.com')
+        $excludeParameters = $includeExcludeParameters.clone()
+        $excludeParameters['ServicePrincipalNameSuffixToInclude'] = $null
+        $excludeParameters['UserPrincipalNameSuffixToInclude'] = $null
+
+        $invalidParameters = $includeExcludeParameters.clone()
+        $invalidParameters['UserPrincipalNameSuffix'] = "test.com"
+
+        $mockADForestDesiredState = @{
+            Name        = $forestName
             SPNSuffixes = @('test.net')
+            UPNSuffixes = @('cloudapp.net', 'fabrikam.com')
         }
 
-        $absentForestMatch = @{
-            Name = $forestName
-            UPNSuffixes = @('test1.value','test2.value')
+        $mockADForestNonDesiredState = @{
+            Name        = $forestName
             SPNSuffixes = @('test3.value')
+            UPNSuffixes = @('test1.value', 'test2.value')
         }
 
-        Mock Assert-Module -MockWith { }
-        Mock Import-Module -MockWith { }
+        Mock Assert-Module
+        Mock Import-Module
 
-        Describe "$($Global:DSCResourceName)\Get-TargetResource" {
-            Mock Get-ADForest -MockWith { return [pscustomobject] $presentForestMatch }
+        Describe "MSFT_xADForestProperties\Get-TargetResource" {
+            Mock Get-ADForest -MockWith { $mockADForestDesiredState }
             
-            $targetResource = Get-TargetResource @testpresentParams
+            Context 'When used with include/exclude parameters' {
 
-            It 'Should Return a "System.Collections.Hashtable" object type' {
-                $targetResource -is [System.Collections.Hashtable] | Should Be $true
+                It 'Should return expected properties' {
+                    $targetResource = Get-TargetResource @includeExcludeParameters
+
+                    $targetResource.ServicePrincipalNameSuffix          | Should -Be $mockADForestDesiredState.SPNSuffixes
+                    $targetResource.ServicePrincipalNameSuffixToInclude | Should -Be $includeExcludeParameters.ServicePrincipalNameSuffixToInclude
+                    $targetResource.ServicePrincipalNameSuffixToExclude | Should -Be $includeExcludeParameters.ServicePrincipalNameSuffixToExclude
+                    $targetResource.UserPrincipalNameSuffix             | Should -Be $mockADForestDesiredState.UPNSuffixes
+                    $targetResource.UserPrincipalNameSuffixToInclude    | Should -Be $includeExcludeParameters.UserPrincipalNameSuffixToInclude
+                    $targetResource.UserPrincipalNameSuffixToExclude    | Should -Be $includeExcludeParameters.UserPrincipalNameSuffixToExclude
+                    $targetResource.Credential                          | Should -BeNullOrEmpty
+                    $targetResource.ForestName                          | Should -Be $mockADForestDesiredState.Name
+                }
             }
 
-            It 'Should return ServicePrincipalNameSuffix'{
-                $targetResource.ServicePrincipalNameSuffix | Should be $presentForestMatch.SPNSuffixes
-            }
-       
-            It 'Should return UserPrincipalNameSuffix'{
-                $targetResource.UserPrincipalNameSuffix | Should be $presentForestMatch.UPNSuffixes
-            }
-       
-            It 'Should return Forest name'{
-                $targetResource.ForestName | Should be $presentForestMatch.Name
-            }
-        }
-        
-        Describe "$($Global:DSCResourceName)\Test-TargetResource" {
+            Context 'When used with replace parameters' {
 
-            It 'Should return $false if [Present] Suffix does NOT match'{
-                Mock Get-ADForest -MockWith { return [pscustomobject] $absentForestMatch }
+                It 'Should return expected properties' {
+                    $targetResource = Get-TargetResource @replaceParameters
 
-                Test-TargetResource @testpresentParams | Should be $false
-            }
-
-            It 'Should return $true if [Present] Suffix does matche'{
-                Mock Get-ADForest -MockWith { return [pscustomobject] $presentForestMatch }
-
-                Test-TargetResource @testpresentParams | Should be $true
-            }
-
-            It 'Should return $false if [Absent] Suffix does NOT match'{
-                Mock Get-ADForest -MockWith { return [pscustomobject] $presentForestMatch }
-
-                Test-TargetResource @testabsentParams | Should be $false
-            }
-
-            It 'Should return $true if [Absent] Suffix does match'{
-                Mock Get-ADForest -MockWith { return [pscustomobject] $absentForestMatch }
-
-                Test-TargetResource @testabsentParams | Should be $true
+                    $targetResource.ServicePrincipalNameSuffix          | Should -Be $mockADForestDesiredState.SPNSuffixes
+                    $targetResource.ServicePrincipalNameSuffixToInclude | Should -Be $null
+                    $targetResource.ServicePrincipalNameSuffixToExclude | Should -Be $null
+                    $targetResource.UserPrincipalNameSuffix             | Should -Be $mockADForestDesiredState.UPNSuffixes
+                    $targetResource.UserPrincipalNameSuffixToInclude    | Should -Be $null
+                    $targetResource.UserPrincipalNameSuffixToExclude    | Should -Be $null
+                    $targetResource.Credential                          | Should -BeNullOrEmpty
+                    $targetResource.ForestName                          | Should -Be $mockADForestDesiredState.Name
+                }
             }
         }
         
-        Describe "$($Global:DSCResourceName)\Set-TargetResource" {
-            It 'Should call Set-AdForest with Credential parameter when Credential parameter is specified'{
-                Mock Set-ADForest -ParameterFilter { $Credential -eq $testCredential } -MockWith { }
+        Describe "MSFT_xADForestProperties\Test-TargetResource" {
+            Context 'When target resource in desired state' {
+                Mock Get-ADForest -MockWith { $mockADForestDesiredState }
 
-                Set-TargetResource @testPresentParams -Credential $testCredential
+                It 'Should return $true when using include/exclude parameters' {
+                    Test-TargetResource @includeExcludeParameters | Should -Be $true
+                }
 
-                Assert-MockCalled Set-ADForest -ParameterFilter { $Credential -eq $testCredential } -Scope It             
+                It 'Should return $true when using replace parameters' {
+                    Test-TargetResource @replaceParameters | Should -Be $true
+                }
             }
 
-            It 'Should call Set-ADForest with Replace action when ensure set to present'{
-                Mock Set-ADForest -ParameterFilter {$SPNSuffixes.replace -eq  $testPresentParams.ServicePrincipalNameSuffix } -MockWith { }
+            Context 'When using Include and Exclude parameters and target not in desired state' {
+                Mock Get-ADForest -MockWith { $mockADForestNonDesiredState }
 
-                Set-TargetResource @testPresentParams 
+                It 'Should return $false when using include/exclude parameters' {
+                    Test-TargetResource @includeExcludeParameters | Should -Be $false
+                }
 
-                Assert-MockCalled Set-ADForest -ParameterFilter { $SPNSuffixes.replace -eq  $testPresentParams.ServicePrincipalNameSuffix } -Scope It
+                It 'Should return $false when using replace parameters' {
+                    Test-TargetResource @replaceParameters | Should -Be $false
+                }
             }
 
-            It 'Should call Set-ADForest with Remove action when ensure set to absent'{
-                Mock Set-ADForest -ParameterFilter {$SPNSuffixes.remove -eq  $testAbsentParams.ServicePrincipalNameSuffix } -MockWith { }
+            Context 'When using invalid parameter combination' {
+                Mock -CommandName Get-ADForest
 
-                Set-TargetResource @testAbsentParams 
+                It 'Should throw when invalid parameter set is used' {
+                    { Test-TargetResource @invalidParameters } | Should -Throw
+                }
+            }
+        }
+        
+        Describe "MSFT_xADForestProperties\Set-TargetResource" {
+            Context 'When using replace parameters' {
+                Mock Set-ADForest -ParameterFilter {
+                    $SpnSuffixes.replace -eq ($replaceParameters.ServicePrincipalNameSuffix -join ',') -and 
+                    $UpnSuffixes.replace -eq ($replaceParameters.UserPrincipalNameSuffix -join ',')
+                }
 
-                Assert-MockCalled Set-ADForest -ParameterFilter { $SPNSuffixes.remove -eq  $testAbsentParams.ServicePrincipalNameSuffix } -Scope It
+                It 'Should call Set-ADForest with the replace action' {
+                    Set-TargetResource @replaceParameters 
+
+                    Assert-MockCalled Set-ADForest -Scope It -Times 1 -Exactly
+                }
+            }
+
+            Context 'When using include/exclude parameters' {
+                Mock Set-ADForest -ParameterFilter {
+                    $SPNSuffixes.add -eq ($includeExcludeParameters.ServicePrincipalNameSuffixToInclude -join ',') -and
+                    $SPNSuffixes.remove -eq ($includeExcludeParameters.ServicePrincipalNameSuffixToExclude -join ',') -and
+                    $UPNSuffixes.add -eq ($includeExcludeParameters.UserPrincipalNameSuffixToInclude -join ',') -and
+                    $UPNSuffixes.remove -eq ($includeExcludeParameters.UserPrincipalNameSuffixToExclude -join ',')
+                }
+
+                It 'Should call Set-ADForest with the add and remove actions' {
+                    Set-TargetResource @includeExcludeParameters 
+
+                    Assert-MockCalled Set-ADForest -Scope It -Times 1 -Exactly 
+                }
+            }
+
+            Context 'When using only exclude parameters' {
+                Mock Set-ADForest -ParameterFilter {
+                    $SPNSuffixes.remove -eq ($excludeParameters.ServicePrincipalNameSuffixToExclude -join ',') -and
+                    $UPNSuffixes.remove -eq ($excludeParameters.UserPrincipalNameSuffixToExclude -join ',')
+                }
+
+                It 'Should call Set-ADForest with the remove action' {
+                    Set-TargetResource @excludeParameters 
+
+                    Assert-MockCalled Set-ADForest -Scope It -Times 1 -Exactly 
+                }
             }
         }
     }

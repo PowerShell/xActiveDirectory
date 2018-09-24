@@ -7,9 +7,9 @@ if (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath $PSUICulture))
 }
 $importLocalizedDataParams = @{
     BindingVariable = 'LocalizedData'
-    Filename = 'MSFT_xADForestProperties.strings.psd1'
-    BaseDirectory = $moduleRoot
-    UICulture = $culture
+    Filename        = 'MSFT_xADForestProperties.strings.psd1'
+    BaseDirectory   = $moduleRoot
+    UICulture       = $culture
 }
 Import-LocalizedData @importLocalizedDataParams
 #endregion
@@ -23,32 +23,29 @@ $adCommonFunctions = Join-Path -Path $adCommonResourcePath -ChildPath 'MSFT_xADC
 .SYNOPSIS
     Gets the current state of user principal name and service principal name suffixes in the forest.
 
+.PARAMETER Credential
+    The user account credentials to use to perform this task.
+
 .PARAMETER ForestName
     The target Active Directory forest for the change.
-
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToInclude
-    The User Principal Name Suffix(es) to include in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToExclude
-    The User Principal Name Suffix(es) to exclude in the forest.
 
 .PARAMETER ServicePrincipalNameSuffix
     The Service Principal Name Suffix(es) to be explicitly defined in the forest.
 
-.PARAMETER ServicePrincipalNameSuffixToInclude
-    The Service Principal Name Suffix(es) to include in the forest.
-
 .PARAMETER ServicePrincipalNameSuffixToExclude
     The Service Principal Name Suffix(es) to exclude in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+.PARAMETER ServicePrincipalNameSuffixToInclude
+    The Service Principal Name Suffix(es) to include in the forest.
 
-.PARAMETER Ensure
-    Whether the principal name suffixes are added or removed.
+.PARAMETER UserPrincipalNameSuffix
+    The User Principal Name Suffix(es) to be explicitly defined in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToExclude
+    The User Principal Name Suffix(es) to exclude in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToInclude
+    The User Principal Name Suffix(es) to include in the forest.
 #>
 function Get-TargetResource
 {
@@ -56,21 +53,13 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
+        [Parameter()]
+        [PSCredential]
+        $Credential,
+
         [Parameter(Mandatory = $true)]
         [String]
         $ForestName,
-
-        [Parameter()]
-        [String[]]
-        $UserPrincipalNameSuffix,
-
-        [Parameter()]
-        [String[]]
-        $UserPrincipalNameSuffixToInclude,
-
-        [Parameter()]
-        [String[]]
-        $UserPrincipalNameSuffixToExclude,
 
         [Parameter()]
         [String[]]
@@ -78,38 +67,49 @@ function Get-TargetResource
 
         [Parameter()]
         [String[]]
+        $ServicePrincipalNameSuffixToExclude,
+
+        [Parameter()]
+        [String[]]
         $ServicePrincipalNameSuffixToInclude,
 
         [Parameter()]
         [String[]]
-        $ServicePrincipalNameSuffixToExclude,
+        $UserPrincipalNameSuffix,
 
         [Parameter()]
-        [PSCredential]
-        $Credential,
+        [String[]]
+        $UserPrincipalNameSuffixToExclude,
 
         [Parameter()]
-        [ValidateSet('Present','Absent')]
-        [String]
-        $Ensure = 'Present'
+        [String[]]
+        $UserPrincipalNameSuffixToInclude
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
     Import-Module -Name 'ActiveDirectory' -Verbose:$false
 
+    $getADForestParameters = @{
+        Identity = $ForestName
+    }
+
+    if ($Credential)
+    {
+        $getADForestParameters['Credential'] = $Credential
+    }
+
     Write-Verbose -Message ($localizedData.GetForest -f $ForestName)
     $forest = Get-ADForest -Identity $ForestName
 
     $targetResource = @{
-        ForestName = $forest.Name
-        UserPrincipalNameSuffix = @($forest.UpnSuffixes)
-        UserPrincipalNameSuffixToInclude = $UserPrincipalNameSuffixToInclude
-        UserPrincipalNameSuffixToExclude = $UserPrincipalNameSuffixToExclude
-        ServicePrincipalNameSuffix = @($forest.SpnSuffixes)
-        ServicePrincipalNameSuffixToInclude = $ServicePrincipalNameSuffixToInclude
-        ServicePrincipalNameSuffixToExclude = $ServicePrincipalNameSuffixToExclude
-        Credential = ''
-        Ensure = $Ensure
+        ForestName                          = $forest.Name
+        UserPrincipalNameSuffix             = [Array]$forest.UpnSuffixes
+        UserPrincipalNameSuffixToInclude    = [Array]$UserPrincipalNameSuffixToInclude
+        UserPrincipalNameSuffixToExclude    = [Array]$UserPrincipalNameSuffixToExclude
+        ServicePrincipalNameSuffix          = [Array]$forest.SpnSuffixes
+        ServicePrincipalNameSuffixToInclude = [Array]$ServicePrincipalNameSuffixToInclude
+        ServicePrincipalNameSuffixToExclude = [Array]$ServicePrincipalNameSuffixToExclude
+        Credential                          = ''
     }
 
     return $targetResource
@@ -119,32 +119,29 @@ function Get-TargetResource
 .SYNOPSIS
     Tests the current state of user principal name and service principal name suffixes in the forest.
 
+.PARAMETER Credential
+    The user account credentials to use to perform this task.
+
 .PARAMETER ForestName
     The target Active Directory forest for the change.
-
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToInclude
-    The User Principal Name Suffix(es) to include in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToExclude
-    The User Principal Name Suffix(es) to exclude in the forest.
 
 .PARAMETER ServicePrincipalNameSuffix
     The Service Principal Name Suffix(es) to be explicitly defined in the forest.
 
-.PARAMETER ServicePrincipalNameSuffixToInclude
-    The Service Principal Name Suffix(es) to include in the forest.
-
 .PARAMETER ServicePrincipalNameSuffixToExclude
     The Service Principal Name Suffix(es) to exclude in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+.PARAMETER ServicePrincipalNameSuffixToInclude
+    The Service Principal Name Suffix(es) to include in the forest.
 
-.PARAMETER Ensure
-    Whether the principal name suffixes are added or removed.
+.PARAMETER UserPrincipalNameSuffix
+    The User Principal Name Suffix(es) to be explicitly defined in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToExclude
+    The User Principal Name Suffix(es) to exclude in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToInclude
+    The User Principal Name Suffix(es) to include in the forest.
 #>
 function Test-TargetResource
 {
@@ -152,9 +149,25 @@ function Test-TargetResource
     [OutputType([System.Boolean])]
     param
     (
+        [Parameter()]
+        [PSCredential]
+        $Credential,
+
         [Parameter(Mandatory = $true)]
         [String]
         $ForestName,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffix,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffixToExclude,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffixToInclude,
 
         [Parameter()]
         [String[]]
@@ -162,88 +175,63 @@ function Test-TargetResource
 
         [Parameter()]
         [String[]]
-        $ServicePrincipalNameSuffix,
+        $UserPrincipalNameSuffixToExclude,
 
         [Parameter()]
-        [PSCredential]
-        $Credential,
-
-        [Parameter()]
-        [ValidateSet('Present','Absent')]
-        [String]
-        $Ensure = 'Present'
+        [String[]]
+        $UserPrincipalNameSuffixToInclude
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
     Import-Module -Name 'ActiveDirectory' -Verbose:$false
 
-    $forest = Get-ADForest -Identity $ForestName
     $inDesiredState = $true
 
-    if ($UserPrincipalNameSuffix)
-    {
-        if ($Ensure -eq 'Present')
-        {
-            $compare = Compare-Object -ReferenceObject $UserPrincipalNameSuffix -DifferenceObject $forest.UpnSuffixes
-            if ($compare)
-            {
-                Write-Verbose -Message ($localizedData.ForestUpnSuffixNotInDesiredState -f $ForestName)
-                $inDesiredState = $false
-            }
-        }
+    $forest = Get-ADForest -Identity $ForestName
 
-        foreach ($suffix in $UserPrincipalNameSuffix)
-        {
-            if ($Ensure -eq 'Present')
-            {
-                if ($suffix -notin $forest.UpnSuffixes)
-                {
-                    Write-Verbose -Message ($localizedData.UpnSuffixNotInDesiredState -f $suffix)
-                    $inDesiredState = $false
-                }
-            }
-            else # Absent
-            {
-                if ($suffix -in $forest.UpnSuffixes)
-                {
-                    Write-Verbose -Message ($localizedData.UpnSuffixNotInDesiredState -f $suffix)
-                    $inDesiredState = $false
-                }
-            }
-        }
+    ## Validate parameters before we even attempt to retrieve anything
+    $assertMemberParameters = @{}
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffix))
+    {
+        $assertMemberParameters['Members'] = $ServicePrincipalNameSuffix
+    }
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToInclude') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToInclude))
+    {
+        $assertMemberParameters['MembersToInclude'] = $ServicePrincipalNameSuffixToInclude
+    }
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToExclude') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToExclude))
+    {
+        $assertMemberParameters['MembersToExclude'] = $ServicePrincipalNameSuffixToExclude
     }
 
-    if ($ServicePrincipalNameSuffix)
-    {
-        if ($Ensure -eq 'Present')
-        {
-            $compare = Compare-Object -ReferenceObject $ServicePrincipalNameSuffix -DifferenceObject $forest.SpnSuffixes
-            if ($compare)
-            {
-                Write-Verbose -Message ($localizedData.ForestSpnSuffixNotInDesiredState -f $ForestName)
-                $inDesiredState = $false
-            }
-        }
+    Assert-MemberParameters @assertMemberParameters -ErrorAction Stop
 
-        foreach ($suffix in $ServicePrincipalNameSuffix)
-        {
-            if ($Ensure -eq 'Present')
-            {
-                if ($suffix -notin $forest.SpnSuffixes)
-                {
-                    Write-Verbose -Message ($localizedData.SpnSuffixNotInDesiredState -f $suffix)
-                    $inDesiredState = $false
-                }
-            }
-            else # Absent
-            {
-                if ($suffix -in $forest.SpnSuffixes)
-                {
-                    Write-Verbose -Message ($localizedData.SpnSuffixNotInDesiredState -f $suffix)
-                    $inDesiredState = $false
-                }
-            }
-        }
+    if (-not ( Test-Members @assertMemberParameters -ExistingMembers ($forest.SpnSuffixes -split ',') ))
+    {
+        Write-Verbose -Message $LocalizedData.ForestSpnSuffixNotInDesiredState
+        $inDesiredState = $false
+    }
+
+    $assertMemberParameters = @{}
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffix))
+    {
+        $assertMemberParameters['Members'] = $UserPrincipalNameSuffix
+    }
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToInclude') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToInclude))
+    {
+        $assertMemberParameters['MembersToInclude'] = $UserPrincipalNameSuffixToInclude
+    }
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToExclude') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToExclude))
+    {
+        $assertMemberParameters['MembersToExclude'] = $UserPrincipalNameSuffixToExclude
+    }
+
+    Assert-MemberParameters @assertMemberParameters -ErrorAction Stop
+
+    if (-not ( Test-Members @assertMemberParameters -ExistingMembers ($forest.UpnSuffixes -split ',') ))
+    {
+        Write-Verbose -Message $LocalizedData.ForestUpnSuffixNotInDesiredState
+        $inDesiredState = $false
     }
 
     return $inDesiredState
@@ -253,41 +241,54 @@ function Test-TargetResource
 .SYNOPSIS
     Sets the user principal name and service principal name suffixes in the forest.
 
+.PARAMETER Credential
+    The user account credentials to use to perform this task.
+
 .PARAMETER ForestName
     The target Active Directory forest for the change.
-
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToInclude
-    The User Principal Name Suffix(es) to include in the forest.
-
-.PARAMETER UserPrincipalNameSuffixToExclude
-    The User Principal Name Suffix(es) to exclude in the forest.
 
 .PARAMETER ServicePrincipalNameSuffix
     The Service Principal Name Suffix(es) to be explicitly defined in the forest.
 
-.PARAMETER ServicePrincipalNameSuffixToInclude
-    The Service Principal Name Suffix(es) to include in the forest.
-
 .PARAMETER ServicePrincipalNameSuffixToExclude
     The Service Principal Name Suffix(es) to exclude in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+.PARAMETER ServicePrincipalNameSuffixToInclude
+    The Service Principal Name Suffix(es) to include in the forest.
 
-.PARAMETER Ensure
-    Whether the principal name suffixes are added or removed.
+.PARAMETER UserPrincipalNameSuffix
+    The User Principal Name Suffix(es) to be explicitly defined in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToExclude
+    The User Principal Name Suffix(es) to exclude in the forest.
+
+.PARAMETER UserPrincipalNameSuffixToInclude
+    The User Principal Name Suffix(es) to include in the forest.
 #>
 function Set-TargetResource
 {
     [CmdletBinding()]
     param
     (
+        [Parameter()]
+        [PSCredential]
+        $Credential,
+
         [Parameter(Mandatory = $true)]
         [String]
         $ForestName,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffix,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffixToExclude,
+
+        [Parameter()]
+        [String[]]
+        $ServicePrincipalNameSuffixToInclude,
 
         [Parameter()]
         [String[]]
@@ -295,16 +296,11 @@ function Set-TargetResource
 
         [Parameter()]
         [String[]]
-        $ServicePrincipalNameSuffix,
+        $UserPrincipalNameSuffixToExclude,
 
         [Parameter()]
-        [PSCredential]
-        $Credential,
-
-        [Parameter()]
-        [ValidateSet('Present','Absent')]
-        [String]
-        $Ensure = 'Present'
+        [String[]]
+        $UserPrincipalNameSuffixToInclude
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
@@ -319,29 +315,76 @@ function Set-TargetResource
         $setADForestParameters['Credential'] = $Credential
     }
 
-    if ($Ensure -eq 'Present')
+    # add ServicePrincipalName parameter
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffix))
     {
-        $action = 'Replace'
+        $replaceServicePrincipalNameSuffix = $ServicePrincipalNameSuffix -join ','
+        $setADForestParameters['SpnSuffixes'] = @{
+            replace = $replaceServicePrincipalNameSuffix
+        }
+
+        Write-Verbose -Message ($localizedData.SetSpnSuffix -f 'replacing with', $replaceServicePrincipalNameSuffix)
     }
-    else #absent
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToInclude') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToInclude))
     {
-        $action = 'Remove'
+        $addServicePrincipalNameSuffix = $ServicePrincipalNameSuffixToInclude -join ','
+        $setADForestParameters['SpnSuffixes'] = @{
+            add = $addServicePrincipalNameSuffix
+        }
+
+        Write-Verbose -Message ($localizedData.SetSpnSuffix -f 'adding', $addServicePrincipalNameSuffix)
+    }
+    if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToExclude') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToExclude))
+    {
+        $removeServicePrincipalNameSuffix = $ServicePrincipalNameSuffixToExclude -join ','
+        if ($setADForestParameters['SpnSuffixes'])
+        {
+            $setADForestParameters['SpnSuffixes']['remove'] = $removeServicePrincipalNameSuffix
+        }
+        else
+        {
+            $setADForestParameters['SpnSuffixes'] = @{
+                remove = $removeServicePrincipalNameSuffix
+            }
+        }
+        
+        Write-Verbose -Message ($localizedData.SetSpnSuffix -f 'removing', $removeServicePrincipalNameSuffix)
     }
 
-    if ($UserPrincipalNameSuffix)
+    # add UserPrincipalName parameter
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffix))
     {
-        $setADForestParameters['UpnSuffixes'] = @{ 
-            $action = $UserPrincipalNameSuffix
+        $replaceUserPrincipalNameSuffix = $UserPrincipalNameSuffix -join ','
+        $setADForestParameters['UpnSuffixes'] = @{
+            replace = $replaceUserPrincipalNameSuffix
         }
-        Write-Verbose -Message ($localizedData.SetUpnSuffix -f $action)
-    }
 
-    if ($ServicePrincipalNameSuffix)
+        Write-Verbose -Message ($localizedData.SetUpnSuffix -f 'replacing with', $replaceUserPrincipalNameSuffix)
+    }
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToInclude') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToInclude))
     {
-        $setADForestParameters['SpnSuffixes'] = @{ 
-            $action = $ServicePrincipalNameSuffix 
+        $addUserPrincipalNameSuffix = $UserPrincipalNameSuffixToInclude -join ','
+        $setADForestParameters['UpnSuffixes'] = @{
+            add = $addUserPrincipalNameSuffix
         }
-        Write-Verbose -Message ($localizedData.SetSpnSuffix -f $action)
+
+        Write-Verbose -Message ($localizedData.SetUpnSuffix -f 'adding', $addUserPrincipalNameSuffix)
+    }
+    if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToExclude') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToExclude))
+    {
+        $removeUserPrincipalNameSuffix = $UserPrincipalNameSuffixToExclude -join ','
+        if ($setADForestParameters['UpnSuffixes'])
+        {
+            $setADForestParameters['UpnSuffixes']['remove'] = $removeUserPrincipalNameSuffix
+        }
+        else
+        {
+            $setADForestParameters['UpnSuffixes'] = @{
+                remove = $removeUserPrincipalNameSuffix
+            }
+        }
+        
+        Write-Verbose -Message ($localizedData.SetUpnSuffix -f 'removing', $removeUserPrincipalNameSuffix)
     }
 
     Set-ADForest @setADForestParameters
