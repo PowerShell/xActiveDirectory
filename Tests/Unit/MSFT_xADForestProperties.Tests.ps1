@@ -42,7 +42,7 @@ try
         $excludeParameters['UserPrincipalNameSuffixToInclude'] = $null
 
         $invalidParameters = $includeExcludeParameters.clone()
-        $invalidParameters['UserPrincipalNameSuffix'] = "test.com"
+        $invalidParameters['UserPrincipalNameSuffix'] = 'test.com'
 
         $mockADForestDesiredState = @{
             Name        = $forestName
@@ -59,7 +59,7 @@ try
         Mock Assert-Module
         Mock Import-Module
 
-        Describe "MSFT_xADForestProperties\Get-TargetResource" {
+        Describe 'MSFT_xADForestProperties\Get-TargetResource' {
             Mock Get-ADForest -MockWith { $mockADForestDesiredState }
             
             Context 'When used with include/exclude parameters' {
@@ -84,18 +84,18 @@ try
                     $targetResource = Get-TargetResource @replaceParameters
 
                     $targetResource.ServicePrincipalNameSuffix          | Should -Be $mockADForestDesiredState.SPNSuffixes
-                    $targetResource.ServicePrincipalNameSuffixToInclude | Should -Be $null
-                    $targetResource.ServicePrincipalNameSuffixToExclude | Should -Be $null
+                    $targetResource.ServicePrincipalNameSuffixToInclude | Should -BeNullOrEmpty
+                    $targetResource.ServicePrincipalNameSuffixToExclude | Should -BeNullOrEmpty
                     $targetResource.UserPrincipalNameSuffix             | Should -Be $mockADForestDesiredState.UPNSuffixes
-                    $targetResource.UserPrincipalNameSuffixToInclude    | Should -Be $null
-                    $targetResource.UserPrincipalNameSuffixToExclude    | Should -Be $null
+                    $targetResource.UserPrincipalNameSuffixToInclude    | Should -BeNullOrEmpty
+                    $targetResource.UserPrincipalNameSuffixToExclude    | Should -BeNullOrEmpty
                     $targetResource.Credential                          | Should -BeNullOrEmpty
                     $targetResource.ForestName                          | Should -Be $mockADForestDesiredState.Name
                 }
             }
         }
         
-        Describe "MSFT_xADForestProperties\Test-TargetResource" {
+        Describe 'MSFT_xADForestProperties\Test-TargetResource' {
             Context 'When target resource in desired state' {
                 Mock Get-ADForest -MockWith { $mockADForestDesiredState }
 
@@ -129,7 +129,7 @@ try
             }
         }
         
-        Describe "MSFT_xADForestProperties\Set-TargetResource" {
+        Describe 'MSFT_xADForestProperties\Set-TargetResource' {
             Context 'When using replace parameters' {
                 Mock Set-ADForest -ParameterFilter {
                     $SpnSuffixes.replace -eq ($replaceParameters.ServicePrincipalNameSuffix -join ',') -and 

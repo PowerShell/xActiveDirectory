@@ -14,10 +14,11 @@ $importLocalizedDataParams = @{
 Import-LocalizedData @importLocalizedDataParams
 #endregion
 
-## Import the common AD functions
-$adCommonResourcePath = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'MSFT_xADCommon'
-$adCommonFunctions = Join-Path -Path $adCommonResourcePath -ChildPath 'MSFT_xADCommon.ps1'
-. $adCommonFunctions
+# Import the common AD functions
+$adCommonFunctions = Join-Path `
+    -Path (Split-Path -Path $PSScriptRoot -Parent) `
+    -ChildPath (Join-Path -Path 'MSFT_xADCommon' -ChildPath 'MSFT_xADCommon.psm1')
+Import-Module -Name $adCommonFunctions
 
 <#
 .SYNOPSIS
@@ -347,7 +348,7 @@ function Set-TargetResource
                 remove = $removeServicePrincipalNameSuffix
             }
         }
-        
+
         Write-Verbose -Message ($localizedData.SetSpnSuffix -f 'removing', $removeServicePrincipalNameSuffix)
     }
 
@@ -383,7 +384,7 @@ function Set-TargetResource
                 remove = $removeUserPrincipalNameSuffix
             }
         }
-        
+
         Write-Verbose -Message ($localizedData.SetUpnSuffix -f 'removing', $removeUserPrincipalNameSuffix)
     }
 

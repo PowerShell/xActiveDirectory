@@ -349,6 +349,7 @@ The xADForestProperties DSC resource will manage User Principal Name (UPN) suffi
 ### Unreleased
 
 * Add PasswordNeverResets parameter to xADUser to facilitate user lifecycle management
+* Added xADForestProperties: New resource to manage User and Principal Name Suffixes for a Forest
   
 ### 2.21.0.0
 
