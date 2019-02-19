@@ -77,6 +77,7 @@ $adPropertyMap = @(
     @{ Parameter = 'Manager'; }
     @{ Parameter = 'PasswordNeverExpires'; UseCmdletParameter = $true; }
     @{ Parameter = 'CannotChangePassword'; UseCmdletParameter = $true; }
+    @{ Parameter = 'TrustedForDelegation'; UseCmdletParameter = $true; }
 )
 
 function Get-TargetResource
@@ -335,6 +336,12 @@ function Get-TargetResource
         [ValidateNotNull()]
         [System.Boolean]
         $PasswordNeverExpires,
+
+        # Specifies whether an account is trusted for Kerberos delegation
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $TrustedForDelegation,
 
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]
@@ -696,6 +703,12 @@ function Test-TargetResource
         [System.Boolean]
         $PasswordNeverExpires,
 
+        # Specifies whether an account is trusted for Kerberos delegation
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $TrustedForDelegation,
+
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]
         [ValidateNotNull()]
@@ -1042,6 +1055,12 @@ function Set-TargetResource
         [ValidateNotNull()]
         [System.Boolean]
         $PasswordNeverExpires,
+
+        # Specifies whether an account is trusted for Kerberos delegation
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $TrustedForDelegation,
 
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]

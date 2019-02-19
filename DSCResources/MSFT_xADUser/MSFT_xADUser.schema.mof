@@ -47,6 +47,7 @@ class MSFT_xADUser : OMI_BaseResource
     [Write, Description("Specifies the user account credentials to use to perform this task"), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
     [Write, Description("Specifies the authentication context type used when testing passwords"), ValueMap{"Default","Negotiate"},Values{"Default","Negotiate"}] String PasswordAuthentication;
     [Write, Description("Specifies whether existing user's password should be reset (default $false)")] Boolean PasswordNeverResets;
+    [Write, Description("Specifies whether an account is trusted for Kerberos delegation (default $false)")] Boolean TrustedForDelegation;
     [Write, Description("Indicates whether or not the user object should first tried to be restored from the recycle bin before creating a new user object.")] Boolean RestoreFromRecycleBin;
     [Read, Description("Returns the X.500 path of the object")] String DistinguishedName;
 };
