@@ -20,7 +20,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 # Begin Testing
 try
 {
-
     #region Pester Tests
 
     InModuleScope $Global:DSCResourceName {
@@ -53,7 +52,7 @@ try
             'EmailAddress', 'EmployeeID', 'EmployeeNumber', 'HomeDirectory', 'HomeDrive', 'HomePage', 'ProfilePath',
             'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone','CommonName'
         );
-        $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword','Enabled');
+        $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword', 'TrustedForDelegation', 'Enabled');
 
         #region Function Get-TargetResource
         Describe "$($Global:DSCResourceName)\Get-TargetResource" {
@@ -167,8 +166,8 @@ try
                 Assert-MockCalled -CommandName Test-Password -ParameterFilter { $PasswordAuthentication -eq 'Negotiate' } -Scope It
             }
 
-            foreach ($testParameter in $testStringProperties) {
-
+            foreach ($testParameter in $testStringProperties)
+            {
                 It "Passes when user account '$testParameter' matches AD account property" {
                     $testParameterValue = 'Test Parameter String Value';
                     $testValidPresentParams = $testPresentParams.Clone();
@@ -251,8 +250,8 @@ try
 
             } #end foreach test string property
 
-            foreach ($testParameter in $testBooleanProperties) {
-
+            foreach ($testParameter in $testBooleanProperties)
+            {
                 It "Passes when user account '$testParameter' matches AD account property" {
                     $testParameterValue = $true;
                     $testValidPresentParams = $testPresentParams.Clone();
@@ -510,7 +509,7 @@ try
                 Mock -CommandName New-ADUser
                 Mock -CommandName Set-ADUser -ParameterFilter { $true}
 
-                {Set-TargetResource @restoreParam} | Should -Throw
+                {Set-TargetResource @restoreParam} | Should Throw
 
                 Assert-MockCalled -CommandName Restore-ADCommonObject -Scope It
                 Assert-MockCalled -CommandName New-ADUser -Scope It -Exactly -Times 0
@@ -530,6 +529,10 @@ try
                 { Assert-Parameters -Password $testCredential -Enabled $false } | Should Throw;
             }
 
+            It "Does not throw when 'TrustedForDelegation' is specified" {
+                { Assert-Parameters -TrustedForDelegation $true } | Should Not Throw
+            }
+
         }
         #endregion
 
@@ -542,5 +545,3 @@ finally
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
     #endregion
 }
-
-
