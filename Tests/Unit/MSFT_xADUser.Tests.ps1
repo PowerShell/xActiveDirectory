@@ -491,13 +491,10 @@ try
                     Assert-MockCalled -CommandName Set-ADUser -Scope It
                 }
 
-<<<<<<< HEAD
                 {Set-TargetResource @restoreParam} | Should -Throw
-=======
                 It 'Should throw the correct error when then object cannot be restored from recycle bin' {
                     $restoreParam = $testPresentParams.Clone()
                     $restoreParam.RestoreFromRecycleBin = $true
->>>>>>> parent of 5f172de... Updated Pester tests including style formatting problems
 
                     $script:mockCounter = 0
 
