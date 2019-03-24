@@ -491,10 +491,7 @@ try
                     Assert-MockCalled -CommandName Set-ADUser -Scope It
                 }
 
-                It 'Should throw the correct error when then object cannot be restored from recycle bin' {
-                    $restoreParam = $testPresentParams.Clone()
-                    $restoreParam.RestoreFromRecycleBin = $true
-                {Set-TargetResource @restoreParam} | Should Throw
+                {Set-TargetResource @restoreParam} | Should -Throw
 
                     $script:mockCounter = 0
 
