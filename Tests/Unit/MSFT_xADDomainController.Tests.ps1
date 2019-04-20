@@ -8,9 +8,9 @@ $moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 # Download DSCResource.Tests if not found, import the tests helper, and init the test environment
 if ( (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 Import-Module (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
 $TestEnvironment = Initialize-TestEnvironment `
@@ -38,14 +38,15 @@ try
         }
 
         #region Pester Test Variable Initialization
-        $correctDomainName              = 'present.com'
-        $testAdminCredential            = [System.Management.Automation.PSCredential]::Empty
-        $correctDatabasePath            = 'C:\Windows\NTDS'
-        $correctLogPath                 = 'C:\Windows\NTDS'
-        $correctSysvolPath              = 'C:\Windows\SYSVOL'
-        $correctSiteName                = 'PresentSite'
-        $incorrectSiteName              = 'IncorrectSite'
-        $correctInstallationMediaPath   = 'Testdrive:\IFM'
+        $correctDomainName = 'present.com'
+        $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
+        $correctDatabasePath = 'C:\Windows\NTDS'
+        $correctLogPath = 'C:\Windows\NTDS'
+        $correctSysvolPath = 'C:\Windows\SYSVOL'
+        $correctSiteName = 'PresentSite'
+        $incorrectSiteName = 'IncorrectSite'
+        $correctInstallationMediaPath = 'Testdrive:\IFM'
+        $mockNtdsSettingsObjectDn = 'CN=NTDS Settings,CN=ServerName,CN=Servers,CN=PresentSite,CN=Sites,CN=Configuration,DC=present,DC=com'
 
         $testDefaultParams = @{
             DomainAdministratorCredential = $testAdminCredential
@@ -54,8 +55,8 @@ try
 
         $commonAssertParams = @{
             ModuleName = $dscResourceName
-            Scope = 'It'
-            Exactly = $true
+            Scope      = 'It'
+            Exactly    = $true
         }
 
         #Fake function because it is only available on Windows Server
@@ -109,8 +110,9 @@ try
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-ADDomainController {
                     return @{
-                        Site = $correctSiteName
-                        Domain = $correctDomainName
+                        Site                 = $correctSiteName
+                        Domain               = $correctDomainName
+                        IsGlobalCatalog      = $true
                     }
                 }
                 Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters' } -MockWith {
@@ -125,17 +127,18 @@ try
                     }
                 }
 
-                New-Item -Path Testdrive:\ -ItemType Directory -Name IFM
+                New-Item -Path 'TestDrive:\' -ItemType Directory -Name IFM
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                 It 'Returns current Domain Controller properties' {
-                    $result.DomainName   | Should -Be $correctDomainName
+                    $result.DomainName | Should -Be $correctDomainName
                     $result.DatabasePath | Should -Be $correctDatabasePath
-                    $result.LogPath      | Should -Be $correctLogPath
-                    $result.SysvolPath   | Should -Be $correctSysvolPath
-                    $result.SiteName     | Should -Be $correctSiteName
-                    $result.Ensure       | Should -Be $true
+                    $result.LogPath | Should -Be $correctLogPath
+                    $result.SysvolPath | Should -Be $correctSysvolPath
+                    $result.SiteName | Should -Be $correctSiteName
+                    $result.Ensure | Should -Be $true
+                    $result.IsGlobalCatalog | Should -Be $true
                 }
             }
 
@@ -147,12 +150,14 @@ try
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                 It 'Returns Ensure = False' {
-                    $result.DomainName   | Should -Be $correctDomainName
+                    $result.DomainName | Should -Be $correctDomainName
                     $result.DatabasePath | Should -BeNullOrEmpty
-                    $result.LogPath      | Should -BeNullOrEmpty
-                    $result.SysvolPath   | Should -BeNullOrEmpty
-                    $result.SiteName     | Should -BeNullOrEmpty
+                    $result.LogPath | Should -BeNullOrEmpty
+                    $result.SysvolPath | Should -BeNullOrEmpty
+                    $result.SiteName | Should -BeNullOrEmpty
                     $result.Ensure | Should -Be $false
+                    $result.IsGlobalCatalog | Should -Be $false
+                    $result.NtdsSettingsObjectDn | Should -BeNullOrEmpty
                 }
             }
         }
@@ -172,41 +177,41 @@ try
                 }
 
                 $stubDomainController = @{
-                    Site = $incorrectSiteName
-                    Domain = $correctDomainName
+                    Site            = $incorrectSiteName
+                    Domain          = $correctDomainName
                 }
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
                 Mock -CommandName Test-ADReplicationSite -MockWith { return $true }
-                Mock -CommandName Get-ItemProperty -MockWith { return @{} }
+                Mock -CommandName Get-ItemProperty -MockWith { return @{ } }
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-                $result | Should Be $false
+                $result | Should -Be $false
             }
 
             It 'Returns "True" when "SiteName" matches' {
 
                 $stubDomainController = @{
-                    Site = $correctSiteName
+                    Site   = $correctSiteName
                     Domain = $correctDomainName
                 }
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
                 Mock -CommandName Test-ADReplicationSite -MockWith { return $true }
-                Mock -CommandName Get-ItemProperty -MockWith { return @{} }
+                Mock -CommandName Get-ItemProperty -MockWith { return @{ } }
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
-                $result | Should Be $true
+                $result | Should -Be $true
             }
 
             It 'Throws if "SiteName" is wrong' {
 
                 $stubDomainController = @{
-                    Site = $correctSiteName
+                    Site   = $correctSiteName
                     Domain = $correctDomainName
                 }
 
@@ -214,7 +219,50 @@ try
                 Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
                 Mock -CommandName Test-ADReplicationSite -MockWith { return $false }
                 { Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName } |
-                    Should Throw "Site '$($incorrectSiteName)' could not be found."
+                Should Throw "Site '$($incorrectSiteName)' could not be found."
+            }
+
+            It 'Returns "False" when "IsGlobalCatalog" does not match' {
+                $stubDomain = @{
+                    DNSRoot = $correctDomainName
+                }
+
+                $stubDomainController = @{
+                    Site            = $correctSiteName
+                    Domain          = $correctDomainName
+                    IsGlobalCatalog = $false
+                }
+
+                Mock -CommandName Get-ADDomain -MockWith { return $true }
+                Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
+                Mock -CommandName Test-ADReplicationSite -MockWith { return $true }
+                Mock -CommandName Get-ItemProperty -MockWith { return @{ } }
+
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -IsGlobalCatalog $true
+
+                $result | Should -Be $false
+
+            }
+
+            It 'Returns "True" when "IsGlobalCatalog" matches' {
+                $stubDomain = @{
+                    DNSRoot = $correctDomainName
+                }
+
+                $stubDomainController = @{
+                    Site            = $correctSiteName
+                    Domain          = $correctDomainName
+                    IsGlobalCatalog = $true
+                }
+
+                Mock -CommandName Get-ADDomain -MockWith { return $true }
+                Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
+                Mock -CommandName Test-ADReplicationSite -MockWith { return $true }
+                Mock -CommandName Get-ItemProperty -MockWith { return @{ } }
+
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -IsGlobalCatalog $true
+
+                $result | Should -Be $true
             }
         }
         #endregion
@@ -234,12 +282,13 @@ try
                 }
                 Mock -CommandName Install-ADDSDomainController -ParameterFilter { $SiteName -eq $correctSiteName }
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
 
                 Assert-MockCalled -CommandName Install-ADDSDomainController -Times 1 -ParameterFilter { $SiteName -eq $correctSiteName }
             }
 
-            New-Item -Path Testdrive:\ -ItemType Directory -Name IFM
+            New-Item -Path 'TestDrive:\' -ItemType Directory -Name IFM
+
             It 'Calls "Install-ADDSDomainController" with InstallationMediaPath specified' {
                 Mock -CommandName Get-ADDomain -MockWith {
                     return $true
@@ -250,18 +299,18 @@ try
                         Ensure = $false
                     }
                 }
-                Mock -CommandName Install-ADDSDomainController -ParameterFilter {$InstallationMediaPath -eq $correctInstallationMediaPath}
+                Mock -CommandName Install-ADDSDomainController -ParameterFilter { $InstallationMediaPath -eq $correctInstallationMediaPath }
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -InstallationMediaPath $correctInstallationMediaPath
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -InstallationMediaPath $correctInstallationMediaPath -Verbose
 
                 Assert-MockCalled -CommandName Install-ADDSDomainController -Times 1 `
-                    -ParameterFilter {$InstallationMediaPath -eq $correctInstallationMediaPath}  @commonAssertParams
+                    -ParameterFilter { $InstallationMediaPath -eq $correctInstallationMediaPath }  @commonAssertParams
             }
 
             It 'Calls "Move-ADDirectoryServer" when "SiteName" does not match' {
                 Mock -CommandName Get-TargetResource -MockWith {
                     return $stubTargetResource = @{
-                        Ensure = $true
+                        Ensure   = $true
                         SiteName = 'IncorrectSite'
                     }
                 }
@@ -269,7 +318,7 @@ try
                 Mock -CommandName Move-ADDirectoryServer -ParameterFilter { $Site.ToString() -eq $correctSiteName }
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
 
                 # FYI: This test will fail when run locally, but should succeed on the build server
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 1 -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonAssertParams
@@ -278,14 +327,14 @@ try
             It 'Does not call "Move-ADDirectoryServer" when "SiteName" matches' {
                 Mock -CommandName Get-TargetResource -MockWith {
                     return $stubTargetResource = @{
-                        Ensure = $true
+                        Ensure   = $true
                         SiteName = 'PresentSite'
                     }
                 }
 
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
 
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
             }
@@ -293,16 +342,90 @@ try
             It 'Does not call "Move-ADDirectoryServer" when "SiteName" is not specified' {
                 Mock -CommandName Get-TargetResource -MockWith {
                     return $stubTargetResource = @{
-                        Ensure = $true
+                        Ensure   = $true
                         SiteName = 'PresentSite'
                     }
                 }
 
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -Verbose
 
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
+            }
+
+            Context 'When specifying the parameter IsGlobalCatalog' {
+                BeforeAll {
+                    Mock -CommandName Set-ADObject
+                    Mock -CommandName Get-ADDomainController {
+                        return @{
+                            Site                 = $correctSiteName
+                            Domain               = $correctDomainName
+                            IsGlobalCatalog      = $true
+                            NTDSSettingsObjectDN = $mockNtdsSettingsObjectDn
+                        }
+                    }
+                }
+
+                It 'Calls "Set-ADObject" when "IsGlobalCatalog" Should -Be "True" and does not match' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return $stubTargetResource = @{
+                            Ensure               = $true
+                            SiteName             = 'PresentSite'
+                            IsGlobalCatalog      = $false
+                        }
+                    }
+
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true -Verbose
+
+                    Assert-MockCalled Set-ADObject -Times 1 -ParameterFilter {
+                        $Replace['options'] -eq 1
+                    } @commonAssertParams
+                }
+
+                It 'Calls "Set-ADObject" when "IsGlobalCatalog" Should -Be "False" and does not match' {
+                    Mock -CommandName Get-TargetResource -MockWith {
+                        return $stubTargetResource = @{
+                            Ensure               = $true
+                            SiteName             = 'PresentSite'
+                            IsGlobalCatalog      = $true
+                        }
+                    }
+
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $false -Verbose
+
+                    Assert-MockCalled Set-ADObject -Times 1 -ParameterFilter {
+                        $Replace['options'] -eq 0
+                    } @commonAssertParams
+                }
+
+                It 'Does not call "Set-ADObject" when "IsGlobalCatalog" matches' {
+                    Mock Get-TargetResource {
+                        return $TargetResource = @{
+                            Ensure               = $true
+                            SiteName             = 'PresentSite'
+                            IsGlobalCatalog      = $true
+                        }
+                    }
+
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true -Verbose
+
+                    Assert-MockCalled Set-ADObject -Times 0 @commonAssertParams
+                }
+
+                It 'Does not call "Set-ADObject" when "IsGlobalCatalog" is not specified' {
+                    Mock Get-TargetResource {
+                        return $TargetResource = @{
+                            Ensure               = $true
+                            SiteName             = 'PresentSite'
+                            IsGlobalCatalog      = $false
+                        }
+                    }
+
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -Verbose
+
+                    Assert-MockCalled Set-ADObject -Times 0 @commonAssertParams
+                }
             }
         }
         #endregion
