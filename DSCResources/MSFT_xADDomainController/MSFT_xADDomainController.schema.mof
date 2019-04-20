@@ -2,7 +2,7 @@
 class MSFT_xADDomainController : OMI_BaseResource
 {
     [Key, Description("The FQDN of the domain the Domain Controller will be joining.")] String DomainName;
-    [Required, Description("The 'PSCredential' object containing Domain Adminstrator rights to add the Domain Controller to the domain."), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
+    [Required, Description("The 'PSCredential' object containing Domain Administrator rights to add the Domain Controller to the domain."), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
     [Required, Description("The 'PSCredential' object containing the password to use for DSRM."), EmbeddedInstance("MSFT_Credential")] String SafemodeAdministratorPassword;
     [Write, Description("The path where the database will be stored.")] String DatabasePath;
     [Write, Description("The path where the logs will be stored.")] String LogPath;
