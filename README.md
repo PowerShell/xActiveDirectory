@@ -124,6 +124,7 @@ The xADDomainController DSC resource will install and configure domain controlle
 * **`[String]` SysvolPath** _(Write)_: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the Sysvol file will be written.
 * **`[String]` SiteName** _(Write)_: Specify the name of an existing site where new domain controller will be placed.
 * **`[String]` InstallationMediaPath** _(Write)_: Specify the path of the folder containg the Installation Media created in NTDSutil.
+* **`[String]` IsGlobalCatalog** _(Write)_: Specifies if the domain controller will be a Global Catalog (GC).
 * **`[String]` Ensure** _(Read)_: The state of the Domain Controller, returned with Get.
 
 ### **xADDomainDefaultPasswordPolicy**
@@ -402,6 +403,12 @@ The xADForestProperties DSC resource will manage User Principal Name (UPN) suffi
 ### Unreleased
 
 * Added xADManagedServiceAccount resource to manage Managed Service Accounts (MSAs). [@awickham10](https://github.com/awickham10) and [@kungfu71186](https://github.com/kungfu71186)
+* Changes to xAdDomainController
+  * Added new parameter to disable or enable the Global Catalog (GC)
+    ([issue #75](https://github.com/PowerShell/xActiveDirectory/issues/75)). [Eric Foskett @Merto410](https://github.com/Merto410)
+  * Fixed a bug with the parameter `InstallationMediaPath` that it would
+    not be added if it was specified in a configuration. Now the parameter
+    `InstallationMediaPath` is correctly passed to `Install-ADDSDomainController`.
 
 ### 2.25.0.0
 

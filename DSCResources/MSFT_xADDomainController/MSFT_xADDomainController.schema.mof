@@ -9,5 +9,6 @@ class MSFT_xADDomainController : OMI_BaseResource
     [Write, Description("The path where the Sysvol will be stored.")] String SysvolPath;
     [Write, Description("The name of the site this Domain Controller will be added to.")] String SiteName;
     [Write, Description("The path of the media you want to use install the Domain Controller.")] String InstallationMediaPath;
+    [Write, Description("Specifies if the domain controller will be a Global Catalog (GC).")] Boolean IsGlobalCatalog;
     [Read, Description("The state of the Domain Controller.")] String Ensure;
 };
