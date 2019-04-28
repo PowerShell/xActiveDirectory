@@ -424,6 +424,7 @@ The xADForestProperties DSC resource will manage User Principal Name (UPN) suffi
   * Fixed a bug with the parameter `InstallationMediaPath` that it would
     not be added if it was specified in a configuration. Now the parameter
     `InstallationMediaPath` is correctly passed to `Install-ADDSDomainController`.
+  * Refactored the resource with major code cleanup and localization.
 
 ### 2.25.0.0
 

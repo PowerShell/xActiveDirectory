@@ -1,7 +1,10 @@
-#
-# xADDomainController: DSC resource to install a domain controller in Active
-# Directory.
-#
+$script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
+$script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules'
+
+$script:localizationModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'DscResource.LocalizationHelper'
+Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath 'DscResource.LocalizationHelper.psm1')
+
+$script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomainController'
 
 ## Import the common AD functions
 $adCommonFunctions = Join-Path `
@@ -69,57 +72,86 @@ function Get-TargetResource
         $SiteName
     )
 
+    Assert-Module -ModuleName 'ActiveDirectory'
+
     $returnValue = @{
         DomainName           = $DomainName
         Ensure               = $false
         IsGlobalCatalog      = $false
     }
 
+    Write-Verbose -Message (
+        $script:localizedData.ResolveDomainName -f $DomainName
+    )
+
     try
     {
-        Write-Verbose -Message "Resolving '$($DomainName)' ..."
         $domain = Get-ADDomain -Identity $DomainName -Credential $DomainAdministratorCredential
-        if ($null -ne $domain)
-        {
-            Write-Verbose -Message "Domain '$($DomainName)' is present. Looking for DCs ..."
-            try
-            {
-                $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential
-                Write-Verbose -Message "Found domain controller '$($domainControllerObject.Name)' in domain '$($domainControllerObject.Domain)'."
-                if ($domainControllerObject.Domain -eq $DomainName)
-                {
-                    Write-Verbose -Message "Current node '$($domainControllerObject.Name)' is already a domain controller for domain '$($domainControllerObject.Domain)'."
-
-                    $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
-                    $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
-
-                    $returnValue.Ensure = $true
-                    $returnValue.DatabasePath = $serviceNTDS.'DSA Working Directory'
-                    $returnValue.LogPath = $serviceNTDS.'Database log files path'
-                    $returnValue.SysvolPath = $serviceNETLOGON.SysVol -replace '\\sysvol$', ''
-                    $returnValue.SiteName = $domainControllerObject.Site
-                    $returnValue.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
-                }
-            }
-            catch
-            {
-                if ($error[0])
-                {
-                    Write-Verbose $error[0].Exception
-                }
-                Write-Verbose -Message "Current node does not host a domain controller."
-            }
-        }
     }
-    catch [System.Management.Automation.CommandNotFoundException]
+    catch
     {
-        if ($error[0])
-        {
-            Write-Verbose $error[0].Exception
-        }
-        Write-Verbose -Message "Current node is not running AD WS, and hence is not a domain controller."
+        $errorMessage = $script:localizedData.MissingDomain -f $DomainName
+        New-ObjectNotFoundException -Message $errorMessage -ErrorRecord $_
     }
-    $returnValue
+
+    Write-Verbose -Message (
+        $script:localizedData.DomainPresent -f $DomainName
+    )
+
+    <#
+        It is not possible to use `-ErrorAction 'SilentlyContinue` on the
+        cmdlet Get-ADDomainController since it will throw an error if the
+        node is not a domain controller regardless.
+    #>
+    try
+    {
+        $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential
+    }
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+    {
+        <#
+            Catches the error from Get-ADDomainController when the node
+            is not a domain controller.
+        #>
+        $domainControllerObject = $null
+    }
+    catch
+    {
+        $errorMessage = $script:localizedData.FailedEvaluatingDomainController
+        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
+
+    if ($domainControllerObject)
+    {
+        Write-Verbose -Message (
+            $script:localizedData.FoundDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+        )
+
+        if ($domainControllerObject.Domain -eq $DomainName)
+        {
+            Write-Verbose -Message (
+                $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+            )
+
+            $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
+            $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
+
+            $returnValue.Ensure = $true
+            $returnValue.DatabasePath = $serviceNTDS.'DSA Working Directory'
+            $returnValue.LogPath = $serviceNTDS.'Database log files path'
+            $returnValue.SysvolPath = $serviceNETLOGON.SysVol -replace '\\sysvol$', ''
+            $returnValue.SiteName = $domainControllerObject.Site
+            $returnValue.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
+        }
+    }
+    else
+    {
+        Write-Verbose -Message (
+            $script:localizedData.NotDomainController -f $env:COMPUTERNAME
+        )
+    }
+
+    return $returnValue
 }
 
 <#
@@ -205,27 +237,12 @@ function Set-TargetResource
 
     if ($targetResource.Ensure -eq $false)
     {
-        ## Node is not a domain controller so we promote it
-        Write-Verbose -Message "Checking if domain '$($DomainName)' is present ..."
+        Write-Verbose -Message (
+            $script:localizedData.Promoting -f $env:COMPUTERNAME, $DomainName
+        )
 
-        $domain = $null;
-
-        try
-        {
-            $domain = Get-ADDomain -Identity $DomainName -Credential $DomainAdministratorCredential
-        }
-        catch
-        {
-            if ($error[0])
-            {
-                Write-Verbose $error[0].Exception
-            }
-
-            throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Domain '$($DomainName)' could not be found.")
-        }
-
-        Write-Verbose -Message "Verified that domain '$($DomainName)' is present, continuing ..."
-        $params = @{
+        # Node is not a domain controller so we promote it.
+        $installADDSDomainControllerParameters = @{
             DomainName                    = $DomainName
             SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
             Credential                    = $DomainAdministratorCredential
@@ -233,77 +250,100 @@ function Set-TargetResource
             Force                         = $true
         }
 
-        if ($DatabasePath -ne $null)
+        if ($PSBoundParameters.ContainsKey('DatabasePath'))
         {
-            $params.Add("DatabasePath", $DatabasePath)
+            $installADDSDomainControllerParameters.Add('DatabasePath', $DatabasePath)
         }
 
-        if ($LogPath -ne $null)
+        if ($PSBoundParameters.ContainsKey('LogPath'))
         {
-            $params.Add("LogPath", $LogPath)
+            $installADDSDomainControllerParameters.Add('LogPath', $LogPath)
         }
 
-        if ($SysvolPath -ne $null)
+        if ($PSBoundParameters.ContainsKey('SysvolPath'))
         {
-            $params.Add("SysvolPath", $SysvolPath)
+            $installADDSDomainControllerParameters.Add('SysvolPath', $SysvolPath)
         }
 
-        if ($SiteName -ne $null -and $SiteName -ne "")
+        if ($PSBoundParameters.ContainsKey('SiteName') -and $SiteName)
         {
-            $params.Add("SiteName", $SiteName)
+            $installADDSDomainControllerParameters.Add('SiteName', $SiteName)
         }
 
         if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $IsGlobalCatalog -eq $false)
         {
-            $params.Add("NoGlobalCatalog", $true)
+            $installADDSDomainControllerParameters.Add('NoGlobalCatalog', $true)
         }
 
         if (-not [string]::IsNullOrWhiteSpace($InstallationMediaPath))
         {
-            $params.Add("InstallationMediaPath", $InstallationMediaPath)
+            $installADDSDomainControllerParameters.Add('InstallationMediaPath', $InstallationMediaPath)
         }
 
-        Install-ADDSDomainController @params
-        Write-Verbose -Message "Node is now a domain controller for '$($DomainName)'."
+        Install-ADDSDomainController @installADDSDomainControllerParameters
 
-        # Signal to the LCM to reboot the node to compensate for the one we
-        # suppressed from Install-ADDSDomainController
+        Write-Verbose -Message (
+            $script:localizedData.Promoted -f $env:COMPUTERNAME, $DomainName
+        )
+
+        <#
+            Signal to the LCM to reboot the node to compensate for the one we
+            suppressed from Install-ADDSDomainController
+        #>
         $global:DSCMachineStatus = 1
     }
     elseif ($targetResource.Ensure)
     {
-        ## Check if Node Global Catalog state is correct
+        # Node is a domain controller. We check if other properties are in desired state
+
+        Write-Verbose -Message (
+            $script:localizedData.IsDomainController -f $env:COMPUTERNAME, $DomainName
+        )
+
+        # Check if Node Global Catalog state is correct
         if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $targetResource.IsGlobalCatalog -ne $IsGlobalCatalog)
         {
-            ## DC is not in the expected Global Catalog state
-            Write-Verbose "Setting the Global Catalog state to '$IsGlobalCatalog'"
+            # DC is not in the expected Global Catalog state
             if ($IsGlobalCatalog)
             {
                 $value = 1
+
+                Write-Verbose -Message $script:localizedData.AddGlobalCatalog
             }
             else
             {
                 $value = 0
+
+                Write-Verbose -Message $script:localizedData.RemoveGlobalCatalog
             }
 
-            $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential -ErrorAction 'Stop'
-            if ($domainControllerObject)
+            try
             {
-                Set-ADObject -Identity $domainControllerObject.NTDSSettingsObjectDN -replace @{
-                    options = $value
-                }
+                <#
+                    It is not possible to use `-ErrorAction 'SilentlyContinue` on the
+                    cmdlet Get-ADDomainController since it will throw an error if the
+                    node is not a domain controller regardless.
+                #>
+                $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential -ErrorAction 'Stop'
             }
-            else
+            catch
             {
-                throw 'Could not get the distinguished name of the NTDSSettingsObject directory object that represents this domain controller.'
+                $errorMessage = $script:localizedData.FailedEvaluatingDomainController
+                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+            }
+
+            Set-ADObject -Identity $domainControllerObject.NTDSSettingsObjectDN -replace @{
+                options = $value
             }
         }
 
-        ## Node is a domain controller. We check if other properties are in desired state
-        if ($PSBoundParameters["SiteName"] -and $targetResource.SiteName -ne $SiteName)
+        if ($PSBoundParameters.ContainsKey('SiteName') -and $targetResource.SiteName -ne $SiteName)
         {
-            ## DC is not in correct site. Move it.
-            Write-Verbose "Moving Domain Controller from '$($targetResource.SiteName)' to '$SiteName'"
+            Write-Verbose -Message (
+                $script:localizedData.IsDomainController -f $targetResource.SiteName, $SiteName
+            )
+
+            # DC is not in correct site. Move it.
             Move-ADDirectoryServer -Identity $env:COMPUTERNAME -Site $SiteName -Credential $DomainAdministratorCredential
         }
     }
@@ -384,53 +424,43 @@ function Test-TargetResource
         $IsGlobalCatalog
     )
 
+    Write-Verbose -Message (
+        $script:localizedData.TestingConfiguration -f $env:COMPUTERNAME, $DomainName
+    )
+
     if ($PSBoundParameters.SiteName)
     {
         if (-not (Test-ADReplicationSite -SiteName $SiteName -DomainName $DomainName -Credential $DomainAdministratorCredential))
         {
-            throw (New-Object -TypeName System.InvalidOperationException -ArgumentList "Site '$($SiteName)' could not be found.")
+            $errorMessage = $script:localizedData.FailedToFindSite -f $SiteName, $DomainName
+            New-ObjectNotFoundException -Message $errorMessage
         }
     }
 
-    $isCompliant = $true
+    $getTargetResourceParameters = @{} + $PSBoundParameters
+    $getTargetResourceParameters.Remove('Debug')
+    $getTargetResourceParameters.Remove('InstallationMediaPath')
+    $getTargetResourceParameters.Remove('IsGlobalCatalog')
+    $existingResource = Get-TargetResource @getTargetResourceParameters
 
-    try
+    $isCompliant = $existingResource.Ensure
+
+    if ($PSBoundParameters.ContainsKey('SiteName') -and $existingResource.SiteName -ne $SiteName)
     {
-        $getTargetResourceParameters = @{} + $PSBoundParameters
-        $getTargetResourceParameters.Remove('Debug')
-        $getTargetResourceParameters.Remove('InstallationMediaPath')
-        $getTargetResourceParameters.Remove('IsGlobalCatalog')
-        $existingResource = Get-TargetResource @getTargetResourceParameters
-        $isCompliant = $existingResource.Ensure
+        Write-Verbose -Message (
+            $script:localizedData.WrongSite -f $existingResource.SiteName, $SiteName
+        )
 
-        if ([System.String]::IsNullOrEmpty($SiteName))
-        {
-            #If SiteName is not specified configuration is compliant
-        }
-        elseif ($existingResource.SiteName -ne $SiteName)
-        {
-            Write-Verbose "Domain Controller Site is not in a desired state. Expected '$SiteName', actual '$($existingResource.SiteName)'"
-            $isCompliant = $false
-        }
-
-        ## Check Global Catalog Config
-        if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
-        {
-            $isCompliant = $false
-        }
-    }
-    catch
-    {
-        if ($error[0])
-        {
-            Write-Verbose $error[0].Exception
-        }
-
-        Write-Verbose -Message "Domain '$($DomainName)' is NOT present on the current node."
         $isCompliant = $false
     }
 
-    $isCompliant
+    ## Check Global Catalog Config
+    if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
+    {
+        $isCompliant = $false
+    }
+
+    return $isCompliant
 }
 
 Export-ModuleMember -Function *-TargetResource

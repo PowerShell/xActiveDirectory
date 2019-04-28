@@ -51,6 +51,7 @@ try
         $testDefaultParams = @{
             DomainAdministratorCredential = $testAdminCredential
             SafemodeAdministratorPassword = $testAdminCredential
+            Verbose                       = $true
         }
 
         $commonAssertParams = @{
@@ -110,9 +111,9 @@ try
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-ADDomainController {
                     return @{
-                        Site                 = $correctSiteName
-                        Domain               = $correctDomainName
-                        IsGlobalCatalog      = $true
+                        Site            = $correctSiteName
+                        Domain          = $correctDomainName
+                        IsGlobalCatalog = $true
                     }
                 }
                 Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters' } -MockWith {
@@ -169,6 +170,7 @@ try
             $testDefaultParams = @{
                 DomainAdministratorCredential = $testAdminCredential
                 SafemodeAdministratorPassword = $testAdminCredential
+                Verbose                       = $true
             }
 
             It 'Returns "False" when "SiteName" does not match' {
@@ -177,8 +179,8 @@ try
                 }
 
                 $stubDomainController = @{
-                    Site            = $incorrectSiteName
-                    Domain          = $correctDomainName
+                    Site   = $incorrectSiteName
+                    Domain = $correctDomainName
                 }
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
@@ -370,9 +372,9 @@ try
                 It 'Calls "Set-ADObject" when "IsGlobalCatalog" Should -Be "True" and does not match' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return $stubTargetResource = @{
-                            Ensure               = $true
-                            SiteName             = 'PresentSite'
-                            IsGlobalCatalog      = $false
+                            Ensure          = $true
+                            SiteName        = 'PresentSite'
+                            IsGlobalCatalog = $false
                         }
                     }
 
@@ -386,9 +388,9 @@ try
                 It 'Calls "Set-ADObject" when "IsGlobalCatalog" Should -Be "False" and does not match' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return $stubTargetResource = @{
-                            Ensure               = $true
-                            SiteName             = 'PresentSite'
-                            IsGlobalCatalog      = $true
+                            Ensure          = $true
+                            SiteName        = 'PresentSite'
+                            IsGlobalCatalog = $true
                         }
                     }
 
@@ -402,9 +404,9 @@ try
                 It 'Does not call "Set-ADObject" when "IsGlobalCatalog" matches' {
                     Mock Get-TargetResource {
                         return $TargetResource = @{
-                            Ensure               = $true
-                            SiteName             = 'PresentSite'
-                            IsGlobalCatalog      = $true
+                            Ensure          = $true
+                            SiteName        = 'PresentSite'
+                            IsGlobalCatalog = $true
                         }
                     }
 
@@ -416,9 +418,9 @@ try
                 It 'Does not call "Set-ADObject" when "IsGlobalCatalog" is not specified' {
                     Mock Get-TargetResource {
                         return $TargetResource = @{
-                            Ensure               = $true
-                            SiteName             = 'PresentSite'
-                            IsGlobalCatalog      = $false
+                            Ensure          = $true
+                            SiteName        = 'PresentSite'
+                            IsGlobalCatalog = $false
                         }
                     }
 
