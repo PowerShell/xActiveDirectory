@@ -107,18 +107,20 @@ function Get-TargetResource
     {
         $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential
     }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+    catch
     {
         <#
             Catches the error from Get-ADDomainController when the node
             is not a domain controller.
         #>
         $domainControllerObject = $null
-    }
-    catch
-    {
-        $errorMessage = $script:localizedData.FailedEvaluatingDomainController
-        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+
+        Write-Verbose -Message (
+            $script:localizedData.FailedEvaluatingDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+        )
+
+        # Writing out the error message, in case there is a
+        Write-Verbose -Message $_.ToString()
     }
 
     if ($domainControllerObject)
