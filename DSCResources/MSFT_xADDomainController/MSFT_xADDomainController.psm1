@@ -119,7 +119,7 @@ function Get-TargetResource
         $domainControllerObject = $null
 
         Write-Verbose -Message (
-            $script:localizedData.FailedEvaluatingDomainController -f $_.ToString()
+            $script:localizedData.ConcludeNotDomainController -f $_.ToString()
         )
     }
 
