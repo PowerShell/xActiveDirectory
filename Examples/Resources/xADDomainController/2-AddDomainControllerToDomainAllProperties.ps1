@@ -43,7 +43,7 @@ Configuration xADDomainController_AddDomainControllerToDomainAllProperties_Confi
             Ensure = 'Present'
         }
 
-        xADDomainController 'DomainController1'
+        xADDomainController 'DomainControllerAllProperties'
         {
             DomainName                    = 'contoso.com'
             DomainAdministratorCredential = $DomainAdministratorCredential

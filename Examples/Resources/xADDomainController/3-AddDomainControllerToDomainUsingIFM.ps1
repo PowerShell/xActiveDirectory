@@ -43,7 +43,7 @@ Configuration xADDomainController_AddDomainControllerToDomainUsingIFM_Config
             Ensure = 'Present'
         }
 
-        xADDomainController 'DomainController1'
+        xADDomainController 'DomainControllerWithIFM'
         {
             DomainName                    = 'contoso.com'
             DomainAdministratorCredential = $DomainAdministratorCredential

@@ -43,7 +43,7 @@ Configuration xADDomainController_AddDomainControllerToDomainMinimal_Config
             Ensure = 'Present'
         }
 
-        xADDomainController 'DomainController1'
+        xADDomainController 'DomainControllerMinimal'
         {
             DomainName                    = 'contoso.com'
             DomainAdministratorCredential = $DomainAdministratorCredential
