@@ -220,8 +220,10 @@ try
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-ADDomainController -MockWith { return $stubDomainController }
                 Mock -CommandName Test-ADReplicationSite -MockWith { return $false }
-                { Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName } |
-                Should Throw "Site '$($incorrectSiteName)' could not be found."
+
+                {
+                    Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName
+                } | Should -Throw $script:localizedData.FailedToFindSite -f $incorrectSiteName, $correctDomainName
             }
 
             It 'Returns "False" when "IsGlobalCatalog" does not match' {

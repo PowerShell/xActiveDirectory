@@ -112,15 +112,15 @@ function Get-TargetResource
         <#
             Catches the error from Get-ADDomainController when the node
             is not a domain controller.
+
+            Writing out the error message, in case there is another unforseen
+            error.
         #>
         $domainControllerObject = $null
 
         Write-Verbose -Message (
-            $script:localizedData.FailedEvaluatingDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+            $script:localizedData.FailedEvaluatingDomainController -f $_.ToString()
         )
-
-        # Writing out the error message, in case there is a
-        Write-Verbose -Message $_.ToString()
     }
 
     if ($domainControllerObject)

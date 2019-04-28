@@ -3,7 +3,7 @@ ConvertFrom-StringData @'
     DomainPresent = The domain '{0}' is present. Looking for domain controllers. (ADDC0002)
     FoundDomainController = Found the domain controller '{0}' in the domain '{1}'. (ADDC0003)
     AlreadyDomainController = The current node '{0}' is already a domain controller for the domain '{1}'. (ADDC0004)
-    FailedEvaluatingDomainController = The evaluation to determine if the node is a domain controller return an error, assuming the node is not a domain controller. (ADDC0005)
+    FailedEvaluatingDomainController = The evaluation to determine if the node is a domain controller returned an error, assuming the node is not a domain controller. (ADDC0005) The error message returned: {0}
     NotDomainController = The current node '{0}' is not a domain controller. (ADDC0006)
     IsDomainController = The current node '{0}' is a domain controller for the domain '{1}'. (ADDC0007)
     MissingDomain = Current node could not find the domain '{0}'. (ADDC0008)
