@@ -223,7 +223,7 @@ try
 
                 {
                     Test-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $incorrectSiteName
-                } | Should -Throw $script:localizedData.FailedToFindSite -f $incorrectSiteName, $correctDomainName
+                } | Should -Throw ($script:localizedData.FailedToFindSite -f $incorrectSiteName, $correctDomainName)
             }
 
             It 'Returns "False" when "IsGlobalCatalog" does not match' {
