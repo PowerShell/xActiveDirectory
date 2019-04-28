@@ -84,11 +84,11 @@ function Get-TargetResource
             Write-Verbose -Message "Domain '$($DomainName)' is present. Looking for DCs ..."
             try
             {
-                $dc = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential
-                Write-Verbose -Message "Found domain controller '$($dc.Name)' in domain '$($dc.Domain)'."
-                if ($dc.Domain -eq $DomainName)
+                $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential
+                Write-Verbose -Message "Found domain controller '$($domainControllerObject.Name)' in domain '$($domainControllerObject.Domain)'."
+                if ($domainControllerObject.Domain -eq $DomainName)
                 {
-                    Write-Verbose -Message "Current node '$($dc.Name)' is already a domain controller for domain '$($dc.Domain)'."
+                    Write-Verbose -Message "Current node '$($domainControllerObject.Name)' is already a domain controller for domain '$($domainControllerObject.Domain)'."
 
                     $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
                     $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
@@ -97,8 +97,8 @@ function Get-TargetResource
                     $returnValue.DatabasePath = $serviceNTDS.'DSA Working Directory'
                     $returnValue.LogPath = $serviceNTDS.'Database log files path'
                     $returnValue.SysvolPath = $serviceNETLOGON.SysVol -replace '\\sysvol$', ''
-                    $returnValue.SiteName = $dc.Site
-                    $returnValue.IsGlobalCatalog = $dc.IsGlobalCatalog
+                    $returnValue.SiteName = $domainControllerObject.Site
+                    $returnValue.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
                 }
             }
             catch
@@ -286,10 +286,10 @@ function Set-TargetResource
                 $value = 0
             }
 
-            $dc = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential -ErrorAction 'Stop'
-            if ($dc)
+            $domainControllerObject = Get-ADDomainController -Identity $env:COMPUTERNAME -Credential $DomainAdministratorCredential -ErrorAction 'Stop'
+            if ($domainControllerObject)
             {
-                Set-ADObject -Identity $dc.NTDSSettingsObjectDN -replace @{
+                Set-ADObject -Identity $domainControllerObject.NTDSSettingsObjectDN -replace @{
                     options = $value
                 }
             }
