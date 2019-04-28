@@ -284,7 +284,7 @@ try
                 }
                 Mock -CommandName Install-ADDSDomainController -ParameterFilter { $SiteName -eq $correctSiteName }
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
                 Assert-MockCalled -CommandName Install-ADDSDomainController -Times 1 -ParameterFilter { $SiteName -eq $correctSiteName }
             }
@@ -303,7 +303,7 @@ try
                 }
                 Mock -CommandName Install-ADDSDomainController -ParameterFilter { $InstallationMediaPath -eq $correctInstallationMediaPath }
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -InstallationMediaPath $correctInstallationMediaPath -Verbose
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -InstallationMediaPath $correctInstallationMediaPath
 
                 Assert-MockCalled -CommandName Install-ADDSDomainController -Times 1 `
                     -ParameterFilter { $InstallationMediaPath -eq $correctInstallationMediaPath }  @commonAssertParams
@@ -320,7 +320,7 @@ try
                 Mock -CommandName Move-ADDirectoryServer -ParameterFilter { $Site.ToString() -eq $correctSiteName }
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
                 # FYI: This test will fail when run locally, but should succeed on the build server
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 1 -ParameterFilter { $Site.ToString() -eq $correctSiteName } @commonAssertParams
@@ -336,7 +336,7 @@ try
 
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName -Verbose
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -SiteName $correctSiteName
 
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
             }
@@ -351,7 +351,7 @@ try
 
                 Mock -CommandName Move-ADDirectoryServer
 
-                Set-TargetResource @testDefaultParams -DomainName $correctDomainName -Verbose
+                Set-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                 Assert-MockCalled -CommandName Move-ADDirectoryServer -Times 0 @commonAssertParams
             }
@@ -378,7 +378,7 @@ try
                         }
                     }
 
-                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true -Verbose
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true
 
                     Assert-MockCalled Set-ADObject -Times 1 -ParameterFilter {
                         $Replace['options'] -eq 1
@@ -394,7 +394,7 @@ try
                         }
                     }
 
-                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $false -Verbose
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $false
 
                     Assert-MockCalled Set-ADObject -Times 1 -ParameterFilter {
                         $Replace['options'] -eq 0
@@ -410,7 +410,7 @@ try
                         }
                     }
 
-                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true -Verbose
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -IsGlobalCatalog $true
 
                     Assert-MockCalled Set-ADObject -Times 0 @commonAssertParams
                 }
@@ -424,7 +424,7 @@ try
                         }
                     }
 
-                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName -Verbose
+                    Set-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                     Assert-MockCalled Set-ADObject -Times 0 @commonAssertParams
                 }
