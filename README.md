@@ -99,7 +99,6 @@ The xADDomain resource creates a new domain in a new forest or a child domain in
 * **`[String]` ParentDomainName** _(Write)_: Fully qualified name of the parent domain.
 * **`[PSCredential]` DomainAdministratorCredential** _(Required)_: Credentials used to query for domain existence.
   * _Note: These are NOT used during domain creation._ During an Active Directory deployment the local administrator credentials are used for the domain administrator.
-
 * **`[PSCredential]` SafemodeAdministratorPassword** _(Required)_: Password for the administrator account when the computer is started in Safe Mode.
 * **`[PSCredential]` DnsDelegationCredential** _(Write)_: Credential used for creating DNS delegation.
 * **`[String]` DomainNetBIOSName** _(Write)_: Specifies the NetBIOS name for the new domain.
@@ -117,7 +116,10 @@ The xADDomain resource creates a new domain in a new forest or a child domain in
 The xADDomainController DSC resource will install and configure domain controllers in Active Directory.
 
 * **`[String]` DomainName** _(Key)_: The fully qualified domain name for the domain where the domain controller will be present.
-* **`[PSCredential]` DomainAdministratorCredential** _(Required)_: Specifies the credential for the account used to install the domain controller.
+* **`[PSCredential]` DomainAdministratorCredential** _(Required)_: Specifies
+  the credential for the account used to install the domain controller.
+  This account must have permission to access the other domain controllers
+  in the domain to be able replicate domain information.
 * **`[PSCredential]` SafemodeAdministratorPassword** _(Required)_: Password for the administrator account when the computer is started in Safe Mode.
 * **`[String]` DatabasePath** _(Write)_: Specifies the fully qualified, non-Universal Naming Convention (UNC) path to a directory on a fixed disk of the local computer that contains the domain database.
 * **`[String]` LogPath** _(Write)_: Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation will be written.

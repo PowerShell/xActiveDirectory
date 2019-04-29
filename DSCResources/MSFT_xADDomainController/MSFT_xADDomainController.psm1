@@ -20,7 +20,9 @@ Import-Module -Name $adCommonFunctions
         Provide the FQDN of the domain the Domain Controller is being added to.
 
     .PARAMETER DomainAdministrationCredential
-        Provide the Domain Admin credentials to be able to promote a new Domain Controller. This is a PSCredential.
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
     .PARAMETER SafemodeAdministratorPassword
         Provide a password that will be used to set the DSRM password. This is a PSCredential.
@@ -164,7 +166,9 @@ function Get-TargetResource
         Provide the FQDN of the domain the Domain Controller is being added to.
 
     .PARAMETER DomainAdministrationCredential
-        Provide the Domain Admin credentials to be able to promote a new Domain Controller. This is a PSCredential.
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
     .PARAMETER SafemodeAdministratorPassword
         Provide a password that will be used to set the DSRM password. This is a PSCredential.
@@ -357,7 +361,9 @@ function Set-TargetResource
         Provide the FQDN of the domain the Domain Controller is being added to.
 
     .PARAMETER DomainAdministrationCredential
-        Provide the Domain Admin credentials to be able to promote a new Domain Controller. This is a PSCredential.
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
     .PARAMETER SafemodeAdministratorPassword
         Provide a password that will be used to set the DSRM password. This is a PSCredential.
