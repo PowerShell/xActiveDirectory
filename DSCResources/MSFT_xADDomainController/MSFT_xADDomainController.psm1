@@ -74,7 +74,7 @@ function Get-TargetResource
 
     Assert-Module -ModuleName 'ActiveDirectory'
 
-    $returnValue = @{
+    $getTargetResourceResult = @{
         DomainName           = $DomainName
         Ensure               = $false
         IsGlobalCatalog      = $false
@@ -138,12 +138,12 @@ function Get-TargetResource
             $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
             $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
 
-            $returnValue.Ensure = $true
-            $returnValue.DatabasePath = $serviceNTDS.'DSA Working Directory'
-            $returnValue.LogPath = $serviceNTDS.'Database log files path'
-            $returnValue.SysvolPath = $serviceNETLOGON.SysVol -replace '\\sysvol$', ''
-            $returnValue.SiteName = $domainControllerObject.Site
-            $returnValue.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
+            $getTargetResourceResult.Ensure = $true
+            $getTargetResourceResult.DatabasePath = $serviceNTDS.'DSA Working Directory'
+            $getTargetResourceResult.LogPath = $serviceNTDS.'Database log files path'
+            $getTargetResourceResult.SysvolPath = $serviceNETLOGON.SysVol -replace '\\sysvol$', ''
+            $getTargetResourceResult.SiteName = $domainControllerObject.Site
+            $getTargetResourceResult.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
         }
     }
     else
@@ -153,7 +153,7 @@ function Get-TargetResource
         )
     }
 
-    return $returnValue
+    return $getTargetResourceResult
 }
 
 <#
@@ -445,7 +445,7 @@ function Test-TargetResource
     $getTargetResourceParameters.Remove('IsGlobalCatalog')
     $existingResource = Get-TargetResource @getTargetResourceParameters
 
-    $isCompliant = $existingResource.Ensure
+    $testTargetResourceResult = $existingResource.Ensure
 
     if ($PSBoundParameters.ContainsKey('SiteName') -and $existingResource.SiteName -ne $SiteName)
     {
@@ -453,16 +453,16 @@ function Test-TargetResource
             $script:localizedData.WrongSite -f $existingResource.SiteName, $SiteName
         )
 
-        $isCompliant = $false
+        $testTargetResourceResult = $false
     }
 
     ## Check Global Catalog Config
     if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
     {
-        $isCompliant = $false
+        $testTargetResourceResult = $false
     }
 
-    return $isCompliant
+    return $testTargetResourceResult
 }
 
 Export-ModuleMember -Function *-TargetResource
