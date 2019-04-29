@@ -121,7 +121,7 @@ controllers in Active Directory.
 >without the domain name, then the cmdlet `Install-ADDSDomainController` will
 >seemingly halt (without reporting an error) when trying to replicate
 >information from another domain controller.
->Make sure to use a correct domain account with the correct permssion as
+>Make sure to use a correct domain account with the correct permission as
 >the account for the parameter `DomainAdministratorCredential`.
 
 * **`[String]` DomainName** _(Key)_: The fully qualified domain name for the domain where the domain controller will be present.
