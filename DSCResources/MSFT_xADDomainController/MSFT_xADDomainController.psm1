@@ -306,13 +306,13 @@ function Set-TargetResource
             # DC is not in the expected Global Catalog state
             if ($IsGlobalCatalog)
             {
-                $value = 1
+                $globalCatalogOptionValue = 1
 
                 Write-Verbose -Message $script:localizedData.AddGlobalCatalog
             }
             else
             {
-                $value = 0
+                $globalCatalogOptionValue = 0
 
                 Write-Verbose -Message $script:localizedData.RemoveGlobalCatalog
             }
@@ -333,7 +333,7 @@ function Set-TargetResource
             }
 
             Set-ADObject -Identity $domainControllerObject.NTDSSettingsObjectDN -replace @{
-                options = $value
+                options = $globalCatalogOptionValue
             }
         }
 
