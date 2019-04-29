@@ -14,7 +14,7 @@ Import-Module -Name $adCommonFunctions
 
 <#
     .SYNOPSIS
-        Returns the current state of the certificate that may need to be requested.
+        Returns the current state of the domain controller.
 
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
@@ -158,7 +158,7 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-        Returns the current state of the certificate that may need to be requested.
+        Installs, or change properties on, a domain controller.
 
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
@@ -230,9 +230,7 @@ function Set-TargetResource
         $IsGlobalCatalog
     )
 
-    # Debug can pause Install-ADDSDomainController, so we remove it.
     $getTargetResourceParameters = @{} + $PSBoundParameters
-    $getTargetResourceParameters.Remove('Debug')
     $getTargetResourceParameters.Remove('InstallationMediaPath')
     $getTargetResourceParameters.Remove('IsGlobalCatalog')
     $targetResource = Get-TargetResource @getTargetResourceParameters
@@ -353,7 +351,7 @@ function Set-TargetResource
 
 <#
     .SYNOPSIS
-        Returns the current state of the certificate that may need to be requested.
+        Determines if the domain controller is in desired state.
 
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
@@ -440,12 +438,11 @@ function Test-TargetResource
     }
 
     $getTargetResourceParameters = @{} + $PSBoundParameters
-    $getTargetResourceParameters.Remove('Debug')
     $getTargetResourceParameters.Remove('InstallationMediaPath')
     $getTargetResourceParameters.Remove('IsGlobalCatalog')
     $existingResource = Get-TargetResource @getTargetResourceParameters
 
-    $testTargetResourceResult = $existingResource.Ensure
+    $testTargetResourceReturnValue = $existingResource.Ensure
 
     if ($PSBoundParameters.ContainsKey('SiteName') -and $existingResource.SiteName -ne $SiteName)
     {
@@ -453,16 +450,16 @@ function Test-TargetResource
             $script:localizedData.WrongSite -f $existingResource.SiteName, $SiteName
         )
 
-        $testTargetResourceResult = $false
+        $testTargetResourceReturnValue = $false
     }
 
     ## Check Global Catalog Config
     if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
     {
-        $testTargetResourceResult = $false
+        $testTargetResourceReturnValue = $false
     }
 
-    return $testTargetResourceResult
+    return $testTargetResourceReturnValue
 }
 
 Export-ModuleMember -Function *-TargetResource
