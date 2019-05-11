@@ -187,6 +187,18 @@ function Get-TargetResource
         #>
         $computerObjectProperties = Convert-PropertyMapToObjectProperties -PropertyMap $script:computerObjectPropertyMap
 
+        <#
+            When the property ServicePrincipalName is read with Get-ADComputer
+            the property name must be 'ServicePrincipalNames', but when it is
+            written with Set-ADComputer the property name must be
+            'ServicePrincipalName'. This difference is handled here.
+        #>
+        $computerObjectProperties = @($computerObjectProperties | Where-Object -FilterScript {
+                $_ -ne 'ServicePrincipalName'
+            })
+
+        $computerObjectProperties += @('ServicePrincipalNames')
+
         Write-Verbose -Message ($script:localizedData.RetrievingComputerAccount -f $ComputerName)
 
         $getADComputerParameters = Get-ADCommonParameters @PSBoundParameters
@@ -439,11 +451,8 @@ function Test-TargetResource
         else
         {
             <#
-                - Ignores the parameter Ensure since we have already evaluated
-                  it to get here.
-                - Ignores the parameter ComputerName because the value of
-                  the parameter Ensure is set depending on the existence of
-                  the ComputerName in Active Directory.
+                - Ignores the parameter ComputerName since we are not supporting
+                  renaming a computer account.
                 - Ignore to compare the parameter ServicePrincipalNames here
                   because it needs a special comparison, so it is handled
                   afterwards.
@@ -452,8 +461,10 @@ function Test-TargetResource
             $compareTargetResourceStateParameters = @{
                 CurrentValues    = $getTargetResourceResult
                 DesiredValues    = $PSBoundParameters
+                # This gives an array of properties to compare.
+                Properties       = $script:computerObjectPropertyMap.ParameterName
+                # But these properties
                 IgnoreProperties = @(
-                    'Ensure'
                     'ComputerName'
                     'ServicePrincipalNames'
                     'Enabled'
@@ -742,7 +753,7 @@ function Set-TargetResource
                     $startProcessParameters = @{
                         FilePath     = 'djoin.exe'
                         ArgumentList = $dJoinArguments
-                        Timeout = 300
+                        Timeout      = 300
                     }
 
                     $dJoinProcessExitCode = Start-ProcessWithTimeout @startProcessParameters

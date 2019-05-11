@@ -487,54 +487,54 @@ try
                         # One test case per property with a value that differs from the desired state.
                         $testCases_Properties = @(
                             @{
-                                PropertyName = 'Location'
-                                Value        = 'NewLocation'
+                                ParameterName = 'Location'
+                                Value         = 'NewLocation'
                             },
                             @{
-                                PropertyName = 'DnsHostName'
-                                Value        = 'New@contoso.com'
+                                ParameterName = 'DnsHostName'
+                                Value         = 'New@contoso.com'
                             },
                             @{
-                                PropertyName = 'ServicePrincipalName'
-                                Value        = @('spn/new')
+                                ParameterName = 'ServicePrincipalNames'
+                                Value         = @('spn/new')
                             },
                             @{
-                                PropertyName = 'UserPrincipalName'
-                                Value        = 'New@contoso.com'
+                                ParameterName = 'UserPrincipalName'
+                                Value         = 'New@contoso.com'
                             },
                             @{
-                                PropertyName = 'DisplayName'
-                                Value        = 'New'
+                                ParameterName = 'DisplayName'
+                                Value         = 'New'
                             },
                             @{
-                                PropertyName = 'Path'
-                                Value        = 'OU=New,CN=Computers,DC=contoso,DC=com'
+                                ParameterName = 'Path'
+                                Value         = 'OU=New,CN=Computers,DC=contoso,DC=com'
                             },
                             @{
-                                PropertyName = 'Description'
-                                Value        = 'New description'
+                                ParameterName = 'Description'
+                                Value         = 'New description'
                             },
                             @{
-                                PropertyName = 'Manager'
-                                Value        = 'CN=NewManager,CN=Users,DC=contoso,DC=com'
+                                ParameterName = 'Manager'
+                                Value         = 'CN=NewManager,CN=Users,DC=contoso,DC=com'
                             }
                         )
                     }
 
-                    It 'Should return $false when property <PropertyName> is not in desired state' -TestCases $testCases_Properties {
+                    It 'Should return $false when property <ParameterName> is not in desired state' -TestCases $testCases_Properties {
                         param
                         (
                             [Parameter()]
-                            $PropertyName,
+                            $ParameterName,
 
                             [Parameter()]
                             $Value
                         )
 
                         $testTargetResourceParameters = @{
-                            ComputerName  = $mockComputerNamePresent
-                            $PropertyName = $Value
-                            Verbose       = $true
+                            ComputerName   = $mockComputerNamePresent
+                            $ParameterName = $Value
+                            Verbose        = $true
                         }
 
                         $testTargetResourceResult = Test-TargetResource @testTargetResourceParameters
@@ -872,11 +872,11 @@ try
                         }
 
                         $setTargetResourceParameters = @{
-                            ComputerName = $mockComputerNamePresent
-                            Path = $mockParentContainer
+                            ComputerName     = $mockComputerNamePresent
+                            Path             = $mockParentContainer
                             DomainController = 'dc01.contoso.com'
-                            RequestFile  = 'c:\ODJTest.txt'
-                            Verbose      = $true
+                            RequestFile      = 'c:\ODJTest.txt'
+                            Verbose          = $true
                         }
                     }
 
