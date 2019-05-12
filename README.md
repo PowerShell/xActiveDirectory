@@ -410,6 +410,7 @@ The xADServicePrincipalName DSC resource will manage service principal names.
 * **`[Boolean]` TrustedForDelegation** _(Write)_: Specifies whether an account is trusted for Kerberos delegation (default $false).
 * **`[Boolean]` RestoreFromRecycleBin** _(Write)_: Indicates whether or not the user object should first tried to be restored from the recycle bin before creating a new user object.
 * **`[String]` DistinguishedName** _(Read)_: The user distinguished name, returned with Get.
+**`[String]` ServicePrincipalNames** _(Write)_: Specifies the service principal names for the user account.
 
 ### **xWaitForADDomain**
 

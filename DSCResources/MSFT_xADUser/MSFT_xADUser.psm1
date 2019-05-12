@@ -78,6 +78,7 @@ $adPropertyMap = @(
     @{ Parameter = 'PasswordNeverExpires'; UseCmdletParameter = $true; }
     @{ Parameter = 'CannotChangePassword'; UseCmdletParameter = $true; }
     @{ Parameter = 'TrustedForDelegation'; UseCmdletParameter = $true; }
+    @{ Parameter = 'ServicePrincipalNames'; }
 )
 
 function Get-TargetResource
@@ -301,7 +302,7 @@ function Get-TargetResource
         [System.String]
         $HomePhone,
 
-         # Specifies the user's pager number (ldapDisplayName 'pager')
+        # Specifies the user's pager number (ldapDisplayName 'pager')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -358,7 +359,7 @@ function Get-TargetResource
 
         # Specifies the authentication context type when testing user passwords #61
         [Parameter()]
-        [ValidateSet('Default','Negotiate')]
+        [ValidateSet('Default', 'Negotiate')]
         [System.String]
         $PasswordAuthentication = 'Default',
 
@@ -372,7 +373,13 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.Boolean]
-        $RestoreFromRecycleBin
+        $RestoreFromRecycleBin,
+
+        # Specifies the service principal names registered on the user account
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String[]]
+        $ServicePrincipalNames
     )
 
     Assert-Module -ModuleName 'ActiveDirectory';
@@ -667,7 +674,7 @@ function Test-TargetResource
         [System.String]
         $HomePhone,
 
-         # Specifies the user's pager number (ldapDisplayName 'pager')
+        # Specifies the user's pager number (ldapDisplayName 'pager')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -724,7 +731,7 @@ function Test-TargetResource
 
         # Specifies the authentication context type when testing user passwords #61
         [Parameter()]
-        [ValidateSet('Default','Negotiate')]
+        [ValidateSet('Default', 'Negotiate')]
         [System.String]
         $PasswordAuthentication = 'Default',
 
@@ -738,7 +745,13 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.Boolean]
-        $RestoreFromRecycleBin
+        $RestoreFromRecycleBin,
+
+        # Specifies the service principal names registered on the user account
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String[]]
+        $ServicePrincipalNames
     )
 
     Assert-Parameters @PSBoundParameters;
@@ -764,9 +777,9 @@ function Test-TargetResource
             if ($parameter -eq 'Password' -and $PasswordNeverResets -eq $false)
             {
                 $testPasswordParams = @{
-                    Username = $UserName;
-                    Password = $Password;
-                    DomainName = $DomainName;
+                    Username               = $UserName;
+                    Password               = $Password;
+                    DomainName             = $DomainName;
                     PasswordAuthentication = $PasswordAuthentication;
                 }
                 if ($DomainAdministratorCredential)
@@ -786,6 +799,21 @@ function Test-TargetResource
                 if (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                 {
                     # Both values are null/empty and therefore we are compliant
+                }
+                elseif ($parameter -eq 'ServicePrincipalNames')
+                {
+                    $testMembersParams = @{
+                        ExistingMembers = $targetResource.ServicePrincipalNames -as [System.String[]];
+                        Members         = $ServicePrincipalNames;
+                    }
+                    if (-not (Test-Members @testMembersParams))
+                    {
+                        $existingSPNs = $testMembersParams['ExistingMembers'] -join ',';
+                        $desiredSPNs = $ServicePrincipalNames -join ',';
+                        Write-Verbose -Message ($LocalizedData.ADUserNotDesiredPropertyState -f `
+                                'ServicePrincipalNames', $desiredSPNs, $existingSPNs);
+                        $isCompliant = $false;
+                    }
                 }
                 elseif ($PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
@@ -1020,7 +1048,7 @@ function Set-TargetResource
         [System.String]
         $HomePhone,
 
-         # Specifies the user's pager number (ldapDisplayName 'pager')
+        # Specifies the user's pager number (ldapDisplayName 'pager')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -1077,7 +1105,7 @@ function Set-TargetResource
 
         # Specifies the authentication context type when testing user passwords #61
         [Parameter()]
-        [ValidateSet('Default','Negotiate')]
+        [ValidateSet('Default', 'Negotiate')]
         [System.String]
         $PasswordAuthentication = 'Default',
 
@@ -1091,7 +1119,13 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.Boolean]
-        $RestoreFromRecycleBin
+        $RestoreFromRecycleBin,
+
+        # Specifies the service principal names registered on the user account
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String[]]
+        $ServicePrincipalNames
     )
 
     Assert-Parameters @PSBoundParameters;
@@ -1106,7 +1140,7 @@ function Set-TargetResource
         if ($targetResource.Ensure -eq 'Absent')
         {
             # Try to restore account if it exists
-            if($RestoreFromRecycleBin)
+            if ($RestoreFromRecycleBin)
             {
                 Write-Verbose -Message ($LocalizedData.RestoringUser -f $UserName)
                 $restoreParams = Get-ADCommonParameters @PSBoundParameters
@@ -1134,8 +1168,8 @@ function Set-TargetResource
         }
 
         $setADUserParams = Get-ADCommonParameters @PSBoundParameters;
-        $replaceUserProperties = @{};
-        $removeUserProperties = @{};
+        $replaceUserProperties = @{ };
+        $removeUserProperties = @{ };
         foreach ($parameter in $PSBoundParameters.Keys)
         {
             # Only check/action properties specified/declared parameters that match one of the function's
@@ -1171,6 +1205,12 @@ function Set-TargetResource
                     # We cannot enable/disable an account with -Add or -Replace parameters, but inform that
                     # we will change this as it is out of compliance (it always gets set anyway)
                     Write-Verbose -Message ($LocalizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter);
+                }
+                elseif ($parameter -eq 'ServicePrincipalNames')
+                {
+                    Write-Verbose -Message ($LocalizedData.UpdatingADUserProperty -f `
+                            'ServicePrincipalNames', ($ServicePrincipalNames -join ','));
+                    $replaceUserProperties['ServicePrincipalName'] = $ServicePrincipalNames;
                 }
                 elseif ($PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
@@ -1273,7 +1313,7 @@ function Assert-Parameters
     if (($PSBoundParameters.ContainsKey('Password')) -and ($Enabled -eq $false))
     {
         $throwInvalidArgumentErrorParams = @{
-            ErrorId = 'xADUser_DisabledAccountPasswordConflict';
+            ErrorId      = 'xADUser_DisabledAccountPasswordConflict';
             ErrorMessage = $LocalizedData.PasswordParameterConflictError -f 'Enabled', $false, 'Password';
         }
         ThrowInvalidArgumentError @throwInvalidArgumentErrorParams;
@@ -1308,7 +1348,7 @@ function Test-Password
 
         # Specifies the authentication context type when testing user passwords #61
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Default','Negotiate')]
+        [ValidateSet('Default', 'Negotiate')]
         [System.String]
         $PasswordAuthentication
     )
@@ -1319,20 +1359,20 @@ function Test-Password
     if ($DomainAdministratorCredential)
     {
         $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext(
-                                [System.DirectoryServices.AccountManagement.ContextType]::Domain,
-                                $DomainName,
-                                $DomainAdministratorCredential.UserName,
-                                $DomainAdministratorCredential.GetNetworkCredential().Password
-                            );
+            [System.DirectoryServices.AccountManagement.ContextType]::Domain,
+            $DomainName,
+            $DomainAdministratorCredential.UserName,
+            $DomainAdministratorCredential.GetNetworkCredential().Password
+        );
     }
     else
     {
         $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext(
-                                [System.DirectoryServices.AccountManagement.ContextType]::Domain,
-                                $DomainName,
-                                $null,
-                                $null
-                            );
+            [System.DirectoryServices.AccountManagement.ContextType]::Domain,
+            $DomainName,
+            $null,
+            $null
+        );
     }
     Write-Verbose -Message ($LocalizedData.CheckingADUserPassword -f $UserName);
 
@@ -1342,8 +1382,8 @@ function Test-Password
             $UserName,
             $Password.GetNetworkCredential().Password,
             [System.DirectoryServices.AccountManagement.ContextOptions]::Negotiate -bor
-                [System.DirectoryServices.AccountManagement.ContextOptions]::Signing -bor
-                    [System.DirectoryServices.AccountManagement.ContextOptions]::Sealing
+            [System.DirectoryServices.AccountManagement.ContextOptions]::Signing -bor
+            [System.DirectoryServices.AccountManagement.ContextOptions]::Sealing
         );
     }
     else

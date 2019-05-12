@@ -1,12 +1,12 @@
-$Global:DSCModuleName      = 'xActiveDirectory'
-$Global:DSCResourceName    = 'MSFT_xADUser'
+$Global:DSCModuleName = 'xActiveDirectory'
+$Global:DSCResourceName = 'MSFT_xADUser'
 
 #region HEADER
 [String] $moduleRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))
 if ( (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -25,21 +25,22 @@ try
     InModuleScope $Global:DSCResourceName {
         $testPresentParams = @{
             DomainName = 'contoso.com'
-            UserName = 'TestUser'
-            Ensure = 'Present'
+            UserName   = 'TestUser'
+            Ensure     = 'Present'
         }
 
         $testAbsentParams = $testPresentParams.Clone()
         $testAbsentParams['Ensure'] = 'Absent'
 
         $fakeADUser = @{
-            DistinguishedName = "CN=$($testPresentParams.UserName),CN=Users,DC=contoso,DC=com"
-            Enabled = $true
-            GivenName = ''
-            Name = $testPresentParams.UserName
-            SamAccountName = $testPresentParams.UserName
-            Surname = ''
-            UserPrincipalName = ''
+            DistinguishedName     = "CN=$($testPresentParams.UserName),CN=Users,DC=contoso,DC=com"
+            Enabled               = $true
+            GivenName             = ''
+            Name                  = $testPresentParams.UserName
+            SamAccountName        = $testPresentParams.UserName
+            Surname               = ''
+            UserPrincipalName     = ''
+            ServicePrincipalNames = @('spn/a', 'spn/b')
         }
 
         $testDomainController = 'TESTDC'
@@ -49,7 +50,7 @@ try
             'UserPrincipalName', 'DisplayName', 'Path', 'GivenName', 'Initials', 'Surname', 'Description', 'StreetAddress',
             'POBox', 'City', 'State', 'PostalCode', 'Country', 'Department', 'Division', 'Company', 'Office', 'JobTitle',
             'EmailAddress', 'EmployeeID', 'EmployeeNumber', 'HomeDirectory', 'HomeDrive', 'HomePage', 'ProfilePath',
-            'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone','CommonName'
+            'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone', 'CommonName'
         )
         $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword', 'TrustedForDelegation', 'Enabled');
 
@@ -185,7 +186,7 @@ try
                     $validADUser = $testPresentParams.Clone()
                     $invalidADUser = $testPresentParams.Clone()
                     Mock -CommandName Get-TargetResource -MockWith {
-                        $invalidADUser[$testParameter] = $testParameterValue.Substring(0, ([System.Int32] $testParameterValue.Length/2))
+                        $invalidADUser[$testParameter] = $testParameterValue.Substring(0, ([System.Int32] $testParameterValue.Length / 2))
                         return $invalidADUser
                     }
 
@@ -467,8 +468,8 @@ try
                     $script:mockCounter = 0
 
                     Mock -CommandName Restore-ADCommonObject -MockWith { return [PSCustomObject]@{
-                        ObjectClass = 'computer'
-                    }}
+                            ObjectClass = 'computer'
+                        } }
 
                     Set-TargetResource @restoreParam
 
@@ -497,7 +498,7 @@ try
 
                     $script:mockCounter = 0
 
-                    Mock -CommandName Restore-ADCommonObject -MockWith {throw (New-Object -TypeName System.InvalidOperationException)}
+                    Mock -CommandName Restore-ADCommonObject -MockWith { throw (New-Object -TypeName System.InvalidOperationException) }
 
                     { Set-TargetResource @restoreParam } | Should -Throw
 
