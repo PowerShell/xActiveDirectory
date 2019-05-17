@@ -1,16 +1,16 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
 param()
 
-$Global:DSCModuleName      = 'xActiveDirectory' # Example xNetworking
-$Global:DSCResourceName    = 'MSFT_xADComputer' # Example MSFT_xFirewall
+$Global:DSCModuleName = 'xActiveDirectory' # Example xNetworking
+$Global:DSCResourceName = 'MSFT_xADComputer' # Example MSFT_xFirewall
 
 #region HEADER
 # Unit Test Template Version: 1.1.0
 [String] $moduleRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path))
 if ( (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-     (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+    (-not (Test-Path -Path (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git',(Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $moduleRoot -ChildPath '\DSCResource.Tests\'))
 }
 
 Import-Module (Join-Path -Path $moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
@@ -31,27 +31,27 @@ try
     InModuleScope $Global:DSCResourceName {
         $testPresentParams = @{
             ComputerName = 'TESTCOMPUTER'
-            Ensure = 'Present'
+            Ensure       = 'Present'
         }
 
         $testAbsentParams = $testPresentParams.Clone()
         $testAbsentParams['Ensure'] = 'Absent'
 
         $fakeADComputer = @{
-            DistinguishedName = "CN=$($testPresentParams.ComputerName),CN=Computers,DC=contoso,DC=com"
-            Enabled = $true
-            Name = $testPresentParams.ComputerName
-            SamAccountName = '{0}$' -f $testPresentParams.ComputerName
-            SID = 'S-1-5-21-1409167834-891301383-2860967316-1143'
-            ObjectClass = 'computer'
-            ObjectGUID = [System.Guid]::NewGuid()
-            UserPrincipalName = 'TESTCOMPUTER@contoso.com'
-            ServicePrincipalNames = @('spn/a','spn/b')
-            Location = 'Test location'
-            DnsHostName = '{0}.contoso.com' -f $testPresentParams.ComputerName
-            DisplayName = $testPresentParams.ComputerName
-            Description = 'Test description'
-            ManagedBy = 'CN=Manager,CN=Users,DC=contoso,DC=com'
+            DistinguishedName     = "CN=$($testPresentParams.ComputerName),CN=Computers,DC=contoso,DC=com"
+            Enabled               = $true
+            Name                  = $testPresentParams.ComputerName
+            SamAccountName        = '{0}$' -f $testPresentParams.ComputerName
+            SID                   = 'S-1-5-21-1409167834-891301383-2860967316-1143'
+            ObjectClass           = 'computer'
+            ObjectGUID            = [System.Guid]::NewGuid()
+            UserPrincipalName     = 'TESTCOMPUTER@contoso.com'
+            ServicePrincipalNames = @('spn/a', 'spn/b')
+            Location              = 'Test location'
+            DnsHostName           = '{0}.contoso.com' -f $testPresentParams.ComputerName
+            DisplayName           = $testPresentParams.ComputerName
+            Description           = 'Test description'
+            ManagedBy             = 'CN=Manager,CN=Users,DC=contoso,DC=com'
         }
 
         $testDomainController = 'TESTDC'
@@ -63,25 +63,25 @@ try
             It "Returns a 'System.Collections.Hashtable' object type" {
                 Mock -CommandName Get-ADComputer -MockWith { return [PSCustomObject] $fakeADComputer }
 
-                $adUser = Get-TargetResource @testPresentParams
+                $adComputer = Get-TargetResource @testPresentParams
 
-                $adUser -is [System.Collections.Hashtable] | Should Be $true
+                $adComputer -is [System.Collections.Hashtable] | Should Be $true
             }
 
             It "Returns 'Ensure' is 'Present' when user account exists" {
                 Mock -CommandName Get-ADComputer -MockWith { return [PSCustomObject] $fakeADComputer }
 
-                $adUser = Get-TargetResource @testPresentParams
+                $adComputer = Get-TargetResource @testPresentParams
 
-                $adUser.Ensure | Should Be 'Present'
+                $adComputer.Ensure | Should Be 'Present'
             }
 
             It "Returns 'Ensure' is 'Absent' when user account does not exist" {
                 Mock -CommandName Get-ADComputer -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
 
-                $adUser = Get-TargetResource @testPresentParams
+                $adComputer = Get-TargetResource @testPresentParams
 
-                $adUser.Ensure | Should Be 'Absent'
+                $adComputer.Ensure | Should Be 'Absent'
             }
 
             It "Calls 'Get-ADComputer' with 'Server' parameter when 'DomainController' specified" {
@@ -167,7 +167,7 @@ try
                     $testValidPresentParams[$testParameter] = $testParameterValue
                     $invalidADComputer = $testPresentParams.Clone()
                     Mock -CommandName Get-TargetResource -MockWith {
-                        $invalidADComputer[$testParameter] = $testParameterValue.Substring(0, ([System.Int32] $testParameterValue.Length/2))
+                        $invalidADComputer[$testParameter] = $testParameterValue.Substring(0, ([System.Int32] $testParameterValue.Length / 2))
                         return $invalidADComputer
                     }
 
@@ -255,7 +255,7 @@ try
                 }
 
                 It "Passes when computer account '$testParameter' matches multiple AD account property" {
-                    $testParameterValue = @('Entry1','Entry2')
+                    $testParameterValue = @('Entry1', 'Entry2')
                     $testValidPresentParams = $testPresentParams.Clone()
                     $testValidPresentParams[$testParameter] = $testParameterValue
                     $validADComputer = $testPresentParams.Clone()
@@ -268,7 +268,7 @@ try
                 }
 
                 It "Fails when computer account '$testParameter' does not match AD account property count" {
-                    $testParameterValue = @('Entry1','Entry2')
+                    $testParameterValue = @('Entry1', 'Entry2')
                     $testValidPresentParams = $testPresentParams.Clone()
                     $testValidPresentParams[$testParameter] = $testParameterValue
                     $validADComputer = $testPresentParams.Clone()
@@ -501,7 +501,7 @@ try
             }
 
             It "Calls 'Set-ADComputer' with 'ServicePrincipalNames' when specified" {
-                $testSPNs = @('spn/a','spn/b')
+                $testSPNs = @('spn/a', 'spn/b')
                 Mock -CommandName Get-ADComputer -MockWith { return $fakeADComputer }
                 Mock -CommandName Set-ADComputer -ParameterFilter { $Replace.ContainsKey('ServicePrincipalName') }
 
