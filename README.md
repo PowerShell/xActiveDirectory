@@ -483,6 +483,7 @@ The xADForestProperties DSC resource will manage User Principal Name (UPN) suffi
 * **UserPrincipalNameSuffixToAdd**: (optional) The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
 * **UserPrincipalNameSuffixToRemove**: (optional) The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 ## Examples
 
@@ -1080,5 +1081,7 @@ Example_ADPrincipalSuffix @parameters
 
 Start-DscConfiguration -Path c:\output -Wait -Verbose
 ```
+=======
+>>>>>>> Creating the new examples files
 =======
 >>>>>>> Creating the new examples files
