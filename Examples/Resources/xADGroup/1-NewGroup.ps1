@@ -2,16 +2,41 @@
 .EXAMPLE
     This example creates a new domain-local group in contoso
 #>
-configuration Example
+configuration Example_xADGroup
 {
-    Import-DscResource -ModuleName xActiveDirectory
+Param(
+    [parameter(Mandatory = $true)]
+    [System.String]
+    $GroupName,
 
-    node localhost
+    [ValidateSet('DomainLocal','Global','Universal')]
+    [System.String]
+    $Scope = 'Global',
+
+    [ValidateSet('Security','Distribution')]
+    [System.String]
+    $Category = 'Security',
+
+    [ValidateNotNullOrEmpty()]
+    [System.String]
+    $Description
+)
+
+    Import-DscResource -Module xActiveDirectory
+
+    Node $AllNodes.NodeName
     {
-        xADGroup dl1
+        xADGroup ExampleGroup
         {
-            GroupName = 'DL_APP_1'
-            GroupScope = 'DomainLocal'
+           GroupName = $GroupName
+           GroupScope = $Scope
+           Category = $Category
+           Description = $Description
+           Ensure = 'Present'
         }
     }
 }
+
+Example_xADGroup -GroupName 'TestGroup' -Scope 'DomainLocal' -Description 'Example test domain local security group' -ConfigurationData $ConfigurationData
+
+Start-DscConfiguration -Path .\Example_xADGroup -Wait -Verbose

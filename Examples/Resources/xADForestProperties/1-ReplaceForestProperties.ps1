@@ -3,17 +3,48 @@
     This example manages the Service and User Principal name suffixes in the Consto.com
     forest by replacing any existing suffixes with the ones specified in the configuration.
 #>
-configuration Example
+configuration Example_ADPrincipalSuffix
 {
-    Import-DscResource -ModuleName xActiveDirectory
+    Param
+    (
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $TargetName,
 
-    node localhost
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $ForestName,
+
+        [parameter(Mandatory = $true)]
+        [String[]]
+        $UserPrincipalNameSuffix,
+
+        [parameter(Mandatory = $true)]
+        [String[]]
+        $ServicePrincipalNameSuffix
+    )
+
+Import-DscResource -ModuleName xActiveDirectory
+
+    node $TargetName
     {
-        xADForestProperties ContosoProperties
+        xADForestProperties $ForestName
         {
-            ForestName                 = 'contoso.com'
-            UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
-            ServicePrincipalNameSuffix = 'corporate.com'
+            ForestName = $ForestName
+            UserPrincipalNameSuffix = $UserPrincipalNameSuffix
+            ServicePrincipalNameSuffix = $ServicePrincipalNameSuffix
         }
     }
 }
+
+$parameters = @{
+    TargetName = 'dc.contoso.com'
+    ForestName = 'contoso.com'
+    UserPrincipalNameSuffix = 'fabrikam.com','industry.com'
+    ServicePrincipalNameSuffix = 'corporate.com'
+    OutputPath = c:\output
+}
+
+Example_ADPrincipalSuffix @parameters
+
+Start-DscConfiguration -Path c:\output -Wait -Verbose
