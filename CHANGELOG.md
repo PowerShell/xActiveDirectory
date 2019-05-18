@@ -1,6 +1,8 @@
 # Change log for xActiveDirectory
 
 ## Unreleased
+- Changes to xADUser
+  - Added ServicePrincipalNames Property
 
 ## 2.26.0.0
 
