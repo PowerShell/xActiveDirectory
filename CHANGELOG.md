@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Changes to xActiveDirectory
+  - Move the examples in the README.md to Examples folder
+
 ## 2.26.0.0
 
 - Changes to xActiveDirectory
@@ -21,7 +24,6 @@
   - Removing the Misc Folder, as it is no longer required.
   - Added xADKDSKey resource to create KDS Root Keys for gMSAs. [@kungfu71186](https://github.com/kungfu71186)
   - Combined DscResource.LocalizationHelper and DscResource.Common Modules into xActiveDirectory.Common
-  - Move the examples in the README.md to Examples folder
 - Changes to xADReplicationSiteLink
   - Make use of the new localization helper functions.
 - Changes to xAdDomainController
