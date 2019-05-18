@@ -8,6 +8,7 @@
     - Convert-PropertyMapToObjectProperties
     - Compare-ResourcePropertyState
     - Test-DscPropertyState
+  - Move the examples in the README.md to Examples folder
 - Changes to xADComputer
   - Refactored the resource and the unit tests.
   - BREAKING CHANGE: The `Enabled` property is **DEPRECATED** and is no
@@ -66,7 +67,6 @@
   - Removing the Misc Folder, as it is no longer required.
   - Added xADKDSKey resource to create KDS Root Keys for gMSAs. [@kungfu71186](https://github.com/kungfu71186)
   - Combined DscResource.LocalizationHelper and DscResource.Common Modules into xActiveDirectory.Common
-  - Move the examples in the README.md to Examples folder
 - Changes to xADReplicationSiteLink
   - Make use of the new localization helper functions.
 - Changes to xAdDomainController
