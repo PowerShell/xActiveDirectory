@@ -33,10 +33,11 @@
   - Change the description of the property IdentityReference.
 - Changes to xADOrganizationalUnit
   - Change the description of the property RestoreFromRecycleBin.
-- Changes to xADuser
+- Changes to xADUser
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADDomainController
-  - Change the `#Requires` statement in the Examples to require the correct module.
+  - Change the `#Requires` statement in the Examples to require the correct
+    module.
 
 ## 2.26.0.0
 
