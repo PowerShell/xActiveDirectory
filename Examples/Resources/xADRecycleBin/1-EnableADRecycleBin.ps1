@@ -34,7 +34,3 @@ $ConfigurationData = @{
         }
     )
 }
-
-Example_xADRecycleBin -EACredential (Get-Credential contoso\administrator) -ForestFQDN 'contoso.com' -ConfigurationData $ConfigurationData
-
-Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose

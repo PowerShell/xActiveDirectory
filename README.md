@@ -146,7 +146,7 @@ All issues are not listed here, see [here for all open issues](https://github.co
 
 The xADDomain resource creates a new domain in a new forest or a child domain in an existing forest. While it is possible to set the forest functional level and the domain functional level during deployment with this resource the common restrictions apply. For more information see [TechNet](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-functional-levels).
 
-* **`[String]` DomainName** _(Key)_: Name of the domain.
+* **`[String]` DomainName** _(Key)_: FQDN of the new domain.
   * If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
 * **`[String]` ParentDomainName** _(Write)_: Fully qualified name of the parent domain.
 * **`[PSCredential]` DomainAdministratorCredential** _(Required)_: Credentials used to query for domain existence.

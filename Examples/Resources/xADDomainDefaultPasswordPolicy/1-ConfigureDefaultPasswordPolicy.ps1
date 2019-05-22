@@ -31,7 +31,3 @@ configuration Example_xADDomainDefaultPasswordPolicy
         }
     }
 }
-
-Example_xADDomainDefaultPasswordPolicy -DomainName 'contoso.com' -ComplexityEnabled $true -MinPasswordLength 8
-
-Start-DscConfiguration -Path .\Example_xADDomainDefaultPasswordPolicy -Wait -Verbose

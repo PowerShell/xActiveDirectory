@@ -18,7 +18,3 @@ configuration Example_xADReplicationSite
         }
     }
 }
-
-Example_xADReplicationSite
-
-Start-DscConfiguration -Path .\Example_xADReplicationSite -Wait -Verbose
