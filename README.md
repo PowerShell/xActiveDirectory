@@ -48,6 +48,9 @@ A full list of changes in each version can be found in the [change log](CHANGELO
 * **xADForestProperties** manages User Principal Name (UPN) suffixes and Service Principal Name (SPN) suffixes in a forest.
 * **xADGroup** modifies and removes Active Directory groups.
 * **xADManagedServiceAccount** modifies and removes Active Directory Managed Service Accounts (MSA).
+* [**xADObjectEnabledState**](#xadobjectenabledstate) enforces the property
+  `Enabled` on object classes, currenty only the object class Computer
+  is supported.
 * **xADObjectPermissionEntry** modifies the access control list of an Active Directory object.
 * **xADOrganizationalUnit** creates and deletes Active Directory OUs.
 * **xADRecycleBin** enables or disabled Active Directory Recycle Bin.
@@ -313,6 +316,54 @@ The xADManagedServiceAccount DSC resource will manage Managed Service Accounts (
 * **`[String]` Enabled** _(Read)_: Specifies whether the user account is enabled or disabled.
 * **`[String]` DistinguishedName** _(Read)_: Specifies the Distinguished Name of the Service Account
   * Cannot be specified in the resource. Returned by Get and Compare.
+
+### **xADObjectEnabledState**
+
+This resource enforces the property `Enabled` on the object class *Computer*.
+
+>This resource could support other object classes like *msDS-ManagedServiceAccount*,
+>*msDS-GroupManagedServiceAccount*, and *User*. But these object classes
+>are not yet supported due to that other resources already enforces the
+>`Enabled` property. If this resource should support another object class,
+>then it should be made so that only one resource enforces the enabled
+>property. This is to prevent a potential "ping-pong" behavior if both
+>resource would be used in a configuration.
+
+#### Requirements
+
+* Target machine must be running Windows Server 2008 R2 or later.
+
+#### Parameters
+
+* **`[String]` Identity** _(Key)_: Specifies the identity of an object
+  that has the object class specified in the parameter `ObjectClass`.
+  * When `ObjectClass` is set to `'Computer'` then this property can be
+  set to either
+    * Distinguished name
+    * GUID (objectGUID)
+    * Security identifier (objectSid)
+    * Security Accounts Manager account name (sAMAccountName)
+* **`[String]` ObjectClass** _(Key)_: Specifies the object class. { Computer }
+* **`[Boolean]` Enabled** _(Required)_: Specifies the value of the `Enabled`
+  property.
+* **`[String]` DomainController** _(Write)_: Specifies the Active Directory
+  Domain Services instance to connect to perform the task.
+* **`[PSCredential]` Credential** _(Write)_: Specifies the user account
+  credentials to use to perform the task.
+
+#### Read-Only Properties from Get-TargetResource
+
+None.
+
+#### Examples
+
+* [Enable a computer account, and enforce the property `Enabled`](/Examples/Resources/xADObjectEnabledState/1-EnabledComputerAccount_Config.ps1)
+* [Create a disabled cluster computer account, configure a cluster and then enforce the cluster computer account to be enabled](/Examples/Resources/xADObjectEnabledState/2-CreateClusterComputerAccount_Config.ps1)
+* [Configure a cluster using a pre-staged computer account, and then enforce the pre-staged computer account to be enabled](/Examples/Resources/xADObjectEnabledState/3-EnabledPrestagedClusterComputerAccount_Config.ps1)
+
+#### Known issues
+
+All issues are not listed here, see [here for all open issues](https://github.com/PowerShell/xActiveDirectory/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+xADObjectEnabledState).
 
 ### **xADObjectPermissionEntry**
 

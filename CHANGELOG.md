@@ -8,6 +8,10 @@
     - Convert-PropertyMapToObjectProperties
     - Compare-ResourcePropertyState
     - Test-DscPropertyState
+  - Added new resource xADObjectEnabledState. This resource should be
+    used to enforce the `Enabled` property of computer accounts. This
+    resource replaces the deprecated `Enabled` property in the resource
+    xADComputer.
 - Changes to xADComputer
   - Refactored the resource and the unit tests.
   - BREAKING CHANGE: The `Enabled` property is **DEPRECATED** and is no
