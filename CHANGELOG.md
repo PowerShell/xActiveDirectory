@@ -34,6 +34,8 @@
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADDomainController
   - Change the `#Requires` statement in the Examples to require the correct module.
+- Changes to xADDomain
+  - Change the description of the property DomainName
 
 ## 2.26.0.0
 

@@ -44,7 +44,3 @@ $parameters = @{
     ServicePrincipalNameSuffix = 'corporate.com'
     OutputPath = c:\output
 }
-
-Example_ADPrincipalSuffix @parameters
-
-Start-DscConfiguration -Path c:\output -Wait -Verbose

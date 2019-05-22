@@ -35,7 +35,3 @@ configuration Example_xADOrganizationalUnit
         }
     }
 }
-
-Example_xADOrganizationalUnit -Name 'Example OU' -Path 'dc=example,dc=com' -Description 'Example test organizational unit' -ConfigurationData $ConfigurationData
-
-Start-DscConfiguration -Path .\Example_xADOrganizationalUnit -Wait -Verbose

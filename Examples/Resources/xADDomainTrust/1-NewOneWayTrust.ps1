@@ -41,8 +41,3 @@ $config = @{
         }
     )
 }
-Sample_xADDomainTrust_OneWayTrust -configurationdata $config `
-                                  -SourceDomain safeharbor.contoso.com `
-                                  -TargetDomain corporate.contoso.com `
-                                  -TargetDomainAdminCred (get-credential) `
-                                  -TrustDirection 'Inbound'

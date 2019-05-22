@@ -98,12 +98,3 @@ $ConfigData = @{
         }
     )
 }
-AssertHADC -configurationData $ConfigData `
--safemodeAdministratorCred (Get-Credential -Message "New Domain Safe Mode Admin Credentials") `
--domainCred (Get-Credential -Message "New Domain Admin Credentials") `
--DNSDelegationCred (Get-Credential -Message "Credentials to Setup DNS Delegation") `
--NewADUserCred (Get-Credential -Message "New AD User Credentials")
-Start-DscConfiguration -Wait -Force -Verbose -ComputerName "dsc-testNode1" -Path $PSScriptRoot\AssertHADC `
--Credential (Get-Credential -Message "Local Admin Credentials on Remote Machine")
-Start-DscConfiguration -Wait -Force -Verbose -ComputerName "dsc-testNode2" -Path $PSScriptRoot\AssertHADC `
--Credential (Get-Credential -Message "Local Admin Credentials on Remote Machine")
