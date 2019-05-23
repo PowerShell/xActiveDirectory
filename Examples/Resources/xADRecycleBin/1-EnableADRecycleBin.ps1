@@ -5,15 +5,15 @@
 
 Configuration Example_xADRecycleBin
 {
-Param(
-    [parameter(Mandatory = $true)]
-    [System.String]
-    $ForestFQDN,
+    Param(
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $ForestFQDN,
 
-    [parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $EACredential
-)
+        [parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $EACredential
+    )
 
     Import-DscResource -Module xActiveDirectory
 
@@ -21,8 +21,8 @@ Param(
     {
         xADRecycleBin RecycleBin
         {
-           EnterpriseAdministratorCredential = $EACredential
-           ForestFQDN = $ForestFQDN
+            EnterpriseAdministratorCredential = $EACredential
+            ForestFQDN                        = $ForestFQDN
         }
     }
 }
