@@ -512,5 +512,42 @@ InModuleScope 'xActiveDirectory.Common' {
             }
         }
     }
+
+    Describe 'DscResource.Common\Set-DscADComputer' {
+        Context 'When calling with a hashtable' {
+            BeforeAll {
+                <#
+                    Pester is unable to mock the real cmdlet Set-ADComputer,
+                    so this a dummy function to be able to mock the cmdlet
+                    Set-ADComputer.
+                #>
+                function Set-ADComputer
+                {
+                    param
+                    (
+                        [Parameter()]
+                        [System.Collections.Hashtable]
+                        $Replace
+                    )
+                }
+
+                Mock -CommandName Set-ADComputer
+            }
+
+            It 'Should call Set-ADComputer with the correct parameter' {
+                {
+                    Set-DscADComputer -Parameters @{
+                        Replace = @{
+                            Location = 'New location'
+                        }
+                    }
+                } | Should -Not -Throw
+
+                Assert-MockCalled -CommandName Set-ADComputer -ParameterFilter {
+                    $Replace.ContainsKey('Location') -eq $true
+                } -Exactly -Times 1 -Scope It
+            }
+        }
+    }
 }
 

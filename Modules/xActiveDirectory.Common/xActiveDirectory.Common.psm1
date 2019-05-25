@@ -468,6 +468,31 @@ function Start-ProcessWithTimeout
     return $sqlSetupProcess.ExitCode
 }
 
+<#
+    .SYNOPSIS
+        This is a wrapper for Set-ADComputer.
+
+    .PARAMETER Parameters
+        A hash table containing all parameters that will be passed trough to
+        Set-ADComputer.
+
+    .NOTES
+        This is needed because of how Pester is unable to handle mocking the
+        cmdlet Set-ADComputer.
+#>
+function Set-DscADComputer
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Hashtable]
+        $Parameters
+    )
+
+    Set-ADComputer @Parameters | Out-Null
+}
+
+# This row should be last in the module, just before the cmdlet Export-ModuleMember.
 $script:localizedData = Get-LocalizedData -ResourceName 'xActiveDirectory.Common' -ScriptRoot $PSScriptRoot
 
 Export-ModuleMember -Function @(
@@ -478,4 +503,5 @@ Export-ModuleMember -Function @(
     'Get-LocalizedData'
     'Test-DscParameterState'
     'Start-ProcessWithTimeout'
+    'Set-DscADComputer'
 )

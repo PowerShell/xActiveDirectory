@@ -352,27 +352,3 @@ function Set-TargetResource
         }
     }
 }
-
-<#
-    .SYNOPSIS
-        This is a wrapper for Set-ADComputer.
-
-    .PARAMETER Parameters
-        A hash table containing all parameters that will be passed trough to
-        Set-ADComputer.
-
-    .NOTES
-        This is needed because of how Pester is unable to handle mocking the
-        cmdlet Set-ADComputer.
-#>
-function Set-DscADComputer
-{
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.Collections.Hashtable]
-        $Parameters
-    )
-
-    Set-ADComputer @Parameters | Out-Null
-}
