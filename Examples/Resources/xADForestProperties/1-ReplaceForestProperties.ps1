@@ -42,5 +42,5 @@ $parameters = @{
     ForestName                 = 'contoso.com'
     UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
     ServicePrincipalNameSuffix = 'corporate.com'
-    OutputPath                 = c:\output
+    OutputPath                 = 'c:\output'
 }
