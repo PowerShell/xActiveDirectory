@@ -18,7 +18,7 @@ Configuration NewOneWayTrust
         [String]$TrustDirection
     )
     Import-DscResource -module xActiveDirectory
-    Node $AllNodes.Where{$_.Role -eq 'DomainController'}.NodeName
+    Node $AllNodes.Where{ $_.Role -eq 'DomainController' }.NodeName
     {
         xADDomainTrust trust
         {

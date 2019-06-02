@@ -40,25 +40,25 @@ Configuration AddDomainControllerToDomainMinimal
         WindowsFeature 'InstallADDomainServicesFeature'
         {
             Ensure = 'Present'
-            Name = 'AD-Domain-Services'
+            Name   = 'AD-Domain-Services'
         }
 
         WindowsFeature 'RSATADPowerShell'
         {
-            Ensure = 'Present'
-            Name   = 'RSAT-AD-PowerShell'
+            Ensure    = 'Present'
+            Name      = 'RSAT-AD-PowerShell'
 
             DependsOn = '[WindowsFeature]InstallADDomainServicesFeature'
         }
 
         xWaitForADDomain 'WaitForestAvailability'
         {
-            DomainName = 'contoso.com'
+            DomainName           = 'contoso.com'
             DomainUserCredential = $DomainAdministratorCredential
-            RetryCount = 10
-            RetryIntervalSec = 120
+            RetryCount           = 10
+            RetryIntervalSec     = 120
 
-            DependsOn = '[WindowsFeature]RSATADPowerShell'
+            DependsOn            = '[WindowsFeature]RSATADPowerShell'
         }
 
         xADDomainController 'DomainControllerMinimal'
@@ -67,7 +67,7 @@ Configuration AddDomainControllerToDomainMinimal
             DomainAdministratorCredential = $DomainAdministratorCredential
             SafemodeAdministratorPassword = $DomainAdministratorCredential
 
-            DependsOn = '[xWaitForADDomain]WaitForestAvailability'
+            DependsOn                     = '[xWaitForADDomain]WaitForestAvailability'
         }
     }
 }

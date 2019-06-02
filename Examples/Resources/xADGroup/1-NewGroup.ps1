@@ -4,23 +4,23 @@
 #>
 configuration NewGroup
 {
-Param(
-    [parameter(Mandatory = $true)]
-    [System.String]
-    $GroupName,
+    Param(
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $GroupName,
 
-    [ValidateSet('DomainLocal','Global','Universal')]
-    [System.String]
-    $Scope = 'Global',
+        [ValidateSet('DomainLocal', 'Global', 'Universal')]
+        [System.String]
+        $Scope = 'Global',
 
-    [ValidateSet('Security','Distribution')]
-    [System.String]
-    $Category = 'Security',
+        [ValidateSet('Security', 'Distribution')]
+        [System.String]
+        $Category = 'Security',
 
-    [ValidateNotNullOrEmpty()]
-    [System.String]
-    $Description
-)
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Description
+    )
 
     Import-DscResource -Module xActiveDirectory
 
@@ -28,11 +28,11 @@ Param(
     {
         xADGroup ExampleGroup
         {
-           GroupName = $GroupName
-           GroupScope = $Scope
-           Category = $Category
-           Description = $Description
-           Ensure = 'Present'
+            GroupName   = $GroupName
+            GroupScope  = $Scope
+            Category    = $Category
+            Description = $Description
+            Ensure      = 'Present'
         }
     }
 }

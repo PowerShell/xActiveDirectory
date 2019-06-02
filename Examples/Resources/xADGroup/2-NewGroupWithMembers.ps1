@@ -10,9 +10,9 @@ configuration NewGroupWithMembers
     {
         xADGroup dl1
         {
-            GroupName = 'DL_APP_1'
+            GroupName  = 'DL_APP_1'
             GroupScope = 'DomainLocal'
-            Members = 'john','jim','sally'
+            Members    = 'john', 'jim', 'sally'
         }
     }
 }

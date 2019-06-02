@@ -40,25 +40,25 @@ Configuration AddDomainControllerToDomainAllProperties
         WindowsFeature 'InstallADDomainServicesFeature'
         {
             Ensure = 'Present'
-            Name = 'AD-Domain-Services'
+            Name   = 'AD-Domain-Services'
         }
 
         WindowsFeature 'RSATADPowerShell'
         {
-            Ensure = 'Present'
-            Name   = 'RSAT-AD-PowerShell'
+            Ensure    = 'Present'
+            Name      = 'RSAT-AD-PowerShell'
 
             DependsOn = '[WindowsFeature]InstallADDomainServicesFeature'
         }
 
         xWaitForADDomain 'WaitForestAvailability'
         {
-            DomainName = 'contoso.com'
+            DomainName           = 'contoso.com'
             DomainUserCredential = $DomainAdministratorCredential
-            RetryCount = 10
-            RetryIntervalSec = 120
+            RetryCount           = 10
+            RetryIntervalSec     = 120
 
-            DependsOn = '[WindowsFeature]RSATADPowerShell'
+            DependsOn            = '[WindowsFeature]RSATADPowerShell'
         }
 
         xADDomainController 'DomainControllerAllProperties'
@@ -72,7 +72,7 @@ Configuration AddDomainControllerToDomainAllProperties
             SiteName                      = 'Europe'
             IsGlobalCatalog               = $true
 
-            DependsOn = '[xWaitForADDomain]WaitForestAvailability'
+            DependsOn                     = '[xWaitForADDomain]WaitForestAvailability'
         }
     }
 }

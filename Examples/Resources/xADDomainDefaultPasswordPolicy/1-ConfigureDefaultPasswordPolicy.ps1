@@ -25,9 +25,9 @@ configuration ConfigureDefaultPasswordPolicy
     {
         xADDomainDefaultPasswordPolicy 'DefaultPasswordPolicy'
         {
-           DomainName = $DomainName
-           ComplexityEnabled = $ComplexityEnabled
-           MinPasswordLength = $MinPasswordLength
+            DomainName        = $DomainName
+            ComplexityEnabled = $ComplexityEnabled
+            MinPasswordLength = $MinPasswordLength
         }
     }
 }

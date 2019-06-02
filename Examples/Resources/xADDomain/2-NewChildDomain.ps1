@@ -41,7 +41,7 @@ configuration NewChildDomain
         WindowsFeature ADDS
         {
             Name   = 'AD-Domain-Services'
-            Ensure = 'Present'        
+            Ensure = 'Present'
         }
 
         WindowsFeature RSAT
@@ -59,5 +59,4 @@ configuration NewChildDomain
             ParentDomainName              = $node.ParentDomain
         }
     }
-
 }

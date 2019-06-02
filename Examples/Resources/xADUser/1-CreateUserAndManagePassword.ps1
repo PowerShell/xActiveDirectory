@@ -20,11 +20,11 @@ configuration CreateUserAndManagePassword
     {
         xADUser Contoso\ExampleUser
         {
-            Ensure      = 'Present'
-            UserName    = "ExampleUser"
-            Password    = $Password
-            DomainName  = "contoso.com"
-            Path        = "CN=Users,DC=contoso,DC=com"
+            Ensure     = 'Present'
+            UserName   = "ExampleUser"
+            Password   = $Password
+            DomainName = "contoso.com"
+            Path       = "CN=Users,DC=contoso,DC=com"
         }
     }
 }

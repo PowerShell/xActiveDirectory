@@ -12,11 +12,11 @@ configuration AddRemoveForestProperties
     {
         xADForestProperties ContosoProperties
         {
-            ForestName                          = 'contoso.com'
-            ServicePrincipalNameSuffixToAdd     = 'test.net'
-            ServicePrincipalNameSuffixToRemove  = 'test.com'
-            UserPrincipalNameSuffixToAdd        = 'cloudapp.net', 'fabrikam.com'
-            UserPrincipalNameSuffixToRemove     = 'pester.net'
+            ForestName                         = 'contoso.com'
+            ServicePrincipalNameSuffixToAdd    = 'test.net'
+            ServicePrincipalNameSuffixToRemove = 'test.com'
+            UserPrincipalNameSuffixToAdd       = 'cloudapp.net', 'fabrikam.com'
+            UserPrincipalNameSuffixToRemove    = 'pester.net'
         }
     }
 }

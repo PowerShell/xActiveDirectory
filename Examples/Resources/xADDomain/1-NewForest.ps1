@@ -40,7 +40,7 @@ configuration NewForest
         WindowsFeature ADDS
         {
             Name   = 'AD-Domain-Services'
-            Ensure = 'Present'        
+            Ensure = 'Present'
         }
 
         WindowsFeature RSAT
@@ -57,5 +57,4 @@ configuration NewForest
             ForestMode                    = $Node.FFL
         }
     }
-
 }

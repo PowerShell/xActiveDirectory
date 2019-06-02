@@ -24,23 +24,23 @@ configuration ReplaceForestProperties
         $ServicePrincipalNameSuffix
     )
 
-Import-DscResource -ModuleName xActiveDirectory
+    Import-DscResource -ModuleName xActiveDirectory
 
     node $TargetName
     {
         xADForestProperties $ForestName
         {
-            ForestName = $ForestName
-            UserPrincipalNameSuffix = $UserPrincipalNameSuffix
+            ForestName                 = $ForestName
+            UserPrincipalNameSuffix    = $UserPrincipalNameSuffix
             ServicePrincipalNameSuffix = $ServicePrincipalNameSuffix
         }
     }
 }
 
 $parameters = @{
-    TargetName = 'dc.contoso.com'
-    ForestName = 'contoso.com'
-    UserPrincipalNameSuffix = 'fabrikam.com','industry.com'
+    TargetName                 = 'dc.contoso.com'
+    ForestName                 = 'contoso.com'
+    UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
     ServicePrincipalNameSuffix = 'corporate.com'
-    OutputPath = c:\output
+    OutputPath                 = c:\output
 }
