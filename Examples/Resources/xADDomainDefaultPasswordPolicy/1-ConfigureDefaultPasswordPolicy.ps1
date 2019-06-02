@@ -16,7 +16,7 @@ configuration ConfigureDefaultPasswordPolicy
 
         [parameter(Mandatory = $true)]
         [System.Int32]
-        $MinPasswordLength,
+        $MinPasswordLength
     )
 
     Import-DscResource -Module xActiveDirectory
