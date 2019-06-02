@@ -18,7 +18,7 @@ Configuration NewOneWayTrust
         [String]$TrustDirection
     )
     Import-DscResource -module xActiveDirectory
-    Node $AllNodes.Where{ $_.Role -eq 'DomainController' }.NodeName
+    Node $AllNodes.NodeName
     {
         xADDomainTrust trust
         {
@@ -30,14 +30,4 @@ Configuration NewOneWayTrust
             TrustType                           = 'External'
         }
     }
-}
-$config = @{
-    AllNodes = @(
-        @{
-            NodeName      = 'localhost'
-            Role          = 'DomainController'
-            # Certificate Thumbprint that is used to encrypt/decrypt the credential
-            CertificateID = 'B9192121495A307A492A19F6344E8752B51AC4A6'
-        }
-    )
 }
