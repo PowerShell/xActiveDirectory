@@ -33,6 +33,7 @@
     if the computer account is created enabled or disabled.
   - Moved examples from the README.md to separate example files in the
     Examples folder.
+  - Fix the RestoreFromRecycleBin Description
 - Changes to xADGroup
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADObjectPermissionEntry
