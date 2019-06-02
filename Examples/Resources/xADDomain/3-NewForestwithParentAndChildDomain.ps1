@@ -87,7 +87,7 @@ Configuration NewForestwithParentAndChildDomain
     }
 }
 
-$ConfigData = @{
+$ConfigurationData = @{
 
     AllNodes = @(
         @{
