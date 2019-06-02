@@ -1,6 +1,6 @@
 <#
     .EXAMPLE
-        This example will create a new one way trust between two domains.
+        This example will create a new one way inbound trust between two domains.
 #>
 
 Configuration NewOneWayTrust
@@ -12,10 +12,7 @@ Configuration NewOneWayTrust
         [Parameter(Mandatory)]
         [String]$TargetDomain,
         [Parameter(Mandatory)]
-        [PSCredential]$TargetDomainAdminCred,
-        [Parameter(Mandatory)]
-        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
-        [String]$TrustDirection
+        [PSCredential]$TargetDomainAdminCred
     )
 
     Import-DscResource -module xActiveDirectory
@@ -27,7 +24,7 @@ Configuration NewOneWayTrust
             SourceDomainName                    = $SourceDomain
             TargetDomainName                    = $TargetDomain
             TargetDomainAdministratorCredential = $TargetDomainAdminCred
-            TrustDirection                      = $TrustDirection
+            TrustDirection                      = 'Inbound'
             TrustType                           = 'External'
         }
     }
