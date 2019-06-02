@@ -5,20 +5,9 @@
 $ConfigurationData = @{
     AllNodes = @(
         @{
-            NodeName                    = 'localhost'
-            FFL                         = 'WinThreshold'
-            DomainName                  = 'contoso.com'
-
-            <#
-                NOTE! THIS IS NOT RECOMMENDED IN PRODUCTION.
-                This is added so that AppVeyor automatic tests can pass, otherwise
-                the tests will fail on passwords being in plain text and not being
-                encrypted. Because it is not possible to have a certificate in
-                AppVeyor to encrypt the passwords we need to add the parameter
-                'PSDscAllowPlainTextPassword'.
-                NOTE! THIS IS NOT RECOMMENDED IN PRODUCTION.
-            #>
-            PSDscAllowPlainTextPassword = $true
+            NodeName   = 'localhost'
+            FFL        = 'WinThreshold'
+            DomainName = 'contoso.com'
         }
     )
 }
