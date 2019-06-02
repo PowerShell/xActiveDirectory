@@ -11,12 +11,13 @@ Configuration NewOneWayTrust
         [String]$SourceDomain,
         [Parameter(Mandatory)]
         [String]$TargetDomain,
-
         [Parameter(Mandatory)]
         [PSCredential]$TargetDomainAdminCred,
         [Parameter(Mandatory)]
+        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
         [String]$TrustDirection
     )
+
     Import-DscResource -module xActiveDirectory
     Node $AllNodes.NodeName
     {
