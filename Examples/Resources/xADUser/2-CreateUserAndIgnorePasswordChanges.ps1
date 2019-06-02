@@ -4,7 +4,7 @@
         This might be used with a traditional user account where a managed password is not desired.
 #>
 
-configuration Example
+configuration CreateUserAndIgnorePasswordChanges
 {
     param
     (

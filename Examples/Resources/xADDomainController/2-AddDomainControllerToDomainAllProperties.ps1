@@ -22,7 +22,7 @@
         This configuration will add a domain controller to the domain
         contoso.com, specifying all properties of the resource.
 #>
-Configuration xADDomainController_AddDomainControllerToDomainAllProperties_Config
+Configuration AddDomainControllerToDomainAllProperties
 {
     param
     (

@@ -5,7 +5,7 @@
         created.
 #>
 
-configuration Example
+configuration ReadWriteComputerObjectProperties
 {
     Import-DscResource -Module xActiveDirectory
 

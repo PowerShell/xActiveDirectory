@@ -3,7 +3,7 @@
         This example will create a new one way trust between two domains.
 #>
 
-Configuration Sample_xADDomainTrust_OneWayTrust
+Configuration NewOneWayTrust
 {
     param
     (

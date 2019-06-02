@@ -6,7 +6,7 @@
         can control the roles AD objects.
 #>
 
-configuration Example
+configuration DelegateFullControl
 {
     Import-DscResource -Module xActiveDirectory
 

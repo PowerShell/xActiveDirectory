@@ -2,7 +2,7 @@
 .EXAMPLE
     This example creates a new domain-local group in contoso
 #>
-configuration Example_xADGroup
+configuration NewGroup
 {
 Param(
     [parameter(Mandatory = $true)]

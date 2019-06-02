@@ -22,7 +22,7 @@
         This configuration will add a domain controller to the domain
         contoso.com using the information from media.
 #>
-Configuration xADDomainController_AddDomainControllerToDomainUsingIFM_Config
+Configuration AddDomainControllerToDomainUsingIFM
 {
     param
     (

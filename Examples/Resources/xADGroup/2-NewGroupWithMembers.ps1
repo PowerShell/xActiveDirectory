@@ -2,7 +2,7 @@
 .EXAMPLE
     This example creates a new domain-local group in contoso with three members.
 #>
-configuration Example
+configuration NewGroupWithMembers
 {
     Import-DscResource -ModuleName xActiveDirectory
 

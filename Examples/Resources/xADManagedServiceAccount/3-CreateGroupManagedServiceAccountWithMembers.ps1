@@ -3,7 +3,7 @@
         In this example we will create a managed service account.
 #>
 
-configuration Example
+configuration CreateGroupManagedServiceAccountWithMembers
 {
     Import-DscResource -Module xActiveDirectory
 

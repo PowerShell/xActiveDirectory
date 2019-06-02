@@ -2,7 +2,7 @@
     .EXAMPLE
         In this example, we will remove the Active Directory replication site called 'Cupertino'.
 #>
-configuration Example_xADReplicationSite
+configuration RemoveADReplicationSite
 {
     Import-DscResource -Module xActiveDirectory
 

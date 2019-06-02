@@ -3,7 +3,7 @@
         In this example we will modify an existing AD Replication Site Link.
 #>
 
-configuration Example
+configuration ModifyExistingReplicationSiteLink
 {
     Import-DscResource -Module xActiveDirectory
 

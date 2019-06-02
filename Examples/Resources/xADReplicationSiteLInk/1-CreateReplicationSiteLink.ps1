@@ -3,7 +3,7 @@
         In this example we will create an AD Replication Site Link.
 #>
 
-configuration Example
+configuration CreateReplicationSiteLink
 {
     Import-DscResource -Module xActiveDirectory
 

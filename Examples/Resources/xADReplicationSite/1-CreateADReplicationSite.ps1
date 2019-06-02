@@ -2,7 +2,7 @@
     .EXAMPLE
         In this example, we will create an Active Directory replication site called 'Seattle'.
 #>
-configuration Example_xADReplicationSite
+configuration CreateADReplicationSite
 {
     Import-DscResource -Module xActiveDirectory
 

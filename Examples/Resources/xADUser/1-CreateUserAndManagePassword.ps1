@@ -4,7 +4,7 @@
         This might be used to manage the lifecycle of a service account.
 #>
 
-configuration Example
+configuration CreateUserAndManagePassword
 {
     param
     (

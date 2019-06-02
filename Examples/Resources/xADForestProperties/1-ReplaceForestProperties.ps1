@@ -3,7 +3,7 @@
     This example manages the Service and User Principal name suffixes in the Consto.com
     forest by replacing any existing suffixes with the ones specified in the configuration.
 #>
-configuration Example_ADPrincipalSuffix
+configuration ReplaceForestProperties
 {
     Param
     (

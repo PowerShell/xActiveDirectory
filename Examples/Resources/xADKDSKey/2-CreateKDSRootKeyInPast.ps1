@@ -5,7 +5,7 @@
         when retrieving the gMSA password. Use with caution
 #>
 
-configuration Example
+configuration CreateKDSRootKeyInPast
 {
     Import-DscResource -Module xActiveDirectory
 

@@ -23,7 +23,7 @@ $ConfigurationData = @{
     )
 }
 
-configuration Example
+configuration NewForest
 {
     param
     (

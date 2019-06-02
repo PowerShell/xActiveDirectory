@@ -2,7 +2,7 @@
     .EXAMPLE
         In this example, we create a domain, and then create a child domain on another node.
 #>
-Configuration AssertParentChildDomains
+Configuration NewForestwithParentAndChildDomain
 {
     param
     (

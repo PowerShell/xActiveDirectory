@@ -3,7 +3,7 @@
     This example will enable the Active Directory Recycle Bin for a specified Domain
 #>
 
-Configuration Example_xADRecycleBin
+Configuration EnableADRecycleBin
 {
     Param(
         [parameter(Mandatory = $true)]

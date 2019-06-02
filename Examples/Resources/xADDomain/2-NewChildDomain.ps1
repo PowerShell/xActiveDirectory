@@ -24,7 +24,7 @@ $ConfigurationData = @{
     )
 }
 
-configuration Example
+configuration NewChildDomain
 {
     param
     (

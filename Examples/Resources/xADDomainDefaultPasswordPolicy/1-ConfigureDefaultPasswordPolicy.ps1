@@ -2,7 +2,7 @@
     .EXAMPLE
         In this example, we configure an Active Directory domain's default password policy to set the minimum password length and complexity.
 #>
-configuration Example_xADDomainDefaultPasswordPolicy
+configuration ConfigureDefaultPasswordPolicy
 {
     Param
     (

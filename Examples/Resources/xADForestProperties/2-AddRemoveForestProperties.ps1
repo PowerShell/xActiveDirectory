@@ -4,7 +4,7 @@
     forest by adding and removing the desired suffixes.  This will not overwrite existing
     suffixes in the forest.
 #>
-configuration Example
+configuration AddRemoveForestProperties
 {
     Import-DscResource -ModuleName xActiveDirectory
 

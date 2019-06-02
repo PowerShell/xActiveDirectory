@@ -4,7 +4,7 @@
         computer objects in an OU and all sub-OUs that may get created.
 #>
 
-configuration Example
+configuration CreateDeleteComputerObject
 {
     Import-DscResource -Module xActiveDirectory
 

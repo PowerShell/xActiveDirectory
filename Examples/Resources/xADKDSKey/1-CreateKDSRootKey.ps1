@@ -5,7 +5,7 @@
         time
 #>
 
-configuration Example
+configuration CreateKDSRootKey
 {
     Import-DscResource -Module xActiveDirectory
 

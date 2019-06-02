@@ -22,7 +22,7 @@
         This configuration will add a domain controller to the domain
         contoso.com.
 #>
-Configuration xADDomainController_AddDomainControllerToDomainMinimal_Config
+Configuration AddDomainControllerToDomainMinimal
 {
     param
     (

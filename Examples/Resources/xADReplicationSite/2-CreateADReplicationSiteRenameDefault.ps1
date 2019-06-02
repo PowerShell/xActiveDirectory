@@ -4,7 +4,7 @@
     If the 'Default-First-Site-Name' site exists, it will rename this site instead of create a new one.
 
 #>
-configuration Example_xADReplicationSite
+configuration CreateADReplicationSiteRenameDefault
 {
     Import-DscResource -Module xActiveDirectory
 

@@ -5,7 +5,7 @@
         and it may cause services to come down
 #>
 
-configuration Example
+configuration CreateKDSRootKeyRemoveLastKey
 {
     Import-DscResource -Module xActiveDirectory
 

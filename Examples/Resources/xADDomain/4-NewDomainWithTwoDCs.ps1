@@ -3,7 +3,7 @@
         In the following example configuration, a highly available domain is created by adding a second domain controller to the newly created domain.
         This example uses the xWaitForDomain resource to ensure that the domain is present before the second domain controller is added.
 #>
-Configuration AssertHADC
+Configuration NewDomainWithTwoDCs
 {
     param
     (

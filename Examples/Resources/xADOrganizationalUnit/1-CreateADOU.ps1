@@ -2,7 +2,7 @@
     .EXAMPLE
         In this example, we add an Active Directory organizational unit to the 'example.com' domain root.
 #>
-configuration Example_xADOrganizationalUnit
+configuration CreateADOU
 {
     Param(
         [parameter(Mandatory = $true)]
