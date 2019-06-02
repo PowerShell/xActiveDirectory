@@ -70,13 +70,12 @@ Configuration NewDomainWithTwoDCs
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domainCred
             SafemodeAdministratorPassword = $safemodeAdministratorCred
-            DnsDelegationCredential       = $DNSDelegationCred
             DependsOn                     = "[xWaitForADDomain]DscForestWait"
         }
     }
 }
 # Configuration Data for AD
-$ConfigData = @{
+$ConfigurationData = @{
     AllNodes = @(
         @{
             Nodename         = "dsc-testNode1"
