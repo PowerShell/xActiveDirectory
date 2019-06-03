@@ -10,5 +10,8 @@ class MSFT_xADDomainController : OMI_BaseResource
     [Write, Description("The name of the site this Domain Controller will be added to.")] String SiteName;
     [Write, Description("The path of the media you want to use install the Domain Controller.")] String InstallationMediaPath;
     [Write, Description("Specifies if the domain controller will be a Global Catalog (GC).")] Boolean IsGlobalCatalog;
+    [Write, Description("Indicates that the cmdlet installs the domain controller as an RODC for an existing domain.")] Boolean ReadOnlyReplica;
+    [Write, Description("Specifies an array of names of user accounts, group accounts, and computer accounts whose passwords can be replicated to this RODC.")] String AllowPasswordReplicationAccountName[];
+    [Write, Description("Specifies the names of user accounts, group accounts, and computer accounts whose passwords are not to be replicated to this RODC.")] String DenyPasswordReplicationAccountName[];
     [Read, Description("The state of the Domain Controller.")] String Ensure;
 };
