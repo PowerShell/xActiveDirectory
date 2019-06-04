@@ -67,7 +67,8 @@
 - Changes to xADReplicationSiteLink
   - Fix ADIdentityNotFoundException When Creating a New Site Link.
 - Changes to appveyor.yml
-   - Enabled auto documentation ([issue #289](https://github.com/PowerShell/xActiveDirectory/issues/289)).
+  - Enabled auto documentation ([issue #289](https://github.com/PowerShell/xActiveDirectory/issues/289)).
+
 ## 2.26.0.0
 
 - Changes to xActiveDirectory
