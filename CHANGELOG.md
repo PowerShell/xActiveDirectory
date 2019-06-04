@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Changes to xActiveDirectory
+- Changes to xActiveDirectory  
   - Added new helper functions in xADCommon, see each functions comment-based
     help for more information.
     - Convert-PropertyMapToObjectProperties
@@ -36,6 +36,8 @@
   - Moved examples from the README.md to separate example files in the
     Examples folder.
   - Fix the RestoreFromRecycleBin Description
+  - Fixed description of RestoreFromRecycleBin ([Issue #292](https://github.com/PowerShell/xActiveDirectory/issues/292))
+  - Removed excessive casting ([Issue #295](https://github.com/PowerShell/xActiveDirectory/issues/295))
 - Changes to xADGroup
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADObjectPermissionEntry
@@ -64,7 +66,8 @@
   - Localize and Improve verbose messaging
 - Changes to xADReplicationSiteLink
   - Fix ADIdentityNotFoundException When Creating a New Site Link.
-
+- Changes to appveyor.yml
+   - Enabled auto documentation ([issue #289](https://github.com/PowerShell/xActiveDirectory/issues/289)).
 ## 2.26.0.0
 
 - Changes to xActiveDirectory
