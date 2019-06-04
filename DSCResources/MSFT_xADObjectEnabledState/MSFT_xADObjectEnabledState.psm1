@@ -184,31 +184,7 @@ function Test-TargetResource
         $script:localizedData.TestConfiguration -f $Identity, $ObjectClass
     )
 
-    $getTargetResourceParameters = @{
-        Identity         = $Identity
-        ObjectClass      = $ObjectClass
-        Enabled          = $Enabled
-        DomainController = $DomainController
-        Credential       = $Credential
-    }
-
-    # Need the @() around this to get a new array to enumerate.
-    @($getTargetResourceParameters.Keys) | ForEach-Object {
-        if (-not $PSBoundParameters.ContainsKey($_))
-        {
-            $getTargetResourceParameters.Remove($_)
-        }
-    }
-
-    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
-
-    $compareTargetResourceStateParameters = @{
-        CurrentValues = $getTargetResourceResult
-        DesiredValues = $PSBoundParameters
-        Properties    = @('Enabled')
-    }
-
-    $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
+    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
 
     if ($false -in $compareTargetResourceStateResult.InDesiredState)
     {
@@ -292,31 +268,7 @@ function Set-TargetResource
         $Credential
     )
 
-    $getTargetResourceParameters = @{
-        Identity         = $Identity
-        ObjectClass      = $ObjectClass
-        Enabled          = $Enabled
-        DomainController = $DomainController
-        Credential       = $Credential
-    }
-
-    # Need the @() around this to get a new array to enumerate.
-    @($getTargetResourceParameters.Keys) | ForEach-Object {
-        if (-not $PSBoundParameters.ContainsKey($_))
-        {
-            $getTargetResourceParameters.Remove($_)
-        }
-    }
-
-    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
-
-    $compareTargetResourceStateParameters = @{
-        CurrentValues = $getTargetResourceResult
-        DesiredValues = $PSBoundParameters
-        Properties    = @('Enabled')
-    }
-
-    $compareTargetResourceStateResult = Compare-ResourcePropertyState @compareTargetResourceStateParameters
+    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
 
     # Get all properties that are not in desired state.
     $propertiesNotInDesiredState = $compareTargetResourceStateResult | Where-Object -FilterScript {
@@ -351,6 +303,88 @@ function Set-TargetResource
             }
         }
     }
+}
+
+<#
+    .SYNOPSIS
+        Sets the property Enabled of the Active Directory object.
+
+    .PARAMETER Identity
+        Specifies the identity of an object that has the object class specified
+        in the parameter ObjectClass. When ObjectClass is set to 'Computer' then
+        this property can be set to either distinguished name, GUID (objectGUID),
+        security identifier (objectSid), or security Accounts Manager account
+        name (sAMAccountName).
+
+    .PARAMETER ObjectClass
+        Specifies the object class.
+
+    .PARAMETER Enabled
+        Specifies the value of the Enabled property.
+
+    .PARAMETER DomainController
+        Specifies the Active Directory Domain Services instance to connect to
+        perform the task.
+
+    .PARAMETER Credential
+        Specifies the user account credentials to use to perform the task.
+#>
+function Compare-TargetResourceState
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $Identity,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Computer')]
+        [System.String]
+        $ObjectClass,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $Enabled,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $DomainController,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.CredentialAttribute()]
+        $Credential
+    )
+
+    $getTargetResourceParameters = @{
+        Identity         = $Identity
+        ObjectClass      = $ObjectClass
+        Enabled          = $Enabled
+        DomainController = $DomainController
+        Credential       = $Credential
+    }
+
+    # Need the @() around this to get a new array to enumerate.
+    @($getTargetResourceParameters.Keys) | ForEach-Object {
+        if (-not $PSBoundParameters.ContainsKey($_))
+        {
+            $getTargetResourceParameters.Remove($_)
+        }
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    $compareTargetResourceStateParameters = @{
+        CurrentValues = $getTargetResourceResult
+        DesiredValues = $PSBoundParameters
+        Properties    = @('Enabled')
+    }
+
+    return Compare-ResourcePropertyState @compareTargetResourceStateParameters
 }
 
 <#
