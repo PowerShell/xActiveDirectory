@@ -47,10 +47,11 @@ Configuration CreateClusterComputerAccount_Config
 
         xCluster 'CreateCluster'
         {
-            Name            = 'CLU_CNO01'
-            StaticIPAddress = '192.168.100.20/24'
+            Name                          = 'CLU_CNO01'
+            StaticIPAddress               = '192.168.100.20/24'
+            DomainAdministratorCredential = $DomainAdministratorCredential
 
-            DependsOn       = '[xADComputer]ClusterAccount'
+            DependsOn                     = '[xADComputer]ClusterAccount'
         }
 
         xADObjectEnabledState 'EnforceEnabledPropertyToEnabled'
