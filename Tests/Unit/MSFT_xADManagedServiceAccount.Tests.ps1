@@ -442,7 +442,7 @@ try
                 $getTargetResourceResult = Get-TargetResource @testResourceParametersSingle
 
                 It "Should return 'Ensure' is 'Absent'" {
-                    $getTargetResourceResult.Ensure | Should Be 'Absent'
+                    $getTargetResourceResult.Ensure | Should -Be 'Absent'
                 }
 
                 It "Should return 'ServiceAccountName' when 'Absent'" {
@@ -886,7 +886,7 @@ try
                         DisplayName         = ''
                     }
 
-                    Test-TargetResource @testResourceParametersGroup | Should Be $true
+                    Test-TargetResource @testResourceParametersGroup | Should -Be $true
                 }
             }
 
@@ -960,7 +960,7 @@ try
                     }
 
                     $testResourceParametersSingle[$Parameter] = $value
-                    Test-TargetResource @testResourceParametersSingle | Should Be $false
+                    Test-TargetResource @testResourceParametersSingle | Should -Be $false
                 }
             }
 
@@ -1014,7 +1014,7 @@ try
                     }
 
                     $testResourceParametersGroup[$Parameter] = $value
-                    Test-TargetResource @testResourceParametersGroup | Should Be $false
+                    Test-TargetResource @testResourceParametersGroup | Should -Be $false
                 }
             }
         }

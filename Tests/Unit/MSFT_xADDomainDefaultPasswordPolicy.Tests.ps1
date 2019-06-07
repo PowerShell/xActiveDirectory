@@ -76,7 +76,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams
 
-                $result -is [System.Collections.Hashtable] | Should Be $true
+                $result -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It 'Calls "Get-ADDefaultDomainPasswordPolicy" without credentials by default' {
@@ -141,7 +141,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams
 
-                $result -is [System.Boolean] | Should Be $true
+                $result -is [System.Boolean] | Should -Be $true
             }
 
             It 'Calls "Get-TargetResource" with "Credential" parameter when specified' {
@@ -169,7 +169,7 @@ try
 
                     $result = Test-TargetResource @propertyDefaultParams
 
-                    $result | Should Be $true
+                    $result | Should -Be $true
                 }
 
                 It "Fails when '$propertyName' parameter does not match resource property value" {
@@ -191,7 +191,7 @@ try
 
                     $result = Test-TargetResource @propertyDefaultParams
 
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
             } #end foreach property
 

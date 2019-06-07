@@ -69,7 +69,7 @@ try
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource -is [System.Collections.Hashtable] | Should Be $true
+                $targetResource -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It 'Returns "Ensure" = "Present" when OU exists' {
@@ -77,7 +77,7 @@ try
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource.Ensure | Should Be 'Present'
+                $targetResource.Ensure | Should -Be 'Present'
             }
 
             It 'Returns "Ensure" = "Absent" when OU does not exist' {
@@ -85,7 +85,7 @@ try
                 Mock -CommandName Get-ADOrganizationalUnit
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource.Ensure | Should Be 'Absent'
+                $targetResource.Ensure | Should -Be 'Absent'
             }
 
             It 'Returns "ProtectedFromAccidentalDeletion" = "$true" when OU is protected' {
@@ -93,7 +93,7 @@ try
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource.ProtectedFromAccidentalDeletion | Should Be $true
+                $targetResource.ProtectedFromAccidentalDeletion | Should -Be $true
             }
 
             It 'Returns "ProtectedFromAccidentalDeletion" = "$false" when OU is not protected' {
@@ -105,7 +105,7 @@ try
                 }
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource.ProtectedFromAccidentalDeletion | Should Be $false
+                $targetResource.ProtectedFromAccidentalDeletion | Should -Be $false
             }
 
             It 'Returns an empty description' {
@@ -118,7 +118,7 @@ try
 
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
 
-                $targetResource.Description | Should BeNullOrEmpty
+                $targetResource.Description | Should -BeNullOrEmpty
             }
 
         }
@@ -131,21 +131,21 @@ try
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
                 $targetResource = Test-TargetResource @testPresentParams
 
-                $targetResource -is [System.Boolean] | Should Be $true
+                $targetResource -is [System.Boolean] | Should -Be $true
             }
 
             It 'Fails when OU does not exist and "Ensure" = "Present"' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit
 
-                Test-TargetResource @testPresentParams | Should Be $false
+                Test-TargetResource @testPresentParams | Should -Be $false
             }
 
             It 'Fails when OU does exist and "Ensure" = "Absent"' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
 
-                Test-TargetResource @testAbsentParams | Should Be $false
+                Test-TargetResource @testAbsentParams | Should -Be $false
             }
 
             It 'Fails when OU does exist but "Description" is incorrect' {
@@ -154,7 +154,7 @@ try
                 $testDescriptionParams = $testPresentParams.Clone()
                 $testDescriptionParams['Description'] = 'Wrong description'
 
-                Test-TargetResource @testDescriptionParams | Should Be $false
+                Test-TargetResource @testDescriptionParams | Should -Be $false
             }
 
             It 'Fails when OU does exist but "ProtectedFromAccidentalDeletion" is incorrect' {
@@ -163,21 +163,21 @@ try
                 $testProtectedFromAccidentalDeletionParams = $testPresentParams.Clone()
                 $testProtectedFromAccidentalDeletionParams['ProtectedFromAccidentalDeletion'] = $false
 
-                Test-TargetResource @testProtectedFromAccidentalDeletionParams | Should Be $false
+                Test-TargetResource @testProtectedFromAccidentalDeletionParams | Should -Be $false
             }
 
             It 'Passes when OU does exist, "Ensure" = "Present" and all properties are correct' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith { return [PSCustomObject] $protectedFakeAdOu }
 
-                Test-TargetResource @testPresentParams | Should Be $true
+                Test-TargetResource @testPresentParams | Should -Be $true
             }
 
             It 'Passes when OU does not exist and "Ensure" = "Absent"' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit
 
-                Test-TargetResource @testAbsentParams | Should Be $true
+                Test-TargetResource @testAbsentParams | Should -Be $true
             }
 
             It 'Passes when no OU description is specified with existing OU description' {
@@ -186,7 +186,7 @@ try
                 $testEmptyDescriptionParams = $testPresentParams.Clone()
                 $testEmptyDescriptionParams['Description'] = ''
 
-                Test-TargetResource @testEmptyDescriptionParams | Should Be $true
+                Test-TargetResource @testEmptyDescriptionParams | Should -Be $true
             }
 
         }

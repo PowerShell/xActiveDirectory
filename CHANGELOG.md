@@ -36,6 +36,7 @@
     xADComputer.
   - Cleanup of code
     - Removed semicolon throughout where it is not needed.
+    - Migrate tests to Pester syntax v4.x ([issue #322](https://github.com/PowerShell/xActiveDirectory/issues/322)).
 - Changes to xADComputer
   - Refactored the resource and the unit tests.
   - BREAKING CHANGE: The `Enabled` property is **DEPRECATED** and is no

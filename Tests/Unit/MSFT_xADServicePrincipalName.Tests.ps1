@@ -50,9 +50,9 @@ try
 
                     $result = Get-TargetResource @testDefaultParameters
 
-                    $result.Ensure               | Should Be 'Absent'
-                    $result.ServicePrincipalName | Should Be 'HOST/demo'
-                    $result.Account              | Should Be ''
+                    $result.Ensure               | Should -Be 'Absent'
+                    $result.ServicePrincipalName | Should -Be 'HOST/demo'
+                    $result.Account              | Should -Be ''
                 }
             }
 
@@ -66,9 +66,9 @@ try
 
                     $result = Get-TargetResource @testDefaultParameters
 
-                    $result.Ensure               | Should Be 'Present'
-                    $result.ServicePrincipalName | Should Be 'HOST/demo'
-                    $result.Account              | Should Be 'User'
+                    $result.Ensure               | Should -Be 'Present'
+                    $result.ServicePrincipalName | Should -Be 'HOST/demo'
+                    $result.Account              | Should -Be 'User'
                 }
             }
 
@@ -83,9 +83,9 @@ try
 
                     $result = Get-TargetResource @testDefaultParameters
 
-                    $result.Ensure               | Should Be 'Present'
-                    $result.ServicePrincipalName | Should Be 'HOST/demo'
-                    $result.Account              | Should Be 'User;Computer'
+                    $result.Ensure               | Should -Be 'Present'
+                    $result.ServicePrincipalName | Should -Be 'HOST/demo'
+                    $result.Account              | Should -Be 'User;Computer'
                 }
             }
         }
@@ -105,13 +105,13 @@ try
                 It 'Should return false for present' {
 
                     $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
 
                 It 'Should return true for absent' {
 
                     $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
-                    $result | Should Be $true
+                    $result | Should -Be $true
                 }
             }
 
@@ -124,13 +124,13 @@ try
                 It 'Should return true for present' {
 
                     $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
-                    $result | Should Be $true
+                    $result | Should -Be $true
                 }
 
                 It 'Should return false for absent' {
 
                     $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
             }
 
@@ -143,13 +143,13 @@ try
                 It 'Should return false for present' {
 
                     $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
 
                 It 'Should return false for absent' {
 
                     $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
             }
 
@@ -163,13 +163,13 @@ try
                 It 'Should return false for present' {
 
                     $result = Test-TargetResource -Ensure 'Present' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
 
                 It 'Should return false for absent' {
 
                     $result = Test-TargetResource -Ensure 'Absent' @testDefaultParameters
-                    $result | Should Be $false
+                    $result | Should -Be $false
                 }
             }
 
@@ -195,7 +195,7 @@ try
 
                 It 'Should throw the correct exception' {
 
-                    { Set-TargetResource @testPresentParams } | Should Throw "AD object with SamAccountName 'User' not found!"
+                    { Set-TargetResource @testPresentParams } | Should -Throw "AD object with SamAccountName 'User' not found!"
                 }
             }
 

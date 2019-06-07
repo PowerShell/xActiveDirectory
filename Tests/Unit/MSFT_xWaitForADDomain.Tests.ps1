@@ -64,19 +64,19 @@ try
             It 'Returns a "System.Collections.Hashtable" object type' {
                 Mock -CommandName Get-Domain -MockWith {return $fakeDomainObject}
                 $targetResource = Get-TargetResource @testParams
-                $targetResource -is [System.Collections.Hashtable] | Should Be $true
+                $targetResource -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It "Returns DomainName = $($testParams.DomainName) when domain is found" {
                 Mock -CommandName Get-Domain -MockWith {return $fakeDomainObject}
                 $targetResource = Get-TargetResource @testParams
-                $targetResource.DomainName | Should Be $testParams.DomainName
+                $targetResource.DomainName | Should -Be $testParams.DomainName
             }
 
             It "Returns an empty DomainName when domain is not found" {
                 Mock -CommandName Get-Domain
                 $targetResource = Get-TargetResource @testParams
-                $targetResource.DomainName | Should Be $null
+                $targetResource.DomainName | Should -Be $null
             }
         }
         #endregion
@@ -87,17 +87,17 @@ try
             It 'Returns a "System.Boolean" object type' {
                 Mock -CommandName Get-Domain -MockWith {return $fakeDomainObject}
                 $targetResource =  Test-TargetResource @testParams
-                $targetResource -is [System.Boolean] | Should Be $true
+                $targetResource -is [System.Boolean] | Should -Be $true
             }
 
             It 'Passes when domain found' {
                 Mock -CommandName Get-Domain -MockWith {return $fakeDomainObject}
-                Test-TargetResource @testParams | Should Be $true
+                Test-TargetResource @testParams | Should -Be $true
             }
 
             It 'Fails when domain not found' {
                 Mock -CommandName Get-Domain
-                Test-TargetResource @testParams | Should Be $false
+                Test-TargetResource @testParams | Should -Be $false
             }
         }
         #endregion
@@ -113,44 +113,44 @@ try
                 Mock -CommandName Get-Domain -MockWith {return $fakeDomainObject}
                 Mock -CommandName Start-Sleep
                 Mock -CommandName Clear-DnsClientCache
-                {Set-TargetResource @testParams} | Should Not Throw
-                 $global:DSCMachineStatus | should not be 1
+                {Set-TargetResource @testParams} | Should -Not -Throw
+                 $global:DSCMachineStatus | should -not -be 1
                 Assert-MockCalled -CommandName Start-Sleep -Times 0 -Scope It
                 Assert-MockCalled -CommandName Clear-DnsClientCache -Times 0 -Scope It
             }
 
             It "Throws exception and does not set `$global:DSCMachineStatus when domain not found after $($testParams.RetryCount) retries when RebootRetryCount is not set" {
                 Mock -CommandName Get-Domain
-                {Set-TargetResource @testParams} | Should Throw
-                $global:DSCMachineStatus | should not be 1
+                {Set-TargetResource @testParams} | Should -Throw
+                $global:DSCMachineStatus | should -not -be 1
             }
 
             It "Throws exception when domain not found after $($rebootTestParams.RebootRetryCount) reboot retries when RebootRetryCount is exceeded" {
                 Mock -CommandName Get-Domain
                 Mock -CommandName Get-Content -MockWith {return $rebootTestParams.RebootRetryCount}
-                {Set-TargetResource @rebootTestParams} | Should Throw
+                {Set-TargetResource @rebootTestParams} | Should -Throw
             }
 
             It "Calls Set-Content if reboot count is less than RebootRetryCount when domain not found" {
                 Mock -CommandName Get-Domain
                 Mock -CommandName Get-Content -MockWith {return 0}
                 Mock -CommandName Set-Content
-                {Set-TargetResource @rebootTestParams} | Should Not Throw
+                {Set-TargetResource @rebootTestParams} | Should -Not -Throw
                 Assert-MockCalled -CommandName Set-Content -Times 1 -Exactly -Scope It
             }
 
             It "Sets `$global:DSCMachineStatus = 1 and does not throw an exception if the domain is not found and RebootRetryCount is not exceeded" {
                 Mock -CommandName Get-Domain
                 Mock -CommandName Get-Content -MockWith {return 0}
-                {Set-TargetResource @rebootTestParams} | Should Not Throw
-                $global:DSCMachineStatus | should be 1
+                {Set-TargetResource @rebootTestParams} | Should -Not -Throw
+                $global:DSCMachineStatus | should -be 1
             }
 
             It "Calls Get-Domain exactly $($testParams.RetryCount) times when domain not found" {
                 Mock -CommandName Get-Domain
                 Mock -CommandName Start-Sleep
                 Mock -CommandName Clear-DnsClientCache
-                {Set-TargetResource @testParams} | Should Throw
+                {Set-TargetResource @testParams} | Should -Throw
                 Assert-MockCalled -CommandName Get-Domain -Times $testParams.RetryCount -Exactly -Scope It
             }
 
@@ -158,7 +158,7 @@ try
                 Mock -CommandName Get-Domain
                 Mock -CommandName Start-Sleep
                 Mock -CommandName Clear-DnsClientCache
-                {Set-TargetResource @testParams} | Should Throw
+                {Set-TargetResource @testParams} | Should -Throw
                 Assert-MockCalled -CommandName Start-Sleep -Times $testParams.RetryCount -Exactly -Scope It
             }
 
@@ -166,7 +166,7 @@ try
                 Mock -CommandName Get-Domain
                 Mock -CommandName Start-Sleep
                 Mock -CommandName Clear-DnsClientCache
-                {Set-TargetResource @testParams} | Should Throw
+                {Set-TargetResource @testParams} | Should -Throw
                 Assert-MockCalled -CommandName Clear-DnsClientCache -Times $testParams.RetryCount -Exactly -Scope It
             }
         }

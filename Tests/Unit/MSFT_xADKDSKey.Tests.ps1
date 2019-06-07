@@ -404,7 +404,7 @@ try
 
                         $getTargetResourceResult = Get-TargetResource @getTargetResourceParametersFuture
 
-                        $getTargetResourceResult.Ensure | Should Be 'Absent'
+                        $getTargetResourceResult.Ensure | Should -Be 'Absent'
 
                         Assert-MockCalled -CommandName Assert-HasDomainAdminRights -Scope It -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-KdsRootKey -Scope It -Exactly -Times 1
@@ -422,7 +422,7 @@ try
                         }
 
                         $getTargetResourceResult = Get-TargetResource @getTargetResourceParametersFuture
-                        $getTargetResourceResult.Ensure | Should Be 'Absent'
+                        $getTargetResourceResult.Ensure | Should -Be 'Absent'
 
                         Assert-MockCalled -CommandName Assert-HasDomainAdminRights -Scope It -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-KdsRootKey -Scope It -Exactly -Times 1
@@ -606,7 +606,7 @@ try
                     }
 
                     $testTargetResourceParametersFuture[$Parameter] = $value
-                    Test-TargetResource @testTargetResourceParametersFuture | Should Be $false
+                    Test-TargetResource @testTargetResourceParametersFuture | Should -Be $false
 
                     Assert-MockCalled -CommandName Compare-TargetResourceState -ParameterFilter {
                         $mockKDSRootKeyFuture.EffectiveTime -eq $EffectiveTime

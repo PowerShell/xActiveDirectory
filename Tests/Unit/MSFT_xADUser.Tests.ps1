@@ -75,7 +75,7 @@ try
 
                 $adUser = Get-TargetResource @testPresentParams
 
-                $adUser -is [System.Collections.Hashtable] | Should Be $true
+                $adUser -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It "Returns 'Ensure' is 'Present' when user account exists" {
@@ -83,7 +83,7 @@ try
 
                 $adUser = Get-TargetResource @testPresentParams
 
-                $adUser.Ensure | Should Be 'Present'
+                $adUser.Ensure | Should -Be 'Present'
             }
 
             It "Returns 'Ensure' is 'Absent' when user account does not exist" {
@@ -91,7 +91,7 @@ try
 
                 $adUser = Get-TargetResource @testPresentParams
 
-                $adUser.Ensure | Should Be 'Absent'
+                $adUser.Ensure | Should -Be 'Absent'
             }
 
             It "Calls 'Get-ADUser' with 'Server' parameter when 'DomainController' specified" {
@@ -123,46 +123,46 @@ try
             It "Passes when user account does not exist and 'Ensure' is 'Absent'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testAbsentParams }
 
-                Test-TargetResource @testAbsentParams | Should Be $true
+                Test-TargetResource @testAbsentParams | Should -Be $true
             }
 
             It "Passes when user account exists and 'Ensure' is 'Present'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testPresentParams }
 
-                Test-TargetResource @testPresentParams | Should Be $true
+                Test-TargetResource @testPresentParams | Should -Be $true
             }
 
             It "Passes when user account password matches, 'Password' is specified and 'PasswordNeverResets' is False" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testPresentParams }
                 Mock -CommandName Test-Password { return $true }
 
-                Test-TargetResource @testPresentParams -Password $testCredential | Should Be $true
+                Test-TargetResource @testPresentParams -Password $testCredential | Should -Be $true
             }
 
             It "Passes when user account password does not match, 'Password' is specified and 'PasswordNeverResets' is True" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testPresentParams }
                 Mock -CommandName Test-Password { return $false }
 
-                Test-TargetResource @testPresentParams -Password $testCredential -PasswordNeverResets $true | Should Be $true
+                Test-TargetResource @testPresentParams -Password $testCredential -PasswordNeverResets $true | Should -Be $true
             }
 
             It "Fails when user account does not exist and 'Ensure' is 'Present'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testAbsentParams }
 
-                Test-TargetResource @testPresentParams | Should Be $false
+                Test-TargetResource @testPresentParams | Should -Be $false
             }
 
             It "Fails when user account exists, and 'Ensure' is 'Absent'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testPresentParams }
 
-                Test-TargetResource @testAbsentParams | Should Be $false
+                Test-TargetResource @testAbsentParams | Should -Be $false
             }
 
             It "Fails when user account password is incorrect, 'Password' is specified and 'PasswordNeverResets' is False" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testPresentParams }
                 Mock -CommandName Test-Password { return $false }
 
-                Test-TargetResource @testPresentParams -Password $testCredential | Should Be $false
+                Test-TargetResource @testPresentParams -Password $testCredential | Should -Be $false
             }
 
             It "Calls 'Test-Password' with 'Default' PasswordAuthentication by default" {
@@ -196,7 +196,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
 
                 It "Fails when user account '$testParameter' does not match incorrect AD account property value" {
@@ -210,7 +210,7 @@ try
                         return $invalidADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Fails when user account '$testParameter' does not match empty AD account property value" {
@@ -224,7 +224,7 @@ try
                         return $invalidADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Fails when user account '$testParameter' does not match null AD account property value" {
@@ -238,7 +238,7 @@ try
                         return $invalidADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Passes when empty user account '$testParameter' matches empty AD account property" {
@@ -250,7 +250,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
 
                 It "Passes when empty user account '$testParameter' matches null AD account property" {
@@ -262,7 +262,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
 
             } #end foreach test string property
@@ -279,7 +279,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
 
                 It "Should fail when user account '$testParameter' is true and does not match AD account property value" {
@@ -318,7 +318,7 @@ try
                         return $invalidADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
             } #end foreach test boolean property
@@ -334,7 +334,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
 
                 It "Passes when user account '$testParameter' matches single AD account property" {
@@ -347,7 +347,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
                 It "Passes when user account '$testParameter' matches multiple AD account property" {
                     $testParameterValue = @('Entry1', 'Entry2')
@@ -359,7 +359,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $true
+                    Test-TargetResource @testValidPresentParams | Should -Be $true
                 }
                 It "Fails when user account '$testParameter' does not match AD account property count" {
                     $testParameterValue = @('Entry1', 'Entry2')
@@ -371,7 +371,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Fails when user account '$testParameter' does not match AD account property name" {
@@ -384,7 +384,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Fails when user account '$testParameter' does not match empty AD account property" {
@@ -397,7 +397,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
                 It "Fails when empty user account '$testParameter' does not match AD account property" {
@@ -410,7 +410,7 @@ try
                         return $validADUser
                     }
 
-                    Test-TargetResource @testValidPresentParams | Should Be $false
+                    Test-TargetResource @testValidPresentParams | Should -Be $false
                 }
 
             }#end foreach test array property
@@ -658,15 +658,15 @@ try
         #region Function Assert-TargetResource
         Describe 'xADUser\Assert-Parameters' {
             It "Does not throw when 'PasswordNeverExpires' and 'CannotChangePassword' are specified" {
-                { Assert-Parameters -PasswordNeverExpires $true -CannotChangePassword $true } | Should Not Throw
+                { Assert-Parameters -PasswordNeverExpires $true -CannotChangePassword $true } | Should -Not -Throw
             }
 
             It "Throws when account is disabled and 'Password' is specified" {
-                { Assert-Parameters -Password $testCredential -Enabled $false } | Should Throw
+                { Assert-Parameters -Password $testCredential -Enabled $false } | Should -Throw
             }
 
             It "Does not throw when 'TrustedForDelegation' is specified" {
-                { Assert-Parameters -TrustedForDelegation $true } | Should Not Throw
+                { Assert-Parameters -TrustedForDelegation $true } | Should -Not -Throw
             }
 
             It "Should throw the correct error when 'PasswordNeverExpires' and 'ChangePasswordAtLogon' are specified" {
