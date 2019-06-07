@@ -98,7 +98,7 @@ function Get-TargetResource
                 Write-Verbose -Message ($script:localizedData.ObjectPermissionEntryFound -f $Path)
 
                 $returnValue['Ensure'] = 'Present'
-                $returnValue['ActiveDirectoryRights'] = [String[]] $access.ActiveDirectoryRights.ToString().Split(',').ForEach({ $_.Trim() })
+                $returnValue['ActiveDirectoryRights'] = [String[]] $access.ActiveDirectoryRights.ToString().Split(',').ForEach( { $_.Trim() })
 
                 return $returnValue
             }
@@ -199,11 +199,11 @@ function Set-TargetResource
         $ntAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList $IdentityReference
 
         $ace = New-Object -TypeName 'System.DirectoryServices.ActiveDirectoryAccessRule' -ArgumentList $ntAccount,
-                                                                                                       $ActiveDirectoryRights,
-                                                                                                       $AccessControlType,
-                                                                                                       $ObjectType,
-                                                                                                       $ActiveDirectorySecurityInheritance,
-                                                                                                       $InheritedObjectType
+        $ActiveDirectoryRights,
+        $AccessControlType,
+        $ObjectType,
+        $ActiveDirectorySecurityInheritance,
+        $InheritedObjectType
 
         $acl.AddAccessRule($ace)
     }
@@ -232,7 +232,8 @@ function Set-TargetResource
     }
 
     # Set the updated acl to the object
-    $acl | Set-Acl -Path "AD:$Path"
+    $acl |
+        Set-Acl -Path "AD:$Path"
 }
 
 <#
@@ -330,8 +331,11 @@ function Test-TargetResource
     if ($Ensure -eq 'Present')
     {
         # Convert to array to a string for easy compare
-        [String] $currentActiveDirectoryRights = ($currentState.ActiveDirectoryRights | Sort-Object) -join ', '
-        [String] $desiredActiveDirectoryRights = ($ActiveDirectoryRights | Sort-Object) -join ', '
+        [String] $currentActiveDirectoryRights = ($currentState.ActiveDirectoryRights |
+                Sort-Object) -join ', '
+
+        [String] $desiredActiveDirectoryRights = ($ActiveDirectoryRights |
+                Sort-Object) -join ', '
 
         $returnValue = $returnValue -and $currentActiveDirectoryRights -eq $desiredActiveDirectoryRights
     }

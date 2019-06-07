@@ -33,15 +33,19 @@ function Get-TargetResource
         $Site
     )
 
-    # Get the replication subnet filtered by it's name. If the subnet is not
-    # present, the command will return $null.
+    <#
+        Get the replication subnet filtered by it's name. If the subnet is not
+        present, the command will return $null.
+    #>
     Write-Verbose -Message ($script:localizedData.GetReplicationSubnet -f $Name)
+
     $replicationSubnet = Get-ADReplicationSubnet -Filter { Name -eq $Name }
 
     if ($null -eq $replicationSubnet)
     {
         # Replication subnet not found, return absent.
         Write-Verbose -Message ($script:localizedData.ReplicationSubnetAbsent -f $Name)
+
         $returnValue = @{
             Ensure   = 'Absent'
             Name     = $Name
@@ -53,13 +57,16 @@ function Get-TargetResource
     {
         # Get the name of the replication site, if it's not empty.
         $replicationSiteName = ''
+
         if ($null -ne $replicationSubnet.Site)
         {
-            $replicationSiteName = Get-ADObject -Identity $replicationSubnet.Site | Select-Object -ExpandProperty 'Name'
+            $replicationSiteName = Get-ADObject -Identity $replicationSubnet.Site |
+                Select-Object -ExpandProperty 'Name'
         }
 
         # Replication subnet found, return present.
         Write-Verbose -Message ($script:localizedData.ReplicationSubnetPresent -f $Name)
+
         $returnValue = @{
             Ensure   = 'Present'
             Name     = $Name
@@ -112,8 +119,10 @@ function Set-TargetResource
         $Location = ''
     )
 
-    # Get the replication subnet filtered by it's name. If the subnet is not
-    # present, the command will return $null.
+    <#
+        Get the replication subnet filtered by it's name. If the subnet is not
+        present, the command will return $null.
+    #>
     $replicationSubnet = Get-ADReplicationSubnet -Filter { Name -eq $Name }
 
     if ($Ensure -eq 'Present')
@@ -126,12 +135,16 @@ function Set-TargetResource
             $replicationSubnet = New-ADReplicationSubnet -Name $Name -Site $Site -PassThru
         }
 
-        # Get the name of the replication site, if it's not empty and update the
-        # site if it's not vaild.
+        <#
+            Get the name of the replication site, if it's not empty and update the
+            site if it's not vaild.
+        #>
         if ($null -ne $replicationSubnet.Site)
         {
-            $replicationSiteName = Get-ADObject -Identity $replicationSubnet.Site | Select-Object -ExpandProperty 'Name'
+            $replicationSiteName = Get-ADObject -Identity $replicationSubnet.Site |
+                Select-Object -ExpandProperty 'Name'
         }
+
         if ($replicationSiteName -ne $Site)
         {
             Write-Verbose -Message ($script:localizedData.SetReplicationSubnetSite -f $Name, $Site)
@@ -139,14 +152,17 @@ function Set-TargetResource
             Set-ADReplicationSubnet -Identity $replicationSubnet.DistinguishedName -Site $Site -PassThru
         }
 
-        # Update the location, if it's not valid. Ensure an empty location
-        # string is converted to $null, because the Set-ADReplicationSubnet does
-        # not accept an empty string for the location, but $null.
+        <#
+            Update the location, if it's not valid. Ensure an empty location
+            string is converted to $null, because the Set-ADReplicationSubnet
+            does not accept an empty string for the location, but $null.
+        #>
         $nullableLocation = $Location
         if ([String]::IsNullOrEmpty($Location))
         {
             $nullableLocation = $null
         }
+
         if ($replicationSubnet.Location -ne $nullableLocation)
         {
             Write-Verbose -Message ($script:localizedData.SetReplicationSubnetLocation -f $Name, $nullableLocation)
@@ -216,8 +232,8 @@ function Test-TargetResource
     if ($Ensure -eq 'Present')
     {
         $desiredConfigurationMatch = $desiredConfigurationMatch -and
-                                     $currentConfiguration.Site -eq $Site -and
-                                     $currentConfiguration.Location -eq $Location
+        $currentConfiguration.Site -eq $Site -and
+        $currentConfiguration.Location -eq $Location
     }
 
     if ($desiredConfigurationMatch)

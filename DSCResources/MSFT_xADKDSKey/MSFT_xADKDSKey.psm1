@@ -78,9 +78,10 @@ function Get-TargetResource
     $kdsRootKey = $null
     if ($kdsRootKeys)
     {
-        $kdsRootKey = $kdsRootKeys.GetEnumerator() | Where-Object -FilterScript {
-            [DateTime]::Parse($_.EffectiveTime) -eq $effectiveTimeObject
-        }
+        $kdsRootKey = $kdsRootKeys.GetEnumerator() |
+            Where-Object -FilterScript {
+                [DateTime]::Parse($_.EffectiveTime) -eq $effectiveTimeObject
+            }
     }
 
     if (-not $kdsRootKey)
@@ -102,12 +103,12 @@ function Get-TargetResource
         }
         elseif ($kdsRootKey)
         {
-            $targetResource['Ensure']            = 'Present'
-            $targetResource['EffectiveTime']     = ([DateTime]::Parse($kdsRootKey.EffectiveTime)).ToString()
-            $targetResource['CreationTime']      = $kdsRootKey.CreationTime
-            $targetResource['KeyId']             = $kdsRootKey.KeyId
+            $targetResource['Ensure'] = 'Present'
+            $targetResource['EffectiveTime'] = ([DateTime]::Parse($kdsRootKey.EffectiveTime)).ToString()
+            $targetResource['CreationTime'] = $kdsRootKey.CreationTime
+            $targetResource['KeyId'] = $kdsRootKey.KeyId
             $targetResource['DistinguishedName'] = 'CN={0},CN=Master Root Keys,CN=Group Key Distribution Service,CN=Services,CN=Configuration,{1}' -f
-                                                        $kdsRootKey.KeyId, (Get-ADRootDomainDN)
+            $kdsRootKey.KeyId, (Get-ADRootDomainDN)
         }
     }
 
@@ -182,14 +183,19 @@ function Test-TargetResource
     }
 
     $compareTargetResourceNonCompliant = Compare-TargetResourceState @getTargetResourceParameters |
-                                            Where-Object -FilterScript {$_.Pass -eq $false}
+        Where-Object -FilterScript {
+            $_.Pass -eq $false
+        }
 
-    $ensureState = $compareTargetResourceNonCompliant | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
+    $ensureState = $compareTargetResourceNonCompliant |
+        Where-Object -FilterScript {
+            $_.Parameter -eq 'Ensure'
+        }
 
     if ($ensureState)
     {
         Write-Verbose -Message ($script:localizedData.NotDesiredPropertyState -f
-                        'Ensure', $EffectiveTime, $ensureState.Expected, $ensureState.Actual)
+            'Ensure', $EffectiveTime, $ensureState.Expected, $ensureState.Actual)
         Write-Verbose -Message ($script:localizedData.KDSRootKeyNotInDesiredState -f $EffectiveTime)
         return $false
     }
@@ -267,7 +273,10 @@ function Set-TargetResource
     }
 
     $compareTargetResource = Compare-TargetResourceState @getTargetResourceParameters
-    $ensureState = $compareTargetResource | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
+    $ensureState = $compareTargetResource |
+        Where-Object -FilterScript {
+            $_.Parameter -eq 'Ensure'
+        }
 
     # Ensure is not in proper state
     if ($ensureState.Pass -eq $false)
@@ -288,7 +297,7 @@ function Set-TargetResource
 
             # We want the key to be present, but it currently does not exist
             if ($effectiveTimeObject -le $currentDateTimeObject -and
-                    $PSBoundParameters.ContainsKey('AllowUnsafeEffectiveTime') -and $AllowUnsafeEffectiveTime)
+                $PSBoundParameters.ContainsKey('AllowUnsafeEffectiveTime') -and $AllowUnsafeEffectiveTime)
             {
                 Write-Warning -Message ($script:localizedData.AddingKDSRootKeyDateInPast -f $EffectiveTime)
             }
@@ -342,7 +351,9 @@ function Set-TargetResource
                 }
             }
 
-            $distinguishedName = $compareTargetResource | Where-Object -FilterScript {$_.Parameter -eq 'DistinguishedName'}
+            $distinguishedName = $compareTargetResource |
+                Where-Object -FilterScript { $_.Parameter -eq 'DistinguishedName' }
+
             try
             {
                 Remove-ADObject -Identity $distinguishedName.Actual -Confirm:$false
@@ -395,7 +406,7 @@ function Compare-TargetResourceState
     )
 
     $getTargetResourceParameters = @{
-        EffectiveTime  = $EffectiveTime
+        EffectiveTime = $EffectiveTime
     }
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
@@ -405,7 +416,7 @@ function Compare-TargetResourceState
     $PSBoundParameters['DistinguishedName'] = $getTargetResourceResult['DistinguishedName']
 
     # Convert EffectiveTime to DateTime object for comparison
-    $PSBoundParameters['EffectiveTime']  = [DateTime]::Parse($EffectiveTime)
+    $PSBoundParameters['EffectiveTime'] = [DateTime]::Parse($EffectiveTime)
     $getTargetResourceResult['EffectiveTime'] = [DateTime]::Parse($getTargetResourceResult.EffectiveTime)
 
     foreach ($parameter in $PSBoundParameters.Keys)
@@ -451,6 +462,10 @@ function Compare-TargetResourceState
 
     .PARAMETER User
         The user to check permissions against
+
+    .NOTES
+        Get-KdsRootKey will return $null instead of a permission error if it can't retrieve the keys
+        so we need manually check
 #>
 function Assert-HasDomainAdminRights
 {
@@ -464,12 +479,6 @@ function Assert-HasDomainAdminRights
         $User
     )
 
-    <#
-     Get-KdsRootKey will return $null instead of a permission error if it can't retrieve the keys
-     so we need manually check
-    #>
-
-
     $windowsPrincipal = New-Object -TypeName System.Security.Principal.WindowsPrincipal($User)
     $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
 
@@ -477,8 +486,8 @@ function Assert-HasDomainAdminRights
     Write-Verbose -Message ($script:localizedData.CheckingDomainAdminComputerRights -f $osInfo.CSName, $osInfo.ProductType)
 
     return $windowsPrincipal.IsInRole("Domain Admins") -or
-            $windowsPrincipal.IsInRole("Enterprise Admins") -or
-            $osInfo.ProductType -eq 2
+    $windowsPrincipal.IsInRole("Enterprise Admins") -or
+    $osInfo.ProductType -eq 2
 }
 
 <#
@@ -497,7 +506,9 @@ function Get-ADRootDomainDN
 {
     [CmdletBinding()]
     [OutputType([System.String])]
-    param()
+    param
+    (
+    )
 
     $rootDomainDN = (New-Object -TypeName System.DirectoryServices.DirectoryEntry('LDAP://RootDSE')).Get('rootDomainNamingContext')
     Write-Verbose -Message ($script:localizedData.RetrievedRootDomainDN -f $rootDomainDN)
