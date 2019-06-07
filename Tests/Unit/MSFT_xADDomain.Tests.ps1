@@ -95,7 +95,7 @@ try
 
                 $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
 
-                $result -is [System.Collections.Hashtable] | Should Be $true
+                $result -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It 'Calls "Get-ADDomain" without credentials if domain member' {
@@ -133,7 +133,7 @@ try
                 }
 
                 ## Match operator is case-sensitive!
-                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'invalid credentials'
+                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw 'invalid credentials'
             }
 
             It 'Throws "Computer is already a domain member" when is already a domain member' {
@@ -141,7 +141,7 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException)
                 }
 
-                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should Throw 'Computer is already a domain member'
+                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw 'Computer is already a domain member'
             }
 
             It 'Does not throw when domain cannot be located' {
@@ -149,7 +149,7 @@ try
                     Write-Error -Exception (New-Object Microsoft.ActiveDirectory.Management.ADServerDownException)
                 }
 
-                { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should Not Throw
+                { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should -Not -Throw
             }
 
             It 'Returns the correct domain mode' {
@@ -161,7 +161,7 @@ try
                 }
                 Mock -CommandName Get-ADForest -MockWith { [psobject]@{ForestMode = $mgmtForestMode} }
 
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should Be $domainMode
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should -Be $domainMode
             }
 
             It 'Returns the correct forest mode' {
@@ -173,7 +173,7 @@ try
                 }
                 Mock -CommandName Get-ADForest -MockWith { [psobject]@{ForestMode = $mgmtForestMode} }
 
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should Be $forestMode
+                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should -Be $forestMode
             }
         }
         #endregion
@@ -209,7 +209,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName
 
-                $result | Should Be $true
+                $result | Should -Be $true
             }
 
             It 'Returns "False" when "DomainName" does not match' {
@@ -217,7 +217,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $incorrectDomainName
 
-                $result | Should Be $false
+                $result | Should -Be $false
             }
 
             It 'Returns "True" when "DomainNetBIOSName" matches' {
@@ -225,7 +225,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DomainNetBIOSName $correctDomainNetBIOSName
 
-                $result | Should Be $true
+                $result | Should -Be $true
             }
 
             It 'Returns "False" when "DomainNetBIOSName" does not match' {
@@ -233,7 +233,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DomainNetBIOSName 'INCORRECT'
 
-                $result | Should Be $false
+                $result | Should -Be $false
             }
 
             It 'Returns "True" when "ParentDomainName" matches' {
@@ -241,7 +241,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctChildDomainName -ParentDomainName $parentDomainName
 
-                $result | Should Be $true
+                $result | Should -Be $true
             }
 
             It 'Returns "False" when "ParentDomainName" does not match' {
@@ -249,7 +249,7 @@ try
 
                 $result = Test-TargetResource @testDefaultParams -DomainName $correctChildDomainName -ParentDomainName 'incorrect.com'
 
-                $result | Should Be $false
+                $result | Should -Be $false
             }
 
         }

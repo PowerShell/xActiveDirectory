@@ -86,7 +86,7 @@ try
                 $targetResource = Get-TargetResource -Name $presentSiteName
 
                 # Assert
-                $targetResource -is [System.Collections.Hashtable] | Should Be $true
+                $targetResource -is [System.Collections.Hashtable] | Should -Be $true
             }
 
             It 'Should return present if the site exists' {
@@ -98,8 +98,8 @@ try
                 $targetResource = Get-TargetResource -Name $presentSiteName
 
                 # Assert
-                $targetResource.Ensure | Should Be 'Present'
-                $targetResource.Name   | Should Be $presentSiteName
+                $targetResource.Ensure | Should -Be 'Present'
+                $targetResource.Name   | Should -Be $presentSiteName
             }
 
             It 'Should return absent if the site does not exist' {
@@ -111,8 +111,8 @@ try
                 $targetResource = Get-TargetResource -Name $absentSiteName
 
                 # Assert
-                $targetResource.Ensure | Should Be 'Absent'
-                $targetResource.Name   | Should Be $absentSiteName
+                $targetResource.Ensure | Should -Be 'Absent'
+                $targetResource.Name   | Should -Be $absentSiteName
             }
         }
         #endregion
@@ -128,7 +128,7 @@ try
                 $targetResourceState = Test-TargetResource @presentSiteTestPresent
 
                 # Assert
-                $targetResourceState -is [System.Boolean] | Should Be $true
+                $targetResourceState -is [System.Boolean] | Should -Be $true
             }
 
             It 'Should return true if the site should exists and does exists' {
@@ -140,7 +140,7 @@ try
                 $targetResourceState = Test-TargetResource @presentSiteTestPresent
 
                 # Assert
-                $targetResourceState | Should Be $true
+                $targetResourceState | Should -Be $true
             }
 
             It 'Should return false if the site should exists but does not exists' {
@@ -152,7 +152,7 @@ try
                 $targetResourceState = Test-TargetResource @absentSiteTestPresent
 
                 # Assert
-                $targetResourceState | Should Be $false
+                $targetResourceState | Should -Be $false
             }
 
             It 'Should return false if the site should not exists but does exists' {
@@ -164,7 +164,7 @@ try
                 $targetResourceState = Test-TargetResource @presentSiteTestAbsent
 
                 # Assert
-                $targetResourceState | Should Be $false
+                $targetResourceState | Should -Be $false
             }
 
             It 'Should return true if the site should not exists and does not exists' {
@@ -176,7 +176,7 @@ try
                 $targetResourceState = Test-TargetResource @absentSiteTestAbsent
 
                 # Assert
-                $targetResourceState | Should Be $true
+                $targetResourceState | Should -Be $true
             }
         }
 

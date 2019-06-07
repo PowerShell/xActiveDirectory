@@ -110,7 +110,7 @@ try
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
 
                     # Assert
-                    $targetResource | Should BeOfType [System.Collections.Hashtable]
+                    $targetResource | Should -BeOfType [System.Collections.Hashtable]
                 }
 
                 It 'Should return a valid result if the ace is present' {
@@ -118,14 +118,14 @@ try
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
 
                     # Assert
-                    $targetResource.Ensure                             | Should Be 'Present'
-                    $targetResource.Path                               | Should Be $testDefaultParameters.Path
-                    $targetResource.IdentityReference                  | Should Be $testDefaultParameters.IdentityReference
-                    $targetResource.ActiveDirectoryRights              | Should Be 'GenericAll'
-                    $targetResource.AccessControlType                  | Should Be $testDefaultParameters.AccessControlType
-                    $targetResource.ObjectType                         | Should Be $testDefaultParameters.ObjectType
-                    $targetResource.ActiveDirectorySecurityInheritance | Should Be $testDefaultParameters.ActiveDirectorySecurityInheritance
-                    $targetResource.InheritedObjectType                | Should Be $testDefaultParameters.InheritedObjectType
+                    $targetResource.Ensure                             | Should -Be 'Present'
+                    $targetResource.Path                               | Should -Be $testDefaultParameters.Path
+                    $targetResource.IdentityReference                  | Should -Be $testDefaultParameters.IdentityReference
+                    $targetResource.ActiveDirectoryRights              | Should -Be 'GenericAll'
+                    $targetResource.AccessControlType                  | Should -Be $testDefaultParameters.AccessControlType
+                    $targetResource.ObjectType                         | Should -Be $testDefaultParameters.ObjectType
+                    $targetResource.ActiveDirectorySecurityInheritance | Should -Be $testDefaultParameters.ActiveDirectorySecurityInheritance
+                    $targetResource.InheritedObjectType                | Should -Be $testDefaultParameters.InheritedObjectType
                 }
             }
 
@@ -143,14 +143,14 @@ try
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
 
                     # Assert
-                    $targetResource.Ensure                             | Should Be 'Absent'
-                    $targetResource.Path                               | Should Be $testDefaultParameters.Path
-                    $targetResource.IdentityReference                  | Should Be $testDefaultParameters.IdentityReference
-                    $targetResource.ActiveDirectoryRights              | Should Be ''
-                    $targetResource.AccessControlType                  | Should Be $testDefaultParameters.AccessControlType
-                    $targetResource.ObjectType                         | Should Be $testDefaultParameters.ObjectType
-                    $targetResource.ActiveDirectorySecurityInheritance | Should Be $testDefaultParameters.ActiveDirectorySecurityInheritance
-                    $targetResource.InheritedObjectType                | Should Be $testDefaultParameters.InheritedObjectType
+                    $targetResource.Ensure                             | Should -Be 'Absent'
+                    $targetResource.Path                               | Should -Be $testDefaultParameters.Path
+                    $targetResource.IdentityReference                  | Should -Be $testDefaultParameters.IdentityReference
+                    $targetResource.ActiveDirectoryRights              | Should -Be ''
+                    $targetResource.AccessControlType                  | Should -Be $testDefaultParameters.AccessControlType
+                    $targetResource.ObjectType                         | Should -Be $testDefaultParameters.ObjectType
+                    $targetResource.ActiveDirectorySecurityInheritance | Should -Be $testDefaultParameters.ActiveDirectorySecurityInheritance
+                    $targetResource.InheritedObjectType                | Should -Be $testDefaultParameters.InheritedObjectType
                 }
             }
         }
@@ -169,7 +169,7 @@ try
                     $targetResource = Test-TargetResource @testDefaultParameters @testPresentParameters
 
                     # Assert
-                    $targetResource | Should BeOfType [System.Boolean]
+                    $targetResource | Should -BeOfType [System.Boolean]
                 }
 
                 It 'Should return $true if the ace desired state is present' {
@@ -177,7 +177,7 @@ try
                     $targetResource = Test-TargetResource @testDefaultParameters @testPresentParameters -Verbose
 
                     # Assert
-                    $targetResource | Should Be $true
+                    $targetResource | Should -Be $true
                 }
 
                 It 'Should return $false if the ace desired state is absent' {
@@ -185,7 +185,7 @@ try
                     $targetResource = Test-TargetResource @testDefaultParameters @testAbsentParameters
 
                     # Assert
-                    $targetResource | Should Be $false
+                    $targetResource | Should -Be $false
                 }
             }
 
@@ -198,7 +198,7 @@ try
                     $targetResource = Test-TargetResource @testDefaultParameters @testPresentParameters
 
                     # Assert
-                    $targetResource | Should Be $false
+                    $targetResource | Should -Be $false
                 }
 
                 It 'Should return $true if the ace desired state is absent' {
@@ -206,7 +206,7 @@ try
                     $targetResource = Test-TargetResource @testDefaultParameters @testAbsentParameters
 
                     # Assert
-                    $targetResource | Should Be $true
+                    $targetResource | Should -Be $true
                 }
             }
         }
