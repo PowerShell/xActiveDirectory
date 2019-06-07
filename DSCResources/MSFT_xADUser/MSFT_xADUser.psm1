@@ -13,47 +13,148 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADUser'
 # Create a property map that maps the DSC resource parameters to the
 # Active Directory user attributes.
 $adPropertyMap = @(
-    @{ Parameter = 'CommonName'; ADProperty = 'cn'; }
-    @{ Parameter = 'UserPrincipalName'; }
-    @{ Parameter = 'DisplayName'; }
-    @{ Parameter = 'Path'; ADProperty = 'distinguishedName'; }
-    @{ Parameter = 'GivenName'; }
-    @{ Parameter = 'Initials'; }
-    @{ Parameter = 'Surname'; ADProperty = 'sn'; }
-    @{ Parameter = 'Description'; }
-    @{ Parameter = 'StreetAddress'; }
-    @{ Parameter = 'POBox'; }
-    @{ Parameter = 'City'; ADProperty = 'l'; }
-    @{ Parameter = 'State'; ADProperty = 'st'; }
-    @{ Parameter = 'PostalCode'; }
-    @{ Parameter = 'Country'; ADProperty = 'c'; }
-    @{ Parameter = 'Department'; }
-    @{ Parameter = 'Division'; }
-    @{ Parameter = 'Company'; }
-    @{ Parameter = 'Office'; ADProperty = 'physicalDeliveryOfficeName'; }
-    @{ Parameter = 'JobTitle'; ADProperty = 'title'; }
-    @{ Parameter = 'EmailAddress'; ADProperty = 'mail'; }
-    @{ Parameter = 'EmployeeID'; }
-    @{ Parameter = 'EmployeeNumber'; }
-    @{ Parameter = 'HomeDirectory'; }
-    @{ Parameter = 'HomeDrive'; }
-    @{ Parameter = 'HomePage'; ADProperty = 'wWWHomePage'; }
-    @{ Parameter = 'ProfilePath'; }
-    @{ Parameter = 'LogonScript'; ADProperty = 'scriptPath'; }
-    @{ Parameter = 'Notes'; ADProperty = 'info'; }
-    @{ Parameter = 'OfficePhone'; ADProperty = 'telephoneNumber'; }
-    @{ Parameter = 'MobilePhone'; ADProperty = 'mobile'; }
-    @{ Parameter = 'Fax'; ADProperty = 'facsimileTelephoneNumber'; }
-    @{ Parameter = 'Pager'; }
-    @{ Parameter = 'IPPhone'; }
-    @{ Parameter = 'HomePhone'; }
-    @{ Parameter = 'Enabled'; }
-    @{ Parameter = 'Manager'; }
-    @{ Parameter = 'PasswordNeverExpires'; UseCmdletParameter = $true; }
-    @{ Parameter = 'CannotChangePassword'; UseCmdletParameter = $true; }
-    @{ Parameter = 'ChangePasswordAtLogon'; UseCmdletParameter = $true; }
-    @{ Parameter = 'TrustedForDelegation'; UseCmdletParameter = $true; }
-    @{ Parameter = 'ServicePrincipalNames'; }
+    @{
+        Parameter = 'CommonName'
+        ADProperty = 'cn'
+    }
+    @{
+        Parameter = 'UserPrincipalName'
+    }
+    @{
+        Parameter = 'DisplayName'
+    }
+    @{
+        Parameter = 'Path'
+        ADProperty = 'distinguishedName'
+    }
+    @{
+        Parameter = 'GivenName'
+    }
+    @{
+        Parameter = 'Initials'
+    }
+    @{
+        Parameter = 'Surname'
+        ADProperty = 'sn'
+    }
+    @{
+        Parameter = 'Description'
+    }
+    @{
+        Parameter = 'StreetAddress'
+    }
+    @{
+        Parameter = 'POBox'
+    }
+    @{
+        Parameter = 'City'
+        ADProperty = 'l'
+    }
+    @{
+        Parameter = 'State'
+        ADProperty = 'st'
+    }
+    @{
+        Parameter = 'PostalCode'
+    }
+    @{
+        Parameter = 'Country'
+        ADProperty = 'c'
+    }
+    @{
+        Parameter = 'Department'
+    }
+    @{
+        Parameter = 'Division'
+    }
+    @{
+        Parameter = 'Company'
+    }
+    @{
+        Parameter = 'Office'
+        ADProperty = 'physicalDeliveryOfficeName'
+    }
+    @{
+        Parameter = 'JobTitle'
+        ADProperty = 'title'
+    }
+    @{
+        Parameter = 'EmailAddress'
+        ADProperty = 'mail'
+    }
+    @{
+        Parameter = 'EmployeeID'
+    }
+    @{
+        Parameter = 'EmployeeNumber'
+    }
+    @{
+        Parameter = 'HomeDirectory'
+    }
+    @{
+        Parameter = 'HomeDrive'
+    }
+    @{
+        Parameter = 'HomePage'
+        ADProperty = 'wWWHomePage'
+    }
+    @{
+        Parameter = 'ProfilePath'
+    }
+    @{
+        Parameter = 'LogonScript'
+        ADProperty = 'scriptPath'
+    }
+    @{
+        Parameter = 'Notes'
+        ADProperty = 'info'
+    }
+    @{
+        Parameter = 'OfficePhone'
+        ADProperty = 'telephoneNumber'
+    }
+    @{
+        Parameter = 'MobilePhone'
+        ADProperty = 'mobile'
+    }
+    @{
+        Parameter = 'Fax'
+        ADProperty = 'facsimileTelephoneNumber'
+    }
+    @{
+        Parameter = 'Pager'
+    }
+    @{
+        Parameter = 'IPPhone'
+    }
+    @{
+        Parameter = 'HomePhone'
+    }
+    @{
+        Parameter = 'Enabled'
+    }
+    @{
+        Parameter = 'Manager'
+    }
+    @{
+        Parameter = 'PasswordNeverExpires'
+        UseCmdletParameter = $true
+    }
+    @{
+        Parameter = 'CannotChangePassword'
+        UseCmdletParameter = $true
+    }
+    @{
+        Parameter = 'ChangePasswordAtLogon'
+        UseCmdletParameter = $true
+    }
+    @{
+        Parameter = 'TrustedForDelegation'
+        UseCmdletParameter = $true
+    }
+    @{
+        Parameter = 'ServicePrincipalNames'
+    }
 )
 
 function Get-TargetResource
@@ -85,7 +186,7 @@ function Get-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        # Specifies the common nane assigned to the user account (ldapDisplayName 'cn')
+        # Specifies the common name assigned to the user account (ldapDisplayName 'cn')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -247,7 +348,7 @@ function Get-TargetResource
         [System.String]
         $LogonScript,
 
-        # Specifies the notes attached to the user's accoutn (ldapDisplayName 'info')
+        # Specifies the notes attached to the user's account (ldapDisplayName 'info')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -370,6 +471,7 @@ function Get-TargetResource
         $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
 
         $adProperties = @()
+
         # Create an array of the AD propertie names to retrieve from the property map
         foreach ($property in $adPropertyMap)
         {
@@ -384,13 +486,17 @@ function Get-TargetResource
         }
 
         Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName)
+
         $adUser = Get-ADUser @adCommonParameters -Properties $adProperties
+
         Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName)
+
         $Ensure = 'Present'
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
         Write-Verbose -Message ($script:localizedData.ADUserNotPresent -f $UserName, $DomainName)
+
         $Ensure = 'Absent'
     }
     catch
@@ -442,8 +548,8 @@ function Get-TargetResource
             $targetResource[$property.Parameter] = $adUser.($property.Parameter)
         }
     }
-    return $targetResource
 
+    return $targetResource
 } #end function Get-TargetResource
 
 function Test-TargetResource
@@ -475,7 +581,7 @@ function Test-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        # Specifies the common nane assigned to the user account (ldapDisplayName 'cn')
+        # Specifies the common name assigned to the user account (ldapDisplayName 'cn')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -637,7 +743,7 @@ function Test-TargetResource
         [System.String]
         $LogonScript,
 
-        # Specifies the notes attached to the user's accoutn (ldapDisplayName 'info')
+        # Specifies the notes attached to the user's account (ldapDisplayName 'info')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -754,7 +860,9 @@ function Test-TargetResource
     )
 
     Assert-Parameters @PSBoundParameters
+
     $targetResource = Get-TargetResource @PSBoundParameters
+
     $isCompliant = $true
 
     if ($Ensure -eq 'Absent')
@@ -781,10 +889,12 @@ function Test-TargetResource
                     DomainName             = $DomainName
                     PasswordAuthentication = $PasswordAuthentication
                 }
+
                 if ($DomainAdministratorCredential)
                 {
                     $testPasswordParams['DomainAdministratorCredential'] = $DomainAdministratorCredential
                 }
+
                 if (-not (Test-Password @testPasswordParams))
                 {
                     Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Password', '<Password>', '<Password>')
@@ -805,12 +915,15 @@ function Test-TargetResource
                         ExistingMembers = $targetResource.ServicePrincipalNames -as [System.String[]]
                         Members         = $ServicePrincipalNames
                     }
+
                     if (-not (Test-Members @testMembersParams))
                     {
                         $existingSPNs = $testMembersParams['ExistingMembers'] -join ','
                         $desiredSPNs = $ServicePrincipalNames -join ','
+
                         Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f `
                                 'ServicePrincipalNames', $desiredSPNs, $existingSPNs)
+
                         $isCompliant = $false
                     }
                 }
@@ -824,7 +937,6 @@ function Test-TargetResource
     }
 
     return $isCompliant
-
 } #end function Test-TargetResource
 
 function Set-TargetResource
@@ -855,7 +967,7 @@ function Set-TargetResource
         [System.String]
         $Ensure = 'Present',
 
-        # Specifies the common nane assigned to the user account (ldapDisplayName 'cn')
+        # Specifies the common name assigned to the user account (ldapDisplayName 'cn')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -1017,7 +1129,7 @@ function Set-TargetResource
         [System.String]
         $LogonScript,
 
-        # Specifies the notes attached to the user's accoutn (ldapDisplayName 'info')
+        # Specifies the notes attached to the user's account (ldapDisplayName 'info')
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
@@ -1134,6 +1246,7 @@ function Set-TargetResource
     )
 
     Assert-Parameters @PSBoundParameters
+
     $targetResource = Get-TargetResource @PSBoundParameters
 
     # Add common name, ensure and enabled as they may not be explicitly passed
@@ -1156,25 +1269,32 @@ function Set-TargetResource
             {
                 # User does not exist and needs creating
                 $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
+
                 if ($PSBoundParameters.ContainsKey('Path'))
                 {
                     $newADUserParams['Path'] = $Path
                 }
+
                 # Populate the AccountPassword parameter of New-ADUser if password declared
                 if ($PSBoundParameters.ContainsKey('Password'))
                 {
                     $newADUserParams['AccountPassword'] = $Password.Password
                 }
+
                 Write-Verbose -Message ($script:localizedData.AddingADUser -f $UserName)
+
                 New-ADUser @newADUserParams -SamAccountName $UserName
+
                 # Now retrieve the newly created user
                 $targetResource = Get-TargetResource @PSBoundParameters
             }
         }
 
         $setADUserParams = Get-ADCommonParameters @PSBoundParameters
+
         $replaceUserProperties = @{ }
         $removeUserProperties = @{ }
+
         foreach ($parameter in $PSBoundParameters.Keys)
         {
             # Only check/action properties specified/declared parameters that match one of the function's
@@ -1185,30 +1305,40 @@ function Set-TargetResource
                 {
                     # Cannot move users by updating the DistinguishedName property
                     $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+
                     # Using the SamAccountName for identity with Move-ADObject does not work, use the DN instead
                     $adCommonParameters['Identity'] = $targetResource.DistinguishedName
+
                     Write-Verbose -Message ($script:localizedData.MovingADUser -f $targetResource.Path, $PSBoundParameters.Path)
+
                     Move-ADObject @adCommonParameters -TargetPath $PSBoundParameters.Path
                 }
                 elseif ($parameter -eq 'CommonName' -and ($PSBoundParameters.CommonName -ne $targetResource.CommonName))
                 {
                     # Cannot rename users by updating the CN property directly
                     $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+
                     # Using the SamAccountName for identity with Rename-ADObject does not work, use the DN instead
                     $adCommonParameters['Identity'] = $targetResource.DistinguishedName
+
                     Write-Verbose -Message ($script:localizedData.RenamingADUser -f $targetResource.CommonName, $PSBoundParameters.CommonName)
+
                     Rename-ADObject @adCommonParameters -NewName $PSBoundParameters.CommonName
                 }
                 elseif ($parameter -eq 'Password' -and $PasswordNeverResets -eq $false)
                 {
                     $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+
                     Write-Verbose -Message ($script:localizedData.SettingADUserPassword -f $UserName)
+
                     Set-ADAccountPassword @adCommonParameters -Reset -NewPassword $Password.Password
                 }
                 elseif ($parameter -eq 'Enabled' -and ($PSBoundParameters.$parameter -ne $targetResource.$parameter))
                 {
-                    # We cannot enable/disable an account with -Add or -Replace parameters, but inform that
-                    # we will change this as it is out of compliance (it always gets set anyway)
+                    <#
+                        We cannot enable/disable an account with -Add or -Replace parameters, but inform that
+                        we will change this as it is out of compliance (it always gets set anyway).
+                    #>
                     Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
                 }
                 elseif ($parameter -eq 'ServicePrincipalNames')
@@ -1233,6 +1363,7 @@ function Set-TargetResource
                         if (-not ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                         {
                             Write-Verbose -Message ($script:localizedData.RemovingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
+
                             if ($adProperty.UseCmdletParameter -eq $true)
                             {
                                 # We need to pass the parameter explicitly to Set-ADUser, not via -Remove
@@ -1252,6 +1383,7 @@ function Set-TargetResource
                     {
                         # We are replacing the existing value
                         Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
+
                         if ($adProperty.UseCmdletParameter -eq $true)
                         {
                             # We need to pass the parameter explicitly to Set-ADUser, not via -Replace
@@ -1276,19 +1408,23 @@ function Set-TargetResource
         {
             $setADUserParams['Replace'] = $replaceUserProperties
         }
+
         if ($removeUserProperties.Count -gt 0)
         {
             $setADUserParams['Remove'] = $removeUserProperties
         }
 
         Write-Verbose -Message ($script:localizedData.UpdatingADUser -f $UserName)
+
         [ref] $null = Set-ADUser @setADUserParams -Enabled $Enabled
     }
     elseif (($Ensure -eq 'Absent') -and ($targetResource.Ensure -eq 'Present'))
     {
         # User exists and needs removing
         Write-Verbose ($script:localizedData.RemovingADUser -f $UserName)
+
         $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+
         [ref] $null = Remove-ADUser @adCommonParameters -Confirm:$false
     }
 
@@ -1331,6 +1467,7 @@ function Assert-Parameters
             ErrorId      = 'xADUser_DisabledAccountPasswordConflict'
             ErrorMessage = $script:localizedData.PasswordParameterConflictError -f 'Enabled', $false, 'Password'
         }
+
         ThrowInvalidArgumentError @throwInvalidArgumentErrorParams
     }
 
@@ -1380,6 +1517,7 @@ function Test-Password
     )
 
     Write-Verbose -Message ($script:localizedData.CreatingADDomainConnection -f $DomainName)
+
     Add-Type -AssemblyName 'System.DirectoryServices.AccountManagement'
 
     if ($DomainAdministratorCredential)
@@ -1400,6 +1538,7 @@ function Test-Password
             $null
         )
     }
+
     Write-Verbose -Message ($script:localizedData.CheckingADUserPassword -f $UserName)
 
     if ($PasswordAuthentication -eq 'Negotiate')
@@ -1420,7 +1559,6 @@ function Test-Password
             $Password.GetNetworkCredential().Password
         )
     }
-
 } #end function Test-Password
 
 Export-ModuleMember -Function *-TargetResource
