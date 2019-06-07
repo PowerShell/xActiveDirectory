@@ -12,25 +12,32 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]$DomainName,
+        [String]
+        $DomainName,
 
         [Parameter()]
-        [PSCredential]$DomainUserCredential,
+        [PSCredential]
+        $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]$RetryIntervalSec = 60,
+        [UInt64]
+        $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]$RetryCount = 10,
+        [UInt32]
+        $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]$RebootRetryCount = 0
-
+        [UInt32]
+        $RebootRetryCount = 0
     )
 
-    if($DomainUserCredential)
+    if ($DomainUserCredential)
     {
-        $convertToCimCredential = New-CimInstance -ClassName MSFT_Credential -Property @{Username=[string]$DomainUserCredential.UserName; Password=[string]$null} -Namespace root/microsoft/windows/desiredstateconfiguration -ClientOnly
+        $convertToCimCredential = New-CimInstance -ClassName MSFT_Credential -Namespace 'root/microsoft/windows/desiredstateconfiguration' -ClientOnly -Property @{
+            Username = [System.String] $DomainUserCredential.UserName
+            Password = [System.String] $null
+        }
     }
     else
     {
@@ -38,20 +45,17 @@ function Get-TargetResource
     }
 
     Write-Verbose -Message ($script:localizedData.GetDomain -f $DomainName)
+
     $domain = Get-Domain -DomainName $DomainName -DomainUserCredential $DomainUserCredential
 
-
-    $returnValue = @{
+    return @{
         DomainName = $domain.Name
         DomainUserCredential = $convertToCimCredential
         RetryIntervalSec = $RetryIntervalSec
         RetryCount = $RetryCount
         RebootRetryCount = $RebootRetryCount
     }
-
-    $returnValue
 }
-
 
 function Set-TargetResource
 {
@@ -69,31 +73,36 @@ function Set-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]$DomainName,
+        [String]
+        $DomainName,
 
         [Parameter()]
-        [PSCredential]$DomainUserCredential,
+        [PSCredential]
+        $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]$RetryIntervalSec = 60,
+        [UInt64]
+        $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]$RetryCount = 10,
+        [UInt32]
+        $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]$RebootRetryCount = 0
+        [UInt32]
+        $RebootRetryCount = 0
 
     )
 
     $rebootLogFile = "$env:temp\xWaitForADDomain_Reboot.tmp"
 
-    for($count = 0; $count -lt $RetryCount; $count++)
+    for ($count = 0; $count -lt $RetryCount; $count++)
     {
         $domain = Get-Domain -DomainName $DomainName -DomainUserCredential $DomainUserCredential
 
-        if($domain)
+        if ($domain)
         {
-            if($RebootRetryCount -gt 0)
+            if ($RebootRetryCount -gt 0)
             {
                 Remove-Item $rebootLogFile -ErrorAction SilentlyContinue
             }
@@ -103,30 +112,33 @@ function Set-TargetResource
         else
         {
             Write-Verbose -Message ($script:localizedData.DomainNotFoundRetrying -f $DomainName, $RetryIntervalSec)
+
             Start-Sleep -Seconds $RetryIntervalSec
+
             Clear-DnsClientCache
         }
     }
 
-    if(-not $domain)
+    if (-not $domain)
     {
-        if($RebootRetryCount -gt 0)
+        if ($RebootRetryCount -gt 0)
         {
-            [UInt32]$rebootCount = Get-Content $RebootLogFile -ErrorAction SilentlyContinue
+            [UInt32] $rebootCount = Get-Content $RebootLogFile -ErrorAction SilentlyContinue
 
-            if($rebootCount -lt $RebootRetryCount)
+            if ($rebootCount -lt $RebootRetryCount)
             {
                 $rebootCount = $rebootCount + 1
+
                 Write-Verbose -Message  ($script:localizedData.DomainNotFoundRebooting -f $DomainName, $count, $RetryIntervalSec, $rebootCount, $RebootRetryCount)
+
                 Set-Content -Path $RebootLogFile -Value $rebootCount
+
                 $global:DSCMachineStatus = 1
             }
             else
             {
                 throw ($script:localizedData.DomainNotFoundAfterReboot -f $DomainName, $RebootRetryCount)
             }
-
-
         }
         else
         {
@@ -161,24 +173,23 @@ function Test-TargetResource
 
     $domain = Get-Domain -DomainName $DomainName -DomainUserCredential $DomainUserCredential
 
-    if($domain)
+    if ($domain)
     {
-        if($RebootRetryCount -gt 0)
+        if ($RebootRetryCount -gt 0)
         {
             Remove-Item $rebootLogFile -ErrorAction SilentlyContinue
         }
 
         Write-Verbose -Message ($script:localizedData.DomainInDesiredState -f $DomainName)
-        $true
+
+        return $true
     }
     else
     {
         Write-Verbose -Message ($script:localizedData.DomainNotInDesiredState -f $DomainName)
-        $false
+        return $false
     }
 }
-
-
 
 function Get-Domain
 {
@@ -186,15 +197,17 @@ function Get-Domain
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]$DomainName,
+        [String]
+        $DomainName,
 
         [Parameter()]
-        [PSCredential]$DomainUserCredential
-
+        [PSCredential]
+        $DomainUserCredential
     )
+
     Write-Verbose -Message ($script:localizedData.CheckDomain -f $DomainName)
 
-    if($DomainUserCredential)
+    if ($DomainUserCredential)
     {
         $context = new-object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName, $DomainUserCredential.UserName, $DomainUserCredential.GetNetworkCredential().Password)
     }
@@ -206,12 +219,12 @@ function Get-Domain
     try
     {
         $domain = ([System.DirectoryServices.ActiveDirectory.DomainController]::FindOne($context)).domain.ToString()
+
         Write-Verbose -Message ($script:localizedData.FoundDomain -f $DomainName)
-        $returnValue = @{
+
+        return @{
             Name = $domain
         }
-
-       $returnValue
     }
     catch
     {
