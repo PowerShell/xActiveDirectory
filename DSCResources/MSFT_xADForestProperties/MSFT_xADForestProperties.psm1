@@ -7,34 +7,34 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADForestProperties'
 
 <#
-.SYNOPSIS
-    Gets the current state of user principal name and service principal name suffixes in the forest.
+    .SYNOPSIS
+        Gets the current state of user principal name and service principal name suffixes in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+    .PARAMETER Credential
+        The user account credentials to use to perform this task.
 
-.PARAMETER ForestName
-    The target Active Directory forest for the change.
+    .PARAMETER ForestName
+        The target Active Directory forest for the change.
 
-.PARAMETER ServicePrincipalNameSuffix
-    The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
+    .PARAMETER ServicePrincipalNameSuffix
+        The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
 
-.PARAMETER ServicePrincipalNameSuffixToAdd
-    The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToAdd
+        The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER ServicePrincipalNameSuffixToRemove
-    The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToRemove
+        The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
+    .PARAMETER UserPrincipalNameSuffix
+        The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
 
-.PARAMETER UserPrincipalNameSuffixToAdd
-    The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToAdd
+        The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffixToRemove
-    The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToRemove
+        The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
 #>
 function Get-TargetResource
 {
@@ -90,7 +90,7 @@ function Get-TargetResource
     Write-Verbose -Message ($script:localizedData.GetForest -f $ForestName)
     $forest = Get-ADForest -Identity $ForestName
 
-    $targetResource = @{
+    return @{
         Credential                         = ''
         ForestName                         = $forest.Name
         ServicePrincipalNameSuffix         = [Array] $forest.SpnSuffixes
@@ -100,39 +100,37 @@ function Get-TargetResource
         UserPrincipalNameSuffixToAdd       = [Array] $UserPrincipalNameSuffixToAdd
         UserPrincipalNameSuffixToRemove    = [Array] $UserPrincipalNameSuffixToRemove
     }
-
-    return $targetResource
 }
 
 <#
-.SYNOPSIS
-    Tests the current state of user principal name and service principal name suffixes in the forest.
+    .SYNOPSIS
+        Tests the current state of user principal name and service principal name suffixes in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+    .PARAMETER Credential
+        The user account credentials to use to perform this task.
 
-.PARAMETER ForestName
-    The target Active Directory forest for the change.
+    .PARAMETER ForestName
+        The target Active Directory forest for the change.
 
-.PARAMETER ServicePrincipalNameSuffix
-    The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
+    .PARAMETER ServicePrincipalNameSuffix
+        The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
 
-.PARAMETER ServicePrincipalNameSuffixToAdd
-    The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToAdd
+        The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER ServicePrincipalNameSuffixToRemove
-    The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToRemove
+        The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
+    .PARAMETER UserPrincipalNameSuffix
+        The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
 
-.PARAMETER UserPrincipalNameSuffixToAdd
-    The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToAdd
+        The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffixToRemove
-    The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToRemove
+        The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
 #>
 function Test-TargetResource
 {
@@ -180,16 +178,19 @@ function Test-TargetResource
 
     $forest = Get-ADForest -Identity $ForestName
 
-    ## Validate parameters before we even attempt to retrieve anything
+    # Validate parameters before we even attempt to retrieve anything
     $assertMemberParameters = @{}
+
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffix))
     {
         $assertMemberParameters['Members'] = $ServicePrincipalNameSuffix
     }
+
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToAdd') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToAdd))
     {
         $assertMemberParameters['MembersToInclude'] = $ServicePrincipalNameSuffixToAdd
     }
+
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToRemove') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToRemove))
     {
         $assertMemberParameters['MembersToExclude'] = $ServicePrincipalNameSuffixToRemove
@@ -204,14 +205,17 @@ function Test-TargetResource
     }
 
     $assertMemberParameters = @{}
+
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffix))
     {
         $assertMemberParameters['Members'] = $UserPrincipalNameSuffix
     }
+
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToAdd') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToAdd))
     {
         $assertMemberParameters['MembersToInclude'] = $UserPrincipalNameSuffixToAdd
     }
+
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToRemove') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToRemove))
     {
         $assertMemberParameters['MembersToExclude'] = $UserPrincipalNameSuffixToRemove
@@ -229,34 +233,34 @@ function Test-TargetResource
 }
 
 <#
-.SYNOPSIS
-    Sets the user principal name and service principal name suffixes in the forest.
+    .SYNOPSIS
+        Sets the user principal name and service principal name suffixes in the forest.
 
-.PARAMETER Credential
-    The user account credentials to use to perform this task.
+    .PARAMETER Credential
+        The user account credentials to use to perform this task.
 
-.PARAMETER ForestName
-    The target Active Directory forest for the change.
+    .PARAMETER ForestName
+        The target Active Directory forest for the change.
 
-.PARAMETER ServicePrincipalNameSuffix
-    The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
+    .PARAMETER ServicePrincipalNameSuffix
+        The Service Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
 
-.PARAMETER ServicePrincipalNameSuffixToAdd
-    The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToAdd
+        The Service Principal Name Suffix(es) to add in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER ServicePrincipalNameSuffixToRemove
-    The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
+    .PARAMETER ServicePrincipalNameSuffixToRemove
+        The Service Principal Name Suffix(es) to remove in the forest. Cannot be used with ServicePrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffix
-    The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
-    members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
+    .PARAMETER UserPrincipalNameSuffix
+        The User Principal Name Suffix(es) to be explicitly defined in the forest and replace existing
+        members. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
 
-.PARAMETER UserPrincipalNameSuffixToAdd
-    The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToAdd
+        The User Principal Name Suffix(es) to add in the forest. Cannot be used with UserPrincipalNameSuffix.
 
-.PARAMETER UserPrincipalNameSuffixToRemove
-    The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
+    .PARAMETER UserPrincipalNameSuffixToRemove
+        The User Principal Name Suffix(es) to remove in the forest. Cannot be used with UserPrincipalNameSuffix.
 #>
 function Set-TargetResource
 {
@@ -318,6 +322,7 @@ function Set-TargetResource
 
         Write-Verbose -Message ($script:localizedData.ReplaceSpnSuffix -f $replaceServicePrincipalNameSuffix)
     }
+
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToAdd') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToAdd))
     {
         $addServicePrincipalNameSuffix = $ServicePrincipalNameSuffixToAdd -join ','
@@ -327,9 +332,11 @@ function Set-TargetResource
 
         Write-Verbose -Message ($script:localizedData.AddSpnSuffix -f $addServicePrincipalNameSuffix)
     }
+
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffixToRemove') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffixToRemove))
     {
         $removeServicePrincipalNameSuffix = $ServicePrincipalNameSuffixToRemove -join ','
+
         if ($setADForestParameters['SpnSuffixes'])
         {
             $setADForestParameters['SpnSuffixes']['remove'] = $($ServicePrincipalNameSuffixToRemove)
@@ -348,24 +355,29 @@ function Set-TargetResource
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffix))
     {
         $replaceUserPrincipalNameSuffix = $UserPrincipalNameSuffix -join ','
+
         $setADForestParameters['UpnSuffixes'] = @{
             replace = $($UserPrincipalNameSuffix)
         }
 
         Write-Verbose -Message ($script:localizedData.ReplaceUpnSuffix -f $replaceUserPrincipalNameSuffix)
     }
+
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToAdd') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToAdd))
     {
         $addUserPrincipalNameSuffix = $UserPrincipalNameSuffixToAdd -join ','
+
         $setADForestParameters['UpnSuffixes'] = @{
             add = $($UserPrincipalNameSuffixToAdd)
         }
 
         Write-Verbose -Message ($script:localizedData.AddUpnSuffix -f $addUserPrincipalNameSuffix)
     }
+
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffixToRemove') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffixToRemove))
     {
         $removeUserPrincipalNameSuffix = $UserPrincipalNameSuffixToRemove -join ','
+
         if ($setADForestParameters['UpnSuffixes'])
         {
             $setADForestParameters['UpnSuffixes']['remove'] = $($UserPrincipalNameSuffixToRemove)
