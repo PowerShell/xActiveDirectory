@@ -102,6 +102,8 @@ function Set-TargetResource
 
         if ($PSCmdlet.ShouldProcess($forest.RootDomain, "Enable Active Directory Recycle Bin"))
         {
+            Write-Verbose -Message $script:localizedData.EnablingRecycleBin
+
             Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet `
                 -Target $forest.RootDomain -Server $forest.DomainNamingMaster `
                 -Credential $EnterpriseAdministratorCredential `
