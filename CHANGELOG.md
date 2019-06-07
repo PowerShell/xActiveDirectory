@@ -90,6 +90,8 @@
     setting it to `'Stop'`.
 - Changes to xADDomainDefaultPasswordPolicy
   - Cleanup of code.
+- Changes to xADDomainTrust
+  - Cleanup of code.
 
 ## 2.26.0.0
 
