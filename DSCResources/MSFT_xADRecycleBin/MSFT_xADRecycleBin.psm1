@@ -21,55 +21,55 @@ function Get-TargetResource
         $EnterpriseAdministratorCredential
     )
 
-    Try
+    $previousErrorActionPreference = $ErrorActionPreference
+
+    try
     {
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $RootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
-        $RecycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($RootDSE.configurationNamingContext)"
-        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($RootDSE.configurationNamingContext)" -Property msDS-EnabledFeature -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
-            Select-Object -ExpandProperty msDS-EnabledFeature
+        $rootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+        $recycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($rootDSE.configurationNamingContext)"
+        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($rootDSE.configurationNamingContext)" -Property 'msDS-EnabledFeature' -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
+            Select-Object -ExpandProperty 'msDS-EnabledFeature'
 
-        If ($msDSEnabledFeature -contains $RecycleBinPath)
+        if ($msDSEnabledFeature -contains $recycleBinPath)
         {
             Write-Verbose -Message $script:localizedData.RecycleBinEnabled
-            $RecycleBinEnabled = $True
-        } Else {
+            $recycleBinEnabled = $true
+        }
+        else
+        {
             Write-Verbose -Message $script:localizedData.RecycleBinNotEnabled
-            $RecycleBinEnabled = $False
+            $recycleBinEnabled = $false
         }
     }
-
-    Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
-        Throw $_
+        throw $_
     }
-    Catch [System.Security.Authentication.AuthenticationException]
+    catch [System.Security.Authentication.AuthenticationException]
     {
         Write-Error -Message $script:localizedData.CredentialError
-        Throw $_
+        throw $_
     }
-    Catch
+    catch
     {
         Write-Error -Message ($script:localizedData.GetUnhandledException -f $ForestFQDN)
-        Throw $_
+        throw $_
+    }
+    finally
+    {
+        $ErrorActionPreference = $previousErrorActionPreference
     }
 
-    Finally {
-        $ErrorActionPreference = 'Continue'
-    }
-
-    $returnValue = @{
+    return @{
         ForestFQDN = $ForestFQDN
-        RecycleBinEnabled = $RecycleBinEnabled
-        ForestMode = $RootDSE.forestFunctionality.ToString()
+        RecycleBinEnabled = $recycleBinEnabled
+        ForestMode = $rootDSE.forestFunctionality.ToString()
     }
-
-    $returnValue
 }
-
 
 function Set-TargetResource
 {
@@ -85,53 +85,49 @@ function Set-TargetResource
         $EnterpriseAdministratorCredential
     )
 
+    $previousErrorActionPreference = $ErrorActionPreference
 
-    Try
+    try
     {
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $Forest = Get-ADForest -Identity $ForestFQDN -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+        $forest = Get-ADForest -Identity $ForestFQDN -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
 
         # Check minimum forest level and throw if not
-        If (($Forest.ForestMode -as [int]) -lt 4)
+        if (($forest.ForestMode -as [int]) -lt 4)
         {
-            Write-Verbose -Message ($script:localizedData.ForestFunctionalLevelError -f $Forest.ForestMode)
-            Throw ($script:localizedData.ForestFunctionalLevelError -f $Forest.ForestMode)
+            throw ($script:localizedData.ForestFunctionalLevelError -f $forest.ForestMode)
         }
 
-        If ($PSCmdlet.ShouldProcess($Forest.RootDomain, "Enable Active Directory Recycle Bin"))
+        if ($PSCmdlet.ShouldProcess($forest.RootDomain, "Enable Active Directory Recycle Bin"))
         {
             Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet `
-                -Target $Forest.RootDomain -Server $Forest.DomainNamingMaster `
+                -Target $forest.RootDomain -Server $forest.DomainNamingMaster `
                 -Credential $EnterpriseAdministratorCredential `
                 -Verbose
         }
     }
-
-    Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
-        Throw $_
+        throw $_
     }
-    Catch [System.Security.Authentication.AuthenticationException]
+    catch [System.Security.Authentication.AuthenticationException]
     {
         Write-Error -Message $script:localizedData.CredentialError
-        Throw $_
+        throw $_
     }
-    Catch
+    catch
     {
         Write-Error -Message ($script:localizedData.SetUnhandledException -f $ForestFQDN)
-        Throw $_
+        throw $_
     }
-
-    Finally
+    finally
     {
-        $ErrorActionPreference = 'Continue'
+        $ErrorActionPreference = $previousErrorActionPreference
     }
-
 }
-
 
 function Test-TargetResource
 {
@@ -148,65 +144,48 @@ function Test-TargetResource
         $EnterpriseAdministratorCredential
     )
 
-    Try
+    $previousErrorActionPreference = $ErrorActionPreference
+
+    try
     {
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $RootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
-        $RecycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($RootDSE.configurationNamingContext)"
-        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($RootDSE.configurationNamingContext)" -Property msDS-EnabledFeature -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
-            Select-Object -ExpandProperty msDS-EnabledFeature
+        $rootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+        $recycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($rootDSE.configurationNamingContext)"
+        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($rootDSE.configurationNamingContext)" -Property 'msDS-EnabledFeature' -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
+            Select-Object -ExpandProperty 'msDS-EnabledFeature'
 
-        If ($msDSEnabledFeature -contains $RecycleBinPath)
+        if ($msDSEnabledFeature -contains $recycleBinPath)
         {
             Write-Verbose $script:localizedData.RecycleBinEnabled
-            Return $True
-        } Else {
+            return $true
+        }
+        else
+        {
             Write-Verbose $script:localizedData.RecycleBinNotEnabled
-            Return $False
+            return $false
         }
     }
-
-    Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
-        Throw $_
+        throw $_
     }
-    Catch [System.Security.Authentication.AuthenticationException]
+    catch [System.Security.Authentication.AuthenticationException]
     {
         Write-Error -Message $script:localizedData.CredentialError
-        Throw $_
+        throw $_
     }
-    Catch
+    catch
     {
         Write-Error -Message ($script:localizedData.TestUnhandledException -f $ForestFQDN)
-        Throw $_
+        throw $_
     }
-
-    Finally
+    finally
     {
-        $ErrorActionPreference = 'Continue'
+        $ErrorActionPreference = $previousErrorActionPreference
     }
-
-
 }
 
-
 Export-ModuleMember -Function *-TargetResource
-
-<#
-Test syntax:
-
-$cred = Get-Credential contoso\administrator
-
-# Valid Domain
-Get-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
-Test-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
-Set-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred -WhatIf
-
-# Invalid Domain
-Get-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
-Test-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
-Set-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred -WhatIf
-#>

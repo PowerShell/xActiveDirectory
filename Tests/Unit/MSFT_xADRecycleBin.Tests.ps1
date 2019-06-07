@@ -114,22 +114,22 @@ try
                 Mock -CommandName Write-Error
 
                 It 'Should throw ADIdentityNotFoundException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
                     { Get-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException
                 }
 
                 It 'Should throw ADServerDownException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
                     { Get-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADServerDownException
                 }
 
                 It 'Should throw AuthenticationException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
                     { Get-TargetResource @targetResourceParameters } | Should -Throw 'System error'
                 }
 
                 It 'Should throw UnhandledException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw Unhandled.Exception }
+                    Mock -CommandName Get-ADObject -MockWith { throw Unhandled.Exception }
                     { Get-TargetResource @targetResourceParameters } | Should -Throw Unhandled.Exception
                 }
             }
@@ -158,22 +158,22 @@ try
                 Mock -CommandName Write-Error
 
                 It 'Should throw ADIdentityNotFoundException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
                     { Test-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException
                 }
 
                 It 'Should throw ADServerDownException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
                     { Test-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADServerDownException
                 }
 
                 It 'Should throw AuthenticationException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
+                    Mock -CommandName Get-ADObject -MockWith { throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
                     { Test-TargetResource @targetResourceParameters } | Should -Throw 'System error'
                 }
 
                 It 'Should throw UnhandledException' {
-                    Mock -CommandName Get-ADObject -MockWith { Throw Unhandled.Exception }
+                    Mock -CommandName Get-ADObject -MockWith { throw Unhandled.Exception }
                     { Test-TargetResource @targetResourceParameters } | Should -Throw Unhandled.Exception
                 }
             }
@@ -210,22 +210,22 @@ try
                 Mock -CommandName Write-Error
 
                 It 'Should throw ADIdentityNotFoundException' {
-                    Mock -CommandName Get-ADForest -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
+                    Mock -CommandName Get-ADForest -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException) }
                     { Set-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException
                 }
 
                 It 'Should throw ADServerDownException' {
-                    Mock -CommandName Get-ADForest -MockWith { Throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
+                    Mock -CommandName Get-ADForest -MockWith { throw (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADServerDownException) }
                     { Set-TargetResource @targetResourceParameters } | Should -Throw Microsoft.ActiveDirectory.Management.ADServerDownException
                 }
 
                 It 'Should throw AuthenticationException' {
-                    Mock -CommandName Get-ADForest -MockWith { Throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
+                    Mock -CommandName Get-ADForest -MockWith { throw (New-Object -TypeName System.Security.Authentication.AuthenticationException) }
                     { Set-TargetResource @targetResourceParameters } | Should -Throw 'System error'
                 }
 
                 It 'Should throw UnhandledException' {
-                    Mock -CommandName Get-ADForest -MockWith { Throw Unhandled.Exception }
+                    Mock -CommandName Get-ADForest -MockWith { throw Unhandled.Exception }
                     { Set-TargetResource @targetResourceParameters } | Should -Throw Unhandled.Exception
                 }
             }
