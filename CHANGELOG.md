@@ -53,8 +53,11 @@
   - Fix unnecessary cast in `Test-TargetResource` ([Issue #295](https://github.com/PowerShell/xActiveDirectory/issues/295))
 - Changes to xADGroup
   - Change the description of the property RestoreFromRecycleBin.
+  - Cleanup of code.
 - Changes to xADObjectPermissionEntry
   - Change the description of the property IdentityReference.
+  - Fix failure when applied in the same configuration as xADDomain
+  - Localize and Improve verbose messaging
 - Changes to xADOrganizationalUnit
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADUser
@@ -77,20 +80,14 @@
   - Suppressing the Script Analyzer rule `PSAvoidGlobalVars` since the
     resource is using the `$global:DSCMachineStatus` variable to trigger
     a reboot.
-- Changes to xADObjectPermissionEntry
-  - Fix failure when applied in the same configuration as xADDomain
-  - Localize and Improve verbose messaging
 - Changes to xADRecycleBin
   - Remove unneeded example and resource designer files.
-- Changes to xADReplicationSiteLink
-  - Fix ADIdentityNotFoundException When Creating a New Site Link.
-- Changes to xADRecycleBin
   - Cleanup of code.
   - It now set back the `$ErrorActionPreference` that was set prior to
     setting it to `'Stop'`.
+- Changes to xADReplicationSiteLink
+  - Fix ADIdentityNotFoundException When Creating a New Site Link.
 - Changes to xADDomainDefaultPasswordPolicy
-  - Cleanup of code.
-- Changes to xADDomainTrust
   - Cleanup of code.
 - Changes to xADForestProperties
   - Minor style cleanup.
