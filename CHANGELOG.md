@@ -30,6 +30,8 @@
       are not in desired state when verbose output is enabled.
   - Update all unit tests to latest unit test template.
   - Deleted the obsolete xActiveDirectory_TechNetDocumentation.html file
+  - Cleanup of code
+    - Removed semicolon throughout where it is not needed.
 - Changes to xADComputer
   - Refactored the resource and the unit tests.
   - BREAKING CHANGE: The `Enabled` property is **DEPRECATED** and is no
