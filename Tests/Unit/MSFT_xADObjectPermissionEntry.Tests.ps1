@@ -94,7 +94,7 @@ try
 
         #region Function Get-TargetResource
         Describe 'xADObjectPermissionEntry\Get-TargetResource' {
-            Mock -CommandName 'Assert-ADPSDrive' -MockWith { }
+            Mock -CommandName 'Assert-ADPSDrive'
 
             Context 'When the desired ace is present' {
 
@@ -214,12 +214,12 @@ try
 
         #region Function Set-TargetResource
         Describe 'xADObjectPermissionEntry\Set-TargetResource' {
-            Mock -CommandName 'Assert-ADPSDrive' -MockWith { }
+            Mock -CommandName 'Assert-ADPSDrive'
 
             Context 'When the desired ace is present' {
 
                 Mock -CommandName 'Get-Acl' -MockWith $mockGetAclPresent
-                Mock -CommandName 'Set-Acl' -MockWith { } -Verifiable
+                Mock -CommandName 'Set-Acl'  Verifiable
 
                 It 'Should call "Assert-ADPSDrive" to check AD PS Drive is created' {
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
@@ -238,7 +238,7 @@ try
             Context 'When the desired ace is absent' {
 
                 Mock -CommandName 'Get-Acl' -MockWith $mockGetAclAbsent
-                Mock -CommandName 'Set-Acl' -MockWith { } -Verifiable
+                Mock -CommandName 'Set-Acl' -Verifiable
 
                 It 'Should call "Assert-ADPSDrive" to check AD PS Drive is created' {
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
