@@ -93,6 +93,8 @@
   - Cleanup of code.
   - It now set back the `$ErrorActionPreference` that was set prior to
     setting it to `'Stop'`.
+- Changes to xADDomainDefaultPasswordPolicy
+  - Cleanup of code.
 
 ## 2.26.0.0
 
