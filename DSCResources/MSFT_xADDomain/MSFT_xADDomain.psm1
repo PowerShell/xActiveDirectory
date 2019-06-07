@@ -85,8 +85,8 @@ function Get-TargetResource
     )
 
     Assert-Module -ModuleName 'ADDSDeployment' -ImportModule
-    $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName;
-    $isDomainMember = Test-DomainMember;
+    $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
+    $isDomainMember = Test-DomainMember
 
     $retries = 0
     $maxRetries = 5
@@ -99,12 +99,12 @@ function Get-TargetResource
         if ($isDomainMember)
         {
             ## We're already a domain member, so take the credentials out of the equation
-            Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN);
-            $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop;
+            Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN)
+            $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop
             $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
         }
         else {
-            Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN);
+            Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN)
             $domain = Get-ADDomain -Identity $domainFQDN -Credential $DomainAdministratorCredential -ErrorAction Stop
             $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
         }
@@ -112,33 +112,33 @@ function Get-TargetResource
         ## No need to check whether the node is actually a domain controller. If we don't throw an exception,
         ## the domain is already UP - and this resource shouldn't run. Domain controller functionality
         ## should be checked by the xADDomainController resource?
-        Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot);
+        Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot)
 
         $targetResource = @{
-            DomainName = $domain.DnsRoot;
-            ParentDomainName = $domain.ParentDomain;
-            DomainNetBIOSName = $domain.NetBIOSName;
+            DomainName = $domain.DnsRoot
+            ParentDomainName = $domain.ParentDomain
+            DomainNetBIOSName = $domain.NetBIOSName
             ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [String]
             DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [String]
         }
 
-        return $targetResource;
+        return $targetResource
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
-        $errorMessage = $script:localizedData.ExistingDomainMemberError -f $DomainName;
-        ThrowInvalidOperationError -ErrorId 'xADDomain_DomainMember' -ErrorMessage $errorMessage;
+        $errorMessage = $script:localizedData.ExistingDomainMemberError -f $DomainName
+        ThrowInvalidOperationError -ErrorId 'xADDomain_DomainMember' -ErrorMessage $errorMessage
     }
     catch [Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Verbose ($script:localizedData.DomainNotFound -f $domainFQDN)
-        $domain = @{ };
+        $domain = @{ }
         # will fall into retry mechanism
     }
     catch [System.Security.Authentication.AuthenticationException]
     {
-        $errorMessage = $script:localizedData.InvalidCredentialError -f $DomainName;
-        ThrowInvalidOperationError -ErrorId 'xADDomain_InvalidCredential' -ErrorMessage $errorMessage;
+        $errorMessage = $script:localizedData.InvalidCredentialError -f $DomainName
+        ThrowInvalidOperationError -ErrorId 'xADDomain_InvalidCredential' -ErrorMessage $errorMessage
     }
     catch
     {
@@ -206,42 +206,42 @@ function Test-TargetResource
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters
-    $isCompliant = $true;
+    $isCompliant = $true
 
     ## The Get-Target resource returns .DomainName as the domain's FQDN. Therefore, we
     ## need to resolve this before comparison.
     $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
     if ($domainFQDN -ne $targetResource.DomainName)
     {
-        $message = $script:localizedData.ResourcePropertyValueIncorrect -f 'DomainName', $domainFQDN, $targetResource.DomainName;
-        Write-Verbose -Message $message;
-        $isCompliant = $false;
+        $message = $script:localizedData.ResourcePropertyValueIncorrect -f 'DomainName', $domainFQDN, $targetResource.DomainName
+        Write-Verbose -Message $message
+        $isCompliant = $false
     }
 
-    $propertyNames = @('ParentDomainName','DomainNetBIOSName');
+    $propertyNames = @('ParentDomainName','DomainNetBIOSName')
     foreach ($propertyName in $propertyNames)
     {
         if ($PSBoundParameters.ContainsKey($propertyName))
         {
-            $propertyValue = (Get-Variable -Name $propertyName).Value;
+            $propertyValue = (Get-Variable -Name $propertyName).Value
             if ($targetResource.$propertyName -ne $propertyValue)
             {
-                $message = $script:localizedData.ResourcePropertyValueIncorrect -f $propertyName, $propertyValue, $targetResource.$propertyName;
-                Write-Verbose -Message $message;
-                $isCompliant = $false;
+                $message = $script:localizedData.ResourcePropertyValueIncorrect -f $propertyName, $propertyValue, $targetResource.$propertyName
+                Write-Verbose -Message $message
+                $isCompliant = $false
             }
         }
     }
 
     if ($isCompliant)
     {
-        Write-Verbose -Message ($script:localizedData.ResourceInDesiredState -f $domainFQDN);
-        return $true;
+        Write-Verbose -Message ($script:localizedData.ResourceInDesiredState -f $domainFQDN)
+        return $true
     }
     else
     {
-        Write-Verbose -Message ($script:localizedData.ResourceNotInDesiredState -f $domainFQDN);
-        return $false;
+        Write-Verbose -Message ($script:localizedData.ResourceNotInDesiredState -f $domainFQDN)
+        return $false
     }
 
 } #end function Test-TargetResource
@@ -297,66 +297,66 @@ function Set-TargetResource
     )
 
     # Debug can pause Install-ADDSForest/Install-ADDSDomain, so we remove it.
-    [ref] $null = $PSBoundParameters.Remove('Debug');
+    [ref] $null = $PSBoundParameters.Remove('Debug')
     ## Not entirely necessary, but run Get-TargetResouece to ensure we raise any pre-flight errors.
-    $targetResource = Get-TargetResource @PSBoundParameters;
+    $targetResource = Get-TargetResource @PSBoundParameters
 
     $installADDSParams = @{
-        SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password;
-        NoRebootOnCompletion = $true;
-        Force = $true;
+        SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
+        NoRebootOnCompletion = $true
+        Force = $true
     }
 
     if ($PSBoundParameters.ContainsKey('DnsDelegationCredential'))
     {
-        $installADDSParams['DnsDelegationCredential'] = $DnsDelegationCredential;
-        $installADDSParams['CreateDnsDelegation'] = $true;
+        $installADDSParams['DnsDelegationCredential'] = $DnsDelegationCredential
+        $installADDSParams['CreateDnsDelegation'] = $true
     }
     if ($PSBoundParameters.ContainsKey('DatabasePath'))
     {
-        $installADDSParams['DatabasePath'] = $DatabasePath;
+        $installADDSParams['DatabasePath'] = $DatabasePath
     }
     if ($PSBoundParameters.ContainsKey('LogPath'))
     {
-        $installADDSParams['LogPath'] = $LogPath;
+        $installADDSParams['LogPath'] = $LogPath
     }
     if ($PSBoundParameters.ContainsKey('SysvolPath'))
     {
-        $installADDSParams['SysvolPath'] = $SysvolPath;
+        $installADDSParams['SysvolPath'] = $SysvolPath
     }
     if ($PSBoundParameters.ContainsKey('DomainMode'))
     {
-        $installADDSParams['DomainMode'] = $DomainMode;
+        $installADDSParams['DomainMode'] = $DomainMode
     }
 
     if ($PSBoundParameters.ContainsKey('ParentDomainName'))
     {
-        Write-Verbose -Message ($script:localizedData.CreatingChildDomain -f $DomainName, $ParentDomainName);
+        Write-Verbose -Message ($script:localizedData.CreatingChildDomain -f $DomainName, $ParentDomainName)
         $installADDSParams['Credential'] = $DomainAdministratorCredential
         $installADDSParams['NewDomainName'] = $DomainName
         $installADDSParams['ParentDomainName'] = $ParentDomainName
-        $installADDSParams['DomainType'] = 'ChildDomain';
+        $installADDSParams['DomainType'] = 'ChildDomain'
         if ($PSBoundParameters.ContainsKey('DomainNetBIOSName'))
         {
-            $installADDSParams['NewDomainNetbiosName'] = $DomainNetBIOSName;
+            $installADDSParams['NewDomainNetbiosName'] = $DomainNetBIOSName
         }
-        Install-ADDSDomain @installADDSParams;
-        Write-Verbose -Message ($script:localizedData.CreatedChildDomain);
+        Install-ADDSDomain @installADDSParams
+        Write-Verbose -Message ($script:localizedData.CreatedChildDomain)
     }
     else
     {
-        Write-Verbose -Message ($script:localizedData.CreatingForest -f $DomainName);
-        $installADDSParams['DomainName'] = $DomainName;
+        Write-Verbose -Message ($script:localizedData.CreatingForest -f $DomainName)
+        $installADDSParams['DomainName'] = $DomainName
         if ($PSBoundParameters.ContainsKey('DomainNetbiosName'))
         {
-            $installADDSParams['DomainNetbiosName'] = $DomainNetBIOSName;
+            $installADDSParams['DomainNetbiosName'] = $DomainNetBIOSName
         }
         if ($PSBoundParameters.ContainsKey('ForestMode'))
         {
             $installADDSParams['ForestMode'] = $ForestMode
         }
-        Install-ADDSForest @installADDSParams;
-        Write-Verbose -Message ($script:localizedData.CreatedForest -f $DomainName);
+        Install-ADDSForest @installADDSParams
+        Write-Verbose -Message ($script:localizedData.CreatedForest -f $DomainName)
     }
 
     'Finished' | Out-File -FilePath (Get-TrackingFilename -DomainName $DomainName) -Force
@@ -367,4 +367,4 @@ function Set-TargetResource
 
 } #end function Set-TargetResource
 
-Export-ModuleMember -Function *-TargetResource;
+Export-ModuleMember -Function *-TargetResource

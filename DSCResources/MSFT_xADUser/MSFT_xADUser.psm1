@@ -363,49 +363,49 @@ function Get-TargetResource
         $ServicePrincipalNames
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
+    Assert-Module -ModuleName 'ActiveDirectory'
 
     try
     {
-        $adCommonParameters = Get-ADCommonParameters @PSBoundParameters;
+        $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
 
-        $adProperties = @();
+        $adProperties = @()
         # Create an array of the AD propertie names to retrieve from the property map
         foreach ($property in $adPropertyMap)
         {
             if ($property.ADProperty)
             {
-                $adProperties += $property.ADProperty;
+                $adProperties += $property.ADProperty
             }
             else
             {
-                $adProperties += $property.Parameter;
+                $adProperties += $property.Parameter
             }
         }
 
-        Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName);
-        $adUser = Get-ADUser @adCommonParameters -Properties $adProperties;
-        Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName);
-        $Ensure = 'Present';
+        Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName)
+        $adUser = Get-ADUser @adCommonParameters -Properties $adProperties
+        Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName)
+        $Ensure = 'Present'
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
-        Write-Verbose -Message ($script:localizedData.ADUserNotPresent -f $UserName, $DomainName);
-        $Ensure = 'Absent';
+        Write-Verbose -Message ($script:localizedData.ADUserNotPresent -f $UserName, $DomainName)
+        $Ensure = 'Absent'
     }
     catch
     {
-        Write-Error -Message ($script:localizedData.RetrievingADUserError -f $UserName, $DomainName);
-        throw $_;
+        Write-Error -Message ($script:localizedData.RetrievingADUserError -f $UserName, $DomainName)
+        throw $_
     }
 
     $targetResource = @{
-        DomainName        = $DomainName;
-        Password          = $Password;
-        UserName          = $UserName;
+        DomainName        = $DomainName
+        Password          = $Password
+        UserName          = $UserName
         DistinguishedName = $adUser.DistinguishedName; # Read-only property
-        Ensure            = $Ensure;
-        DomainController  = $DomainController;
+        Ensure            = $Ensure
+        DomainController  = $DomainController
     }
 
     # Retrieve each property from the ADPropertyMap and add to the hashtable
@@ -416,7 +416,7 @@ function Get-TargetResource
             # The path returned is not the parent container
             if (-not [System.String]::IsNullOrEmpty($adUser.DistinguishedName))
             {
-                $targetResource['Path'] = Get-ADObjectParentDN -DN $adUser.DistinguishedName;
+                $targetResource['Path'] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
             }
         }
         elseif (($property.Parameter) -eq 'ServicePrincipalNames') {
@@ -434,15 +434,15 @@ function Get-TargetResource
         elseif ($property.ADProperty)
         {
             # The AD property name is different to the function parameter to use this
-            $targetResource[$property.Parameter] = $adUser.($property.ADProperty);
+            $targetResource[$property.Parameter] = $adUser.($property.ADProperty)
         }
         else
         {
             # The AD property name matches the function parameter
-            $targetResource[$property.Parameter] = $adUser.($property.Parameter);
+            $targetResource[$property.Parameter] = $adUser.($property.Parameter)
         }
     }
-    return $targetResource;
+    return $targetResource
 
 } #end function Get-TargetResource
 
@@ -753,42 +753,42 @@ function Test-TargetResource
         $ServicePrincipalNames
     )
 
-    Assert-Parameters @PSBoundParameters;
-    $targetResource = Get-TargetResource @PSBoundParameters;
-    $isCompliant = $true;
+    Assert-Parameters @PSBoundParameters
+    $targetResource = Get-TargetResource @PSBoundParameters
+    $isCompliant = $true
 
     if ($Ensure -eq 'Absent')
     {
         if ($targetResource.Ensure -eq 'Present')
         {
-            Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Ensure', $PSBoundParameters.Ensure, $targetResource.Ensure);
-            $isCompliant = $false;
+            Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Ensure', $PSBoundParameters.Ensure, $targetResource.Ensure)
+            $isCompliant = $false
         }
     }
     else
     {
         # Add common name, ensure and enabled as they may not be explicitly passed and we want to enumerate them
-        $PSBoundParameters['Ensure'] = $Ensure;
-        $PSBoundParameters['Enabled'] = $Enabled;
+        $PSBoundParameters['Ensure'] = $Ensure
+        $PSBoundParameters['Enabled'] = $Enabled
 
         foreach ($parameter in $PSBoundParameters.Keys)
         {
             if ($parameter -eq 'Password' -and $PasswordNeverResets -eq $false)
             {
                 $testPasswordParams = @{
-                    Username               = $UserName;
-                    Password               = $Password;
-                    DomainName             = $DomainName;
-                    PasswordAuthentication = $PasswordAuthentication;
+                    Username               = $UserName
+                    Password               = $Password
+                    DomainName             = $DomainName
+                    PasswordAuthentication = $PasswordAuthentication
                 }
                 if ($DomainAdministratorCredential)
                 {
-                    $testPasswordParams['DomainAdministratorCredential'] = $DomainAdministratorCredential;
+                    $testPasswordParams['DomainAdministratorCredential'] = $DomainAdministratorCredential
                 }
                 if (-not (Test-Password @testPasswordParams))
                 {
-                    Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Password', '<Password>', '<Password>');
-                    $isCompliant = $false;
+                    Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Password', '<Password>', '<Password>')
+                    $isCompliant = $false
                 }
             }
             # Only check properties that are returned by Get-TargetResource
@@ -802,28 +802,28 @@ function Test-TargetResource
                 elseif ($parameter -eq 'ServicePrincipalNames')
                 {
                     $testMembersParams = @{
-                        ExistingMembers = $targetResource.ServicePrincipalNames -as [System.String[]];
-                        Members         = $ServicePrincipalNames;
+                        ExistingMembers = $targetResource.ServicePrincipalNames -as [System.String[]]
+                        Members         = $ServicePrincipalNames
                     }
                     if (-not (Test-Members @testMembersParams))
                     {
-                        $existingSPNs = $testMembersParams['ExistingMembers'] -join ',';
-                        $desiredSPNs = $ServicePrincipalNames -join ',';
+                        $existingSPNs = $testMembersParams['ExistingMembers'] -join ','
+                        $desiredSPNs = $ServicePrincipalNames -join ','
                         Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f `
-                                'ServicePrincipalNames', $desiredSPNs, $existingSPNs);
-                        $isCompliant = $false;
+                                'ServicePrincipalNames', $desiredSPNs, $existingSPNs)
+                        $isCompliant = $false
                     }
                 }
                 elseif ($PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
-                    Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f $parameter, $PSBoundParameters.$parameter, $targetResource.$parameter);
-                    $isCompliant = $false;
+                    Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f $parameter, $PSBoundParameters.$parameter, $targetResource.$parameter)
+                    $isCompliant = $false
                 }
             }
         } #end foreach PSBoundParameter
     }
 
-    return $isCompliant;
+    return $isCompliant
 
 } #end function Test-TargetResource
 
@@ -1133,12 +1133,12 @@ function Set-TargetResource
         $ServicePrincipalNames
     )
 
-    Assert-Parameters @PSBoundParameters;
-    $targetResource = Get-TargetResource @PSBoundParameters;
+    Assert-Parameters @PSBoundParameters
+    $targetResource = Get-TargetResource @PSBoundParameters
 
     # Add common name, ensure and enabled as they may not be explicitly passed
-    $PSBoundParameters['Ensure'] = $Ensure;
-    $PSBoundParameters['Enabled'] = $Enabled;
+    $PSBoundParameters['Ensure'] = $Ensure
+    $PSBoundParameters['Enabled'] = $Enabled
 
     if ($Ensure -eq 'Present')
     {
@@ -1155,26 +1155,26 @@ function Set-TargetResource
             if (-not $RestoreFromRecycleBin -or ($RestoreFromRecycleBin -and -not $restorationSuccessful))
             {
                 # User does not exist and needs creating
-                $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter;
+                $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
                 if ($PSBoundParameters.ContainsKey('Path'))
                 {
-                    $newADUserParams['Path'] = $Path;
+                    $newADUserParams['Path'] = $Path
                 }
                 # Populate the AccountPassword parameter of New-ADUser if password declared
                 if ($PSBoundParameters.ContainsKey('Password'))
                 {
-                    $newADUserParams['AccountPassword'] = $Password.Password;
+                    $newADUserParams['AccountPassword'] = $Password.Password
                 }
-                Write-Verbose -Message ($script:localizedData.AddingADUser -f $UserName);
-                New-ADUser @newADUserParams -SamAccountName $UserName;
+                Write-Verbose -Message ($script:localizedData.AddingADUser -f $UserName)
+                New-ADUser @newADUserParams -SamAccountName $UserName
                 # Now retrieve the newly created user
-                $targetResource = Get-TargetResource @PSBoundParameters;
+                $targetResource = Get-TargetResource @PSBoundParameters
             }
         }
 
-        $setADUserParams = Get-ADCommonParameters @PSBoundParameters;
-        $replaceUserProperties = @{ };
-        $removeUserProperties = @{ };
+        $setADUserParams = Get-ADCommonParameters @PSBoundParameters
+        $replaceUserProperties = @{ }
+        $removeUserProperties = @{ }
         foreach ($parameter in $PSBoundParameters.Keys)
         {
             # Only check/action properties specified/declared parameters that match one of the function's
@@ -1184,43 +1184,43 @@ function Set-TargetResource
                 if ($parameter -eq 'Path' -and ($PSBoundParameters.Path -ne $targetResource.Path))
                 {
                     # Cannot move users by updating the DistinguishedName property
-                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters;
+                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
                     # Using the SamAccountName for identity with Move-ADObject does not work, use the DN instead
-                    $adCommonParameters['Identity'] = $targetResource.DistinguishedName;
-                    Write-Verbose -Message ($script:localizedData.MovingADUser -f $targetResource.Path, $PSBoundParameters.Path);
-                    Move-ADObject @adCommonParameters -TargetPath $PSBoundParameters.Path;
+                    $adCommonParameters['Identity'] = $targetResource.DistinguishedName
+                    Write-Verbose -Message ($script:localizedData.MovingADUser -f $targetResource.Path, $PSBoundParameters.Path)
+                    Move-ADObject @adCommonParameters -TargetPath $PSBoundParameters.Path
                 }
                 elseif ($parameter -eq 'CommonName' -and ($PSBoundParameters.CommonName -ne $targetResource.CommonName))
                 {
                     # Cannot rename users by updating the CN property directly
-                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters;
+                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
                     # Using the SamAccountName for identity with Rename-ADObject does not work, use the DN instead
-                    $adCommonParameters['Identity'] = $targetResource.DistinguishedName;
-                    Write-Verbose -Message ($script:localizedData.RenamingADUser -f $targetResource.CommonName, $PSBoundParameters.CommonName);
-                    Rename-ADObject @adCommonParameters -NewName $PSBoundParameters.CommonName;
+                    $adCommonParameters['Identity'] = $targetResource.DistinguishedName
+                    Write-Verbose -Message ($script:localizedData.RenamingADUser -f $targetResource.CommonName, $PSBoundParameters.CommonName)
+                    Rename-ADObject @adCommonParameters -NewName $PSBoundParameters.CommonName
                 }
                 elseif ($parameter -eq 'Password' -and $PasswordNeverResets -eq $false)
                 {
-                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters;
-                    Write-Verbose -Message ($script:localizedData.SettingADUserPassword -f $UserName);
-                    Set-ADAccountPassword @adCommonParameters -Reset -NewPassword $Password.Password;
+                    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+                    Write-Verbose -Message ($script:localizedData.SettingADUserPassword -f $UserName)
+                    Set-ADAccountPassword @adCommonParameters -Reset -NewPassword $Password.Password
                 }
                 elseif ($parameter -eq 'Enabled' -and ($PSBoundParameters.$parameter -ne $targetResource.$parameter))
                 {
                     # We cannot enable/disable an account with -Add or -Replace parameters, but inform that
                     # we will change this as it is out of compliance (it always gets set anyway)
-                    Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter);
+                    Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
                 }
                 elseif ($parameter -eq 'ServicePrincipalNames')
                 {
                     Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f `
-                            'ServicePrincipalNames', ($ServicePrincipalNames -join ','));
-                    $replaceUserProperties['ServicePrincipalName'] = $ServicePrincipalNames;
+                            'ServicePrincipalNames', ($ServicePrincipalNames -join ','))
+                    $replaceUserProperties['ServicePrincipalName'] = $ServicePrincipalNames
                 }
                 elseif ($PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
                     # Find the associated AD property
-                    $adProperty = $adPropertyMap | Where-Object { $_.Parameter -eq $parameter };
+                    $adProperty = $adPropertyMap | Where-Object { $_.Parameter -eq $parameter }
 
                     if ([System.String]::IsNullOrEmpty($adProperty))
                     {
@@ -1232,38 +1232,38 @@ function Set-TargetResource
                         # Only remove if the existing value in not null or empty
                         if (-not ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                         {
-                            Write-Verbose -Message ($script:localizedData.RemovingADUserProperty -f $parameter, $PSBoundParameters.$parameter);
+                            Write-Verbose -Message ($script:localizedData.RemovingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
                             if ($adProperty.UseCmdletParameter -eq $true)
                             {
                                 # We need to pass the parameter explicitly to Set-ADUser, not via -Remove
-                                $setADUserParams[$adProperty.Parameter] = $PSBoundParameters.$parameter;
+                                $setADUserParams[$adProperty.Parameter] = $PSBoundParameters.$parameter
                             }
                             elseif ([System.String]::IsNullOrEmpty($adProperty.ADProperty))
                             {
-                                $removeUserProperties[$adProperty.Parameter] = $targetResource.$parameter;
+                                $removeUserProperties[$adProperty.Parameter] = $targetResource.$parameter
                             }
                             else
                             {
-                                $removeUserProperties[$adProperty.ADProperty] = $targetResource.$parameter;
+                                $removeUserProperties[$adProperty.ADProperty] = $targetResource.$parameter
                             }
                         }
                     } #end if remove existing value
                     else
                     {
                         # We are replacing the existing value
-                        Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter);
+                        Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
                         if ($adProperty.UseCmdletParameter -eq $true)
                         {
                             # We need to pass the parameter explicitly to Set-ADUser, not via -Replace
-                            $setADUserParams[$adProperty.Parameter] = $PSBoundParameters.$parameter;
+                            $setADUserParams[$adProperty.Parameter] = $PSBoundParameters.$parameter
                         }
                         elseif ([System.String]::IsNullOrEmpty($adProperty.ADProperty))
                         {
-                            $replaceUserProperties[$adProperty.Parameter] = $PSBoundParameters.$parameter;
+                            $replaceUserProperties[$adProperty.Parameter] = $PSBoundParameters.$parameter
                         }
                         else
                         {
-                            $replaceUserProperties[$adProperty.ADProperty] = $PSBoundParameters.$parameter;
+                            $replaceUserProperties[$adProperty.ADProperty] = $PSBoundParameters.$parameter
                         }
                     } #end if replace existing value
                 }
@@ -1274,22 +1274,22 @@ function Set-TargetResource
         # Only pass -Remove and/or -Replace if we have something to set/change
         if ($replaceUserProperties.Count -gt 0)
         {
-            $setADUserParams['Replace'] = $replaceUserProperties;
+            $setADUserParams['Replace'] = $replaceUserProperties
         }
         if ($removeUserProperties.Count -gt 0)
         {
-            $setADUserParams['Remove'] = $removeUserProperties;
+            $setADUserParams['Remove'] = $removeUserProperties
         }
 
-        Write-Verbose -Message ($script:localizedData.UpdatingADUser -f $UserName);
-        [ref] $null = Set-ADUser @setADUserParams -Enabled $Enabled;
+        Write-Verbose -Message ($script:localizedData.UpdatingADUser -f $UserName)
+        [ref] $null = Set-ADUser @setADUserParams -Enabled $Enabled
     }
     elseif (($Ensure -eq 'Absent') -and ($targetResource.Ensure -eq 'Present'))
     {
         # User exists and needs removing
-        Write-Verbose ($script:localizedData.RemovingADUser -f $UserName);
-        $adCommonParameters = Get-ADCommonParameters @PSBoundParameters;
-        [ref] $null = Remove-ADUser @adCommonParameters -Confirm:$false;
+        Write-Verbose ($script:localizedData.RemovingADUser -f $UserName)
+        $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+        [ref] $null = Remove-ADUser @adCommonParameters -Confirm:$false
     }
 
 } #end function Set-TargetResource
@@ -1328,10 +1328,10 @@ function Assert-Parameters
     if (($PSBoundParameters.ContainsKey('Password')) -and ($Enabled -eq $false))
     {
         $throwInvalidArgumentErrorParams = @{
-            ErrorId      = 'xADUser_DisabledAccountPasswordConflict';
-            ErrorMessage = $script:localizedData.PasswordParameterConflictError -f 'Enabled', $false, 'Password';
+            ErrorId      = 'xADUser_DisabledAccountPasswordConflict'
+            ErrorMessage = $script:localizedData.PasswordParameterConflictError -f 'Enabled', $false, 'Password'
         }
-        ThrowInvalidArgumentError @throwInvalidArgumentErrorParams;
+        ThrowInvalidArgumentError @throwInvalidArgumentErrorParams
     }
 
     # ChangePasswordAtLogon cannot be set for an account that also has PasswordNeverExpires set
@@ -1379,8 +1379,8 @@ function Test-Password
         $PasswordAuthentication
     )
 
-    Write-Verbose -Message ($script:localizedData.CreatingADDomainConnection -f $DomainName);
-    Add-Type -AssemblyName 'System.DirectoryServices.AccountManagement';
+    Write-Verbose -Message ($script:localizedData.CreatingADDomainConnection -f $DomainName)
+    Add-Type -AssemblyName 'System.DirectoryServices.AccountManagement'
 
     if ($DomainAdministratorCredential)
     {
@@ -1389,7 +1389,7 @@ function Test-Password
             $DomainName,
             $DomainAdministratorCredential.UserName,
             $DomainAdministratorCredential.GetNetworkCredential().Password
-        );
+        )
     }
     else
     {
@@ -1398,9 +1398,9 @@ function Test-Password
             $DomainName,
             $null,
             $null
-        );
+        )
     }
-    Write-Verbose -Message ($script:localizedData.CheckingADUserPassword -f $UserName);
+    Write-Verbose -Message ($script:localizedData.CheckingADUserPassword -f $UserName)
 
     if ($PasswordAuthentication -eq 'Negotiate')
     {
@@ -1410,7 +1410,7 @@ function Test-Password
             [System.DirectoryServices.AccountManagement.ContextOptions]::Negotiate -bor
             [System.DirectoryServices.AccountManagement.ContextOptions]::Signing -bor
             [System.DirectoryServices.AccountManagement.ContextOptions]::Sealing
-        );
+        )
     }
     else
     {
@@ -1418,7 +1418,7 @@ function Test-Password
         return $principalContext.ValidateCredentials(
             $UserName,
             $Password.GetNetworkCredential().Password
-        );
+        )
     }
 
 } #end function Test-Password

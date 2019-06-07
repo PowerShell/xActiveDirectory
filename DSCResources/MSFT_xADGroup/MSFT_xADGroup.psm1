@@ -385,7 +385,7 @@ function Set-TargetResource
         if ($MembershipAttribute -eq 'DistinguishedName')
         {
             $AllMembers = $Members + $MembersToInclude + $MembersToExclude
-            $GroupMemberDomains = @();
+            $GroupMemberDomains = @()
             foreach($member in $AllMembers)
             {
                 $GroupMemberDomains += Get-ADDomainNameFromDistinguishedName -DistinguishedName $member
@@ -393,7 +393,7 @@ function Set-TargetResource
             $GroupMemberDomainCount = ($GroupMemberDomains | Select-Object -Unique).count
             if( $GroupMemberDomainCount -gt 1 -or ($GroupMemberDomains -ine (Get-DomainName)).Count -gt 0  )
             {
-                Write-Verbose -Message ($script:localizedData.GroupMembershipMultipleDomains -f $GroupMemberDomainCount);
+                Write-Verbose -Message ($script:localizedData.GroupMembershipMultipleDomains -f $GroupMemberDomainCount)
                 $MembersInMultipleDomains = $true
             }
         }

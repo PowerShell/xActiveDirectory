@@ -98,7 +98,7 @@ function Set-TargetResource
                 Remove-Item $rebootLogFile -ErrorAction SilentlyContinue
             }
 
-            break;
+            break
         }
         else
         {

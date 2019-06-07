@@ -44,22 +44,22 @@ try
         function Remove-ADOrganizationalUnit { param ($Name, $Credential) }
         function New-ADOrganizationalUnit { param ($Name, $Credential) }
 
-        $testCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
+        $testCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
 
         $testPresentParams = @{
             Name = 'TestOU'
-            Path = 'OU=Fake,DC=contoso,DC=com';
-            Description = 'Test AD OU description';
-            Ensure = 'Present';
+            Path = 'OU=Fake,DC=contoso,DC=com'
+            Description = 'Test AD OU description'
+            Ensure = 'Present'
         }
 
-        $testAbsentParams = $testPresentParams.Clone();
-        $testAbsentParams['Ensure'] = 'Absent';
+        $testAbsentParams = $testPresentParams.Clone()
+        $testAbsentParams['Ensure'] = 'Absent'
 
         $protectedFakeAdOu = @{
-            Name = $testPresentParams.Name;
-            ProtectedFromAccidentalDeletion = $true;
-            Description = $testPresentParams.Description;
+            Name = $testPresentParams.Name
+            ProtectedFromAccidentalDeletion = $true
+            Description = $testPresentParams.Description
         }
 
         #region Function Get-TargetResource
@@ -99,8 +99,8 @@ try
             It 'Returns "ProtectedFromAccidentalDeletion" = "$false" when OU is not protected' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith {
-                    $unprotectedFakeAdOu = $protectedFakeAdOu.Clone();
-                    $unprotectedFakeAdOu['ProtectedFromAccidentalDeletion'] = $false;
+                    $unprotectedFakeAdOu = $protectedFakeAdOu.Clone()
+                    $unprotectedFakeAdOu['ProtectedFromAccidentalDeletion'] = $false
                     return [PSCustomObject] $unprotectedFakeAdOu
                 }
                 $targetResource = Get-TargetResource -Name $testPresentParams.Name -Path $testPresentParams.Path
@@ -111,8 +111,8 @@ try
             It 'Returns an empty description' {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Get-ADOrganizationalUnit -MockWith {
-                    $noDescriptionFakeAdOu = $protectedFakeAdOu.Clone();
-                    $noDescriptionFakeAdOu['Description'] = '';
+                    $noDescriptionFakeAdOu = $protectedFakeAdOu.Clone()
+                    $noDescriptionFakeAdOu['Description'] = ''
                     return [PSCustomObject] $noDescriptionFakeAdOu
                 }
 
@@ -291,7 +291,7 @@ try
                 Mock -CommandName Get-TargetResource -MockWith { return @{Ensure = 'Absent'}}
                 Mock -CommandName Restore-ADCommonObject -MockWith { return [PSCustomObject] $protectedFakeAdOu }
 
-                Set-TargetResource @restoreParam;
+                Set-TargetResource @restoreParam
 
                 Assert-MockCalled -CommandName Restore-AdCommonObject -Scope It
                 Assert-MockCalled -CommandName New-ADOrganizationalUnit -Scope It -Exactly -Times 0
@@ -304,7 +304,7 @@ try
                 Mock -CommandName New-ADOrganizationalUnit
                 Mock -CommandName Restore-ADCommonObject
 
-                Set-TargetResource @restoreParam;
+                Set-TargetResource @restoreParam
 
                 Assert-MockCalled -CommandName Restore-AdCommonObject -Scope It
                 Assert-MockCalled -CommandName New-ADOrganizationalUnit -Scope It

@@ -65,7 +65,7 @@ try
             'EmailAddress', 'EmployeeID', 'EmployeeNumber', 'HomeDirectory', 'HomeDrive', 'HomePage', 'ProfilePath',
             'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone', 'CommonName'
         )
-        $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword', 'ChangePasswordAtLogon', 'TrustedForDelegation', 'Enabled');
+        $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword', 'ChangePasswordAtLogon', 'TrustedForDelegation', 'Enabled')
         $testArrayProperties = @('ServicePrincipalNames')
 
         #region Function Get-TargetResource
