@@ -179,7 +179,7 @@ function Test-TargetResource
     $forest = Get-ADForest -Identity $ForestName
 
     # Validate parameters before we even attempt to retrieve anything
-    $assertMemberParameters = @{}
+    $assertMemberParameters = @{ }
 
     if ($PSBoundParameters.ContainsKey('ServicePrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($ServicePrincipalNameSuffix))
     {
@@ -204,7 +204,7 @@ function Test-TargetResource
         $inDesiredState = $false
     }
 
-    $assertMemberParameters = @{}
+    $assertMemberParameters = @{ }
 
     if ($PSBoundParameters.ContainsKey('UserPrincipalNameSuffix') -and -not [system.string]::IsNullOrEmpty($UserPrincipalNameSuffix))
     {

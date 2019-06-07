@@ -62,6 +62,7 @@
   - Change the description of the property IdentityReference.
   - Fix failure when applied in the same configuration as xADDomain
   - Localize and Improve verbose messaging
+  - Code cleanup.
 - Changes to xADOrganizationalUnit
   - Change the description of the property RestoreFromRecycleBin.
 - Changes to xADUser
@@ -99,6 +100,16 @@
 - Changes to xADForestProperties
   - Minor style cleanup.
 - Changes to xADOrganizationalUnit
+  - Code cleanup.
+- Changes to xADReplicationSiteLink
+  - Code cleanup.
+- Changes to xADReplicationSubnet
+  - Code cleanup.
+- Changes to xADKDSKey
+  - Code cleanup.
+- Changes to xADManagedServiceAccount
+  - Code cleanup.
+- Changes to xADServicePrincipalName
   - Code cleanup.
 
 ## 2.26.0.0

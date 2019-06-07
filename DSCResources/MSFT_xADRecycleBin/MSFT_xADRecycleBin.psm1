@@ -44,7 +44,7 @@ function Get-TargetResource
             $recycleBinEnabled = $false
         }
     }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException], [Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
         throw $_
@@ -65,15 +65,15 @@ function Get-TargetResource
     }
 
     return @{
-        ForestFQDN = $ForestFQDN
+        ForestFQDN        = $ForestFQDN
         RecycleBinEnabled = $recycleBinEnabled
-        ForestMode = $rootDSE.forestFunctionality.ToString()
+        ForestMode        = $rootDSE.forestFunctionality.ToString()
     }
 }
 
 function Set-TargetResource
 {
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -108,7 +108,7 @@ function Set-TargetResource
                 -Verbose
         }
     }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException], [Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
         throw $_
@@ -167,7 +167,7 @@ function Test-TargetResource
             return $false
         }
     }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException],[Microsoft.ActiveDirectory.Management.ADServerDownException]
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException], [Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Error -Message ($script:localizedData.ForestNotFound -f $ForestFQDN)
         throw $_

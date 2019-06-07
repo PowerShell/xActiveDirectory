@@ -14,7 +14,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADUser'
 # Active Directory user attributes.
 $adPropertyMap = @(
     @{
-        Parameter = 'CommonName'
+        Parameter  = 'CommonName'
         ADProperty = 'cn'
     }
     @{
@@ -24,7 +24,7 @@ $adPropertyMap = @(
         Parameter = 'DisplayName'
     }
     @{
-        Parameter = 'Path'
+        Parameter  = 'Path'
         ADProperty = 'distinguishedName'
     }
     @{
@@ -34,7 +34,7 @@ $adPropertyMap = @(
         Parameter = 'Initials'
     }
     @{
-        Parameter = 'Surname'
+        Parameter  = 'Surname'
         ADProperty = 'sn'
     }
     @{
@@ -47,18 +47,18 @@ $adPropertyMap = @(
         Parameter = 'POBox'
     }
     @{
-        Parameter = 'City'
+        Parameter  = 'City'
         ADProperty = 'l'
     }
     @{
-        Parameter = 'State'
+        Parameter  = 'State'
         ADProperty = 'st'
     }
     @{
         Parameter = 'PostalCode'
     }
     @{
-        Parameter = 'Country'
+        Parameter  = 'Country'
         ADProperty = 'c'
     }
     @{
@@ -71,15 +71,15 @@ $adPropertyMap = @(
         Parameter = 'Company'
     }
     @{
-        Parameter = 'Office'
+        Parameter  = 'Office'
         ADProperty = 'physicalDeliveryOfficeName'
     }
     @{
-        Parameter = 'JobTitle'
+        Parameter  = 'JobTitle'
         ADProperty = 'title'
     }
     @{
-        Parameter = 'EmailAddress'
+        Parameter  = 'EmailAddress'
         ADProperty = 'mail'
     }
     @{
@@ -95,30 +95,30 @@ $adPropertyMap = @(
         Parameter = 'HomeDrive'
     }
     @{
-        Parameter = 'HomePage'
+        Parameter  = 'HomePage'
         ADProperty = 'wWWHomePage'
     }
     @{
         Parameter = 'ProfilePath'
     }
     @{
-        Parameter = 'LogonScript'
+        Parameter  = 'LogonScript'
         ADProperty = 'scriptPath'
     }
     @{
-        Parameter = 'Notes'
+        Parameter  = 'Notes'
         ADProperty = 'info'
     }
     @{
-        Parameter = 'OfficePhone'
+        Parameter  = 'OfficePhone'
         ADProperty = 'telephoneNumber'
     }
     @{
-        Parameter = 'MobilePhone'
+        Parameter  = 'MobilePhone'
         ADProperty = 'mobile'
     }
     @{
-        Parameter = 'Fax'
+        Parameter  = 'Fax'
         ADProperty = 'facsimileTelephoneNumber'
     }
     @{
@@ -137,19 +137,20 @@ $adPropertyMap = @(
         Parameter = 'Manager'
     }
     @{
-        Parameter = 'PasswordNeverExpires'
+        Parameter          = 'PasswordNeverExpires'
         UseCmdletParameter = $true
     }
     @{
-        Parameter = 'CannotChangePassword'
+        Parameter          = 'CannotChangePassword'
         UseCmdletParameter = $true
     }
     @{
-        Parameter = 'ChangePasswordAtLogon'
+        Parameter          = 'ChangePasswordAtLogon'
         UseCmdletParameter = $true
     }
     @{
-        Parameter = 'TrustedForDelegation'
+
+        Parameter          = 'TrustedForDelegation'
         UseCmdletParameter = $true
     }
     @{
@@ -525,7 +526,8 @@ function Get-TargetResource
                 $targetResource['Path'] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
             }
         }
-        elseif (($property.Parameter) -eq 'ServicePrincipalNames') {
+        elseif (($property.Parameter) -eq 'ServicePrincipalNames')
+        {
             $targetResource['ServicePrincipalNames'] = [System.String[]]$adUser.ServicePrincipalNames
         }
         elseif (($property.Parameter) -eq 'ChangePasswordAtLogon') {
@@ -1350,7 +1352,8 @@ function Set-TargetResource
                 elseif ($PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
                     # Find the associated AD property
-                    $adProperty = $adPropertyMap | Where-Object { $_.Parameter -eq $parameter }
+                    $adProperty = $adPropertyMap |
+                        Where-Object { $_.Parameter -eq $parameter }
 
                     if ([System.String]::IsNullOrEmpty($adProperty))
                     {

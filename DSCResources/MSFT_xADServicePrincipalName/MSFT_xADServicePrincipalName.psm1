@@ -26,13 +26,15 @@ function Get-TargetResource
     )
 
     Write-Verbose -Message ($script:localizedData.GetServicePrincipalName -f $ServicePrincipalName)
+
     $spnAccounts = Get-ADObject -Filter { ServicePrincipalName -eq $ServicePrincipalName } -Properties 'SamAccountName' |
-                       Select-Object -ExpandProperty 'SamAccountName'
+        Select-Object -ExpandProperty 'SamAccountName'
 
     if ($spnAccounts.Count -eq 0)
     {
         # No SPN found
         Write-Verbose -Message ($script:localizedData.ServicePrincipalNameAbsent -f $ServicePrincipalName)
+
         $returnValue = @{
             Ensure               = 'Absent'
             ServicePrincipalName = $ServicePrincipalName
@@ -43,6 +45,7 @@ function Get-TargetResource
     {
         # One or more SPN(s) found, return the account name(s)
         Write-Verbose -Message ($script:localizedData.ServicePrincipalNamePresent -f $ServicePrincipalName, ($spnAccounts -join ';'))
+
         $returnValue = @{
             Ensure               = 'Present'
             ServicePrincipalName = $ServicePrincipalName
@@ -93,8 +96,10 @@ function Set-TargetResource
 
     if ($Ensure -eq 'Present')
     {
-        # Throw an exception, if no account was specified or the account does
-        # not exist.
+        <#
+            Throw an exception, if no account was specified or the account does
+            not exist.
+        #>
         if ([String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
         {
             throw ($script:localizedData.AccountNotFound -f $Account)
@@ -106,18 +111,24 @@ function Set-TargetResource
             if ($spnAccount.SamAccountName -ne $Account)
             {
                 Write-Verbose -Message ($script:localizedData.RemoveServicePrincipalName -f $ServicePrincipalName, $spnAccount.SamAccountName)
+
                 Set-ADObject -Identity $spnAccount.DistinguishedName -Remove @{ ServicePrincipalName = $ServicePrincipalName }
             }
         }
 
-        # Add the SPN to the target account. Use Get-ADObject to get the target
-        # object filtered by SamAccountName. Set-ADObject does not support the
-        # field SamAccountName as Identifier.
+        <#
+            Add the SPN to the target account. Use Get-ADObject to get the target
+            object filtered by SamAccountName. Set-ADObject does not support the
+            field SamAccountName as Identifier.
+        #>
         if ($spnAccounts.SamAccountName -notcontains $Account)
         {
             Write-Verbose -Message ($script:localizedData.AddServicePrincipalName -f $ServicePrincipalName, $Account)
+
             Get-ADObject -Filter { SamAccountName -eq $Account } |
-                Set-ADObject -Add @{ ServicePrincipalName = $ServicePrincipalName }
+                Set-ADObject -Add @{
+                    ServicePrincipalName = $ServicePrincipalName
+                }
         }
     }
 
@@ -127,6 +138,7 @@ function Set-TargetResource
         foreach ($spnAccount in $spnAccounts)
         {
             Write-Verbose -Message ($script:localizedData.RemoveServicePrincipalName -f $ServicePrincipalName, $spnAccount.SamAccountName)
+
             Set-ADObject -Identity $spnAccount.DistinguishedName -Remove @{ ServicePrincipalName = $ServicePrincipalName }
         }
     }
@@ -175,7 +187,7 @@ function Test-TargetResource
     if ($Ensure -eq 'Present')
     {
         $desiredConfigurationMatch = $desiredConfigurationMatch -and
-                                     $currentConfiguration.Account -eq $Account
+        $currentConfiguration.Account -eq $Account
     }
 
     if ($desiredConfigurationMatch)

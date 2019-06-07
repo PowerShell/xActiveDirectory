@@ -18,12 +18,12 @@ function Get-TargetResource
         $GroupName,
 
         [Parameter()]
-        [ValidateSet('DomainLocal','Global','Universal')]
+        [ValidateSet('DomainLocal', 'Global', 'Universal')]
         [System.String]
         $GroupScope = 'Global',
 
         [Parameter()]
-        [ValidateSet('Security','Distribution')]
+        [ValidateSet('Security', 'Distribution')]
         [System.String]
         $Category = 'Security',
 
@@ -71,7 +71,7 @@ function Get-TargetResource
         $MembersToExclude,
 
         [Parameter()]
-        [ValidateSet('SamAccountName','DistinguishedName','SID','ObjectGUID')]
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
         [System.String]
         $MembershipAttribute = 'SamAccountName',
 
@@ -98,7 +98,7 @@ function Get-TargetResource
 
     try
     {
-        $adGroup = Get-ADGroup @adGroupParams -Property Name,GroupScope,GroupCategory,DistinguishedName,Description,DisplayName,ManagedBy,Info
+        $adGroup = Get-ADGroup @adGroupParams -Property Name, GroupScope, GroupCategory, DistinguishedName, Description, DisplayName, ManagedBy, Info
 
         Write-Verbose -Message ($script:localizedData.RetrievingGroupMembers -f $MembershipAttribute)
 
@@ -106,19 +106,19 @@ function Get-TargetResource
         [System.Array]$adGroupMembers = (Get-ADGroupMember @adGroupParams).$MembershipAttribute
 
         $targetResource = @{
-            GroupName = $adGroup.Name
-            GroupScope = $adGroup.GroupScope
-            Category = $adGroup.GroupCategory
-            Path = Get-ADObjectParentDN -DN $adGroup.DistinguishedName
-            Description = $adGroup.Description
-            DisplayName = $adGroup.DisplayName
-            Members = $adGroupMembers
-            MembersToInclude = $MembersToInclude
-            MembersToExclude = $MembersToExclude
+            GroupName           = $adGroup.Name
+            GroupScope          = $adGroup.GroupScope
+            Category            = $adGroup.GroupCategory
+            Path                = Get-ADObjectParentDN -DN $adGroup.DistinguishedName
+            Description         = $adGroup.Description
+            DisplayName         = $adGroup.DisplayName
+            Members             = $adGroupMembers
+            MembersToInclude    = $MembersToInclude
+            MembersToExclude    = $MembersToExclude
             MembershipAttribute = $MembershipAttribute
-            ManagedBy = $adGroup.ManagedBy
-            Notes = $adGroup.Info
-            Ensure = 'Absent'
+            ManagedBy           = $adGroup.ManagedBy
+            Notes               = $adGroup.Info
+            Ensure              = 'Absent'
         }
 
         if ($adGroup)
@@ -131,19 +131,19 @@ function Get-TargetResource
         Write-Verbose -Message ($script:localizedData.GroupNotFound -f $GroupName)
 
         $targetResource = @{
-            GroupName = $GroupName
-            GroupScope = $GroupScope
-            Category = $Category
-            Path = $Path
-            Description = $Description
-            DisplayName = $DisplayName
-            Members = @()
-            MembersToInclude = $MembersToInclude
-            MembersToExclude = $MembersToExclude
+            GroupName           = $GroupName
+            GroupScope          = $GroupScope
+            Category            = $Category
+            Path                = $Path
+            Description         = $Description
+            DisplayName         = $DisplayName
+            Members             = @()
+            MembersToInclude    = $MembersToInclude
+            MembersToExclude    = $MembersToExclude
             MembershipAttribute = $MembershipAttribute
-            ManagedBy = $ManagedBy
-            Notes = $Notes
-            Ensure = 'Absent'
+            ManagedBy           = $ManagedBy
+            Notes               = $Notes
+            Ensure              = 'Absent'
         }
     }
 
@@ -161,12 +161,12 @@ function Test-TargetResource
         $GroupName,
 
         [Parameter()]
-        [ValidateSet('DomainLocal','Global','Universal')]
+        [ValidateSet('DomainLocal', 'Global', 'Universal')]
         [System.String]
         $GroupScope = 'Global',
 
         [Parameter()]
-        [ValidateSet('Security','Distribution')]
+        [ValidateSet('Security', 'Distribution')]
         [System.String]
         $Category = 'Security',
 
@@ -214,7 +214,7 @@ function Test-TargetResource
         $MembersToExclude,
 
         [Parameter()]
-        [ValidateSet('SamAccountName','DistinguishedName','SID','ObjectGUID')]
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
         [System.String]
         $MembershipAttribute = 'SamAccountName',
 
@@ -236,7 +236,7 @@ function Test-TargetResource
     )
 
     # Validate parameters before we even attempt to retrieve anything
-    $assertMemberParameters = @{}
+    $assertMemberParameters = @{ }
 
     if ($PSBoundParameters.ContainsKey('Members') -and -not [system.string]::IsNullOrEmpty($Members))
     {
@@ -328,12 +328,12 @@ function Set-TargetResource
         $GroupName,
 
         [Parameter()]
-        [ValidateSet('DomainLocal','Global','Universal')]
+        [ValidateSet('DomainLocal', 'Global', 'Universal')]
         [System.String]
         $GroupScope = 'Global',
 
         [Parameter()]
-        [ValidateSet('Security','Distribution')]
+        [ValidateSet('Security', 'Distribution')]
         [System.String]
         $Category = 'Security',
 
@@ -381,7 +381,7 @@ function Set-TargetResource
         $MembersToExclude,
 
         [Parameter()]
-        [ValidateSet('SamAccountName','DistinguishedName','SID','ObjectGUID')]
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
         [System.String]
         $MembershipAttribute = 'SamAccountName',
 
@@ -420,7 +420,10 @@ function Set-TargetResource
                 $groupMemberDomains += Get-ADDomainNameFromDistinguishedName -DistinguishedName $member
             }
 
-            $GroupMemberDomainCount = ($groupMemberDomains | Select-Object -Unique).count
+            $uniqueGroupMemberDomainCount = $groupMemberDomains |
+                Select-Object -Unique
+
+            $GroupMemberDomainCount = $uniqueGroupMemberDomainCount.count
 
             if ($GroupMemberDomainCount -gt 1 -or ($groupMemberDomains -ine (Get-DomainName)).Count -gt 0)
             {
@@ -429,7 +432,7 @@ function Set-TargetResource
             }
         }
 
-        $adGroup = Get-ADGroup @adGroupParams -Property Name,GroupScope,GroupCategory,DistinguishedName,Description,DisplayName,ManagedBy,Info
+        $adGroup = Get-ADGroup @adGroupParams -Property Name, GroupScope, GroupCategory, DistinguishedName, Description, DisplayName, ManagedBy, Info
 
         if ($Ensure -eq 'Present')
         {
@@ -626,7 +629,6 @@ function Set-TargetResource
 
                 Add-ADCommonGroupMember -Parameter $adGroupParams -Members $MembersToInclude -MembersInMultipleDomains:$MembersInMultipleDomains
             }
-
         }
     } #end catch
 } #end function Set-TargetResource
