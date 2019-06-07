@@ -86,6 +86,7 @@
   - Suppressing the Script Analyzer rule `PSAvoidGlobalVars` since the
     resource is using the `$global:DSCMachineStatus` variable to trigger
     a reboot.
+  - Code cleanup.
 - Changes to xADRecycleBin
   - Remove unneeded example and resource designer files.
   - Code cleanup.
@@ -94,8 +95,6 @@
 - Changes to xADReplicationSiteLink
   - Fix ADIdentityNotFoundException When Creating a New Site Link.
 - Changes to xADDomainDefaultPasswordPolicy
-  - Code cleanup.
-- Changes to xADDomainTrust
   - Code cleanup.
 - Changes to xADForestProperties
   - Minor style cleanup.
