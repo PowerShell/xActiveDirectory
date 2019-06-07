@@ -58,7 +58,7 @@ try
 
         $mockPath               = 'OU=Fake,DC=contoso,DC=com'
         $mockDomainController   = 'MockDC'
-        $mockCredentials        = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force);
+        $mockCredentials        = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
 
         $mockADUSer = @{
             SamAccountName    = 'User1'

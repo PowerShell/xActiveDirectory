@@ -19,7 +19,7 @@ function Get-TargetResource
         [System.String] $Path
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
+    Assert-Module -ModuleName 'ActiveDirectory'
     Write-Verbose ($script:localizedData.RetrievingOU -f $Name)
     $ou = Get-ADOrganizationalUnit -Filter { Name -eq $Name } -SearchBase $Path -SearchScope OneLevel -Properties ProtectedFromAccidentalDeletion, Description
 
@@ -162,7 +162,7 @@ function Set-TargetResource
         $RestoreFromRecycleBin
     )
 
-    Assert-Module -ModuleName 'ActiveDirectory';
+    Assert-Module -ModuleName 'ActiveDirectory'
     $targetResource = Get-TargetResource -Name $Name -Path $Path
 
     if ($targetResource.Ensure -eq 'Present')
