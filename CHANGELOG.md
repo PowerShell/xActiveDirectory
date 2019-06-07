@@ -88,6 +88,10 @@
   - Remove unneeded example and resource designer files.
 - Changes to xADReplicationSiteLink
   - Fix ADIdentityNotFoundException When Creating a New Site Link.
+- Changes to xADRecycleBin
+  - Cleanup of code
+  - It now set back the `$ErrorActionPreference` that was set prior to
+    setting it to `'Stop'`.
 
 ## 2.26.0.0
 
