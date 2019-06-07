@@ -72,6 +72,7 @@
     a reboot.
 - Changes to xADDomainTrust
   - Replaced New-TerminatingError with Standard Function.
+  - Cleanup of code.
 - Changes to xWaitForADDomain
   - Suppressing the Script Analyzer rule `PSAvoidGlobalVars` since the
     resource is using the `$global:DSCMachineStatus` variable to trigger
@@ -84,7 +85,7 @@
 - Changes to xADReplicationSiteLink
   - Fix ADIdentityNotFoundException When Creating a New Site Link.
 - Changes to xADRecycleBin
-  - Cleanup of code
+  - Cleanup of code.
   - It now set back the `$ErrorActionPreference` that was set prior to
     setting it to `'Stop'`.
 

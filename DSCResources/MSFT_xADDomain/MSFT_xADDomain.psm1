@@ -36,7 +36,8 @@ function Get-TrackingFilename
 {
     [OutputType([String])]
     [CmdletBinding()]
-    param(
+    param
+    (
         [Parameter(Mandatory = $true)]
         [String]
         $DomainName
@@ -51,37 +52,56 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String] $DomainName,
+        [String]
+        $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $DomainAdministratorCredential,
+        [PSCredential]
+        $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $SafemodeAdministratorPassword,
+        [PSCredential]
+        $SafemodeAdministratorPassword,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $ParentDomainName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $ParentDomainName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DomainNetBIOSName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DomainNetBIOSName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [PSCredential] $DnsDelegationCredential,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [PSCredential]
+        $DnsDelegationCredential,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DatabasePath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DatabasePath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $LogPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $LogPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SysvolPath,
 
-        [Parameter()] [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $ForestMode,
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $ForestMode,
 
-        [Parameter()] [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $DomainMode
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $DomainMode
     )
 
     Assert-Module -ModuleName 'ADDSDeployment' -ImportModule
@@ -94,75 +114,78 @@ function Get-TargetResource
     $domainShouldExist = (Test-Path (Get-TrackingFilename -DomainName $DomainName))
     do
     {
-    try
-    {
-        if ($isDomainMember)
+        try
         {
-            ## We're already a domain member, so take the credentials out of the equation
-            Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN)
-            $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop
-            $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
+            if ($isDomainMember)
+            {
+                ## We're already a domain member, so take the credentials out of the equation
+                Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN)
+                $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop
+                $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
+            }
+            else {
+                Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN)
+                $domain = Get-ADDomain -Identity $domainFQDN -Credential $DomainAdministratorCredential -ErrorAction Stop
+                $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
+            }
+
+            ## No need to check whether the node is actually a domain controller. If we don't throw an exception,
+            ## the domain is already UP - and this resource shouldn't run. Domain controller functionality
+            ## should be checked by the xADDomainController resource?
+            Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot)
+
+            $targetResource = @{
+                DomainName = $domain.DnsRoot
+                ParentDomainName = $domain.ParentDomain
+                DomainNetBIOSName = $domain.NetBIOSName
+                ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [String]
+                DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [String]
+            }
+
+            return $targetResource
         }
-        else {
-            Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN)
-            $domain = Get-ADDomain -Identity $domainFQDN -Credential $DomainAdministratorCredential -ErrorAction Stop
-            $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
-        }
-
-        ## No need to check whether the node is actually a domain controller. If we don't throw an exception,
-        ## the domain is already UP - and this resource shouldn't run. Domain controller functionality
-        ## should be checked by the xADDomainController resource?
-        Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot)
-
-        $targetResource = @{
-            DomainName = $domain.DnsRoot
-            ParentDomainName = $domain.ParentDomain
-            DomainNetBIOSName = $domain.NetBIOSName
-            ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [String]
-            DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [String]
-        }
-
-        return $targetResource
-    }
-    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
-    {
-        $errorMessage = $script:localizedData.ExistingDomainMemberError -f $DomainName
-        ThrowInvalidOperationError -ErrorId 'xADDomain_DomainMember' -ErrorMessage $errorMessage
-    }
-    catch [Microsoft.ActiveDirectory.Management.ADServerDownException]
-    {
-        Write-Verbose ($script:localizedData.DomainNotFound -f $domainFQDN)
-        $domain = @{ }
-        # will fall into retry mechanism
-    }
-    catch [System.Security.Authentication.AuthenticationException]
-    {
-        $errorMessage = $script:localizedData.InvalidCredentialError -f $DomainName
-        ThrowInvalidOperationError -ErrorId 'xADDomain_InvalidCredential' -ErrorMessage $errorMessage
-    }
-    catch
-    {
-        $errorMessage = $script:localizedData.UnhandledError -f ($_.Exception | Format-List -Force | Out-String)
-        Write-Verbose $errorMessage
-
-        if ($domainShouldExist -and ($_.Exception.InnerException -is [System.ServiceModel.FaultException]))
+        catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
         {
-            Write-Verbose $script:localizedData.FaultExceptionAndDomainShouldExist
+            $errorMessage = $script:localizedData.ExistingDomainMemberError -f $DomainName
+            ThrowInvalidOperationError -ErrorId 'xADDomain_DomainMember' -ErrorMessage $errorMessage
+        }
+        catch [Microsoft.ActiveDirectory.Management.ADServerDownException]
+        {
+            Write-Verbose ($script:localizedData.DomainNotFound -f $domainFQDN)
+            $domain = @{ }
             # will fall into retry mechanism
-        } else {
-            ## Not sure what's gone on here!
-            throw $_
         }
-    }
+        catch [System.Security.Authentication.AuthenticationException]
+        {
+            $errorMessage = $script:localizedData.InvalidCredentialError -f $DomainName
+            ThrowInvalidOperationError -ErrorId 'xADDomain_InvalidCredential' -ErrorMessage $errorMessage
+        }
+        catch
+        {
+            $errorMessage = $script:localizedData.UnhandledError -f ($_.Exception | Format-List -Force | Out-String)
+            Write-Verbose $errorMessage
 
-    if($domainShouldExist)
-    {
-        $retries++
-        Write-Verbose ($script:localizedData.RetryingGetADDomain -f $retries, $maxRetries, $retryIntervalInSeconds)
-        Start-Sleep -Seconds ($retries * $retryIntervalInSeconds)
-    }
+            if ($domainShouldExist -and ($_.Exception.InnerException -is [System.ServiceModel.FaultException]))
+            {
+                Write-Verbose $script:localizedData.FaultExceptionAndDomainShouldExist
+                # will fall into retry mechanism
+            }
+            else
+            {
+                ## Not sure what's gone on here!
+                throw $_
+            }
+        }
 
-    } while ($domainShouldExist -and ($retries -le $maxRetries) )
+        if ($domainShouldExist)
+        {
+            $retries++
+
+            Write-Verbose ($script:localizedData.RetryingGetADDomain -f $retries, $maxRetries, $retryIntervalInSeconds)
+
+            Start-Sleep -Seconds ($retries * $retryIntervalInSeconds)
+        }
+    } while ($domainShouldExist -and ($retries -le $maxRetries))
 
 } #end function Get-TargetResource
 
@@ -172,37 +195,56 @@ function Test-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String] $DomainName,
+        [String]
+        $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $DomainAdministratorCredential,
+        [PSCredential]
+        $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $SafemodeAdministratorPassword,
+        [PSCredential]
+        $SafemodeAdministratorPassword,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $ParentDomainName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $ParentDomainName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DomainNetBIOSName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DomainNetBIOSName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [PSCredential] $DnsDelegationCredential,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [PSCredential]
+        $DnsDelegationCredential,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DatabasePath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DatabasePath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $LogPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $LogPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SysvolPath,
 
-        [Parameter()] [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $ForestMode,
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $ForestMode,
 
-        [Parameter()]  [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $DomainMode
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $DomainMode
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters
@@ -224,6 +266,7 @@ function Test-TargetResource
         if ($PSBoundParameters.ContainsKey($propertyName))
         {
             $propertyValue = (Get-Variable -Name $propertyName).Value
+
             if ($targetResource.$propertyName -ne $propertyValue)
             {
                 $message = $script:localizedData.ResourcePropertyValueIncorrect -f $propertyName, $propertyValue, $targetResource.$propertyName
@@ -243,7 +286,6 @@ function Test-TargetResource
         Write-Verbose -Message ($script:localizedData.ResourceNotInDesiredState -f $domainFQDN)
         return $false
     }
-
 } #end function Test-TargetResource
 
 function Set-TargetResource
@@ -263,37 +305,56 @@ function Set-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String] $DomainName,
+        [String]
+        $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $DomainAdministratorCredential,
+        [PSCredential]
+        $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential] $SafemodeAdministratorPassword,
+        [PSCredential]
+        $SafemodeAdministratorPassword,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $ParentDomainName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $ParentDomainName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DomainNetBIOSName,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DomainNetBIOSName,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [PSCredential] $DnsDelegationCredential,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [PSCredential]
+        $DnsDelegationCredential,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $DatabasePath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $DatabasePath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $LogPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $LogPath,
 
-        [Parameter()] [ValidateNotNullOrEmpty()]
-        [String] $SysvolPath,
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $SysvolPath,
 
-        [Parameter()] [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $ForestMode,
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $ForestMode,
 
-        [Parameter()] [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String] $DomainMode
+        [Parameter()]
+        [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
+        [String]
+        $DomainMode
     )
 
     # Debug can pause Install-ADDSForest/Install-ADDSDomain, so we remove it.
@@ -340,7 +401,9 @@ function Set-TargetResource
         {
             $installADDSParams['NewDomainNetbiosName'] = $DomainNetBIOSName
         }
+
         Install-ADDSDomain @installADDSParams
+
         Write-Verbose -Message ($script:localizedData.CreatedChildDomain)
     }
     else
@@ -355,7 +418,9 @@ function Set-TargetResource
         {
             $installADDSParams['ForestMode'] = $ForestMode
         }
+
         Install-ADDSForest @installADDSParams
+
         Write-Verbose -Message ($script:localizedData.CreatedForest -f $DomainName)
     }
 
@@ -364,7 +429,6 @@ function Set-TargetResource
     # Signal to the LCM to reboot the node to compensate for the one we
     # suppressed from Install-ADDSForest/Install-ADDSDomain
     $global:DSCMachineStatus = 1
-
 } #end function Set-TargetResource
 
 Export-ModuleMember -Function *-TargetResource
