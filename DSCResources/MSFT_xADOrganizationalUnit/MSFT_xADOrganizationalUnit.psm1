@@ -13,25 +13,36 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [System.String] $Name,
+        [System.String]
+        $Name,
 
         [Parameter(Mandatory = $true)]
-        [System.String] $Path
+        [System.String]
+        $Path
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
+
     Write-Verbose ($script:localizedData.RetrievingOU -f $Name)
+
     $ou = Get-ADOrganizationalUnit -Filter { Name -eq $Name } -SearchBase $Path -SearchScope OneLevel -Properties ProtectedFromAccidentalDeletion, Description
 
-    $targetResource = @{
-        Name = $Name
-        Path = $Path
-        Ensure = if ($null -eq $ou) { 'Absent' } else { 'Present' }
-        ProtectedFromAccidentalDeletion = $ou.ProtectedFromAccidentalDeletion
-        Description = $ou.Description
+    if ($null -eq $ou)
+    {
+        $ensureState = 'Absent'
     }
-    return $targetResource
+    else
+    {
+        $ensureState = 'Present'
+    }
 
+    return @{
+        Name                            = $Name
+        Path                            = $Path
+        Ensure                          = $ensureState
+        ProtectedFromAccidentalDeletion = $ou.ProtectedFromAccidentalDeletion
+        Description                     = $ou.Description
+    }
 } # end function Get-TargetResource
 
 function Test-TargetResource
@@ -41,10 +52,12 @@ function Test-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [System.String] $Name,
+        [System.String]
+        $Name,
 
         [Parameter(Mandatory = $true)]
-        [System.String] $Path,
+        [System.String]
+        $Path,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -59,11 +72,13 @@ function Test-TargetResource
 
         [Parameter()]
         [ValidateNotNull()]
-        [System.Boolean] $ProtectedFromAccidentalDeletion = $true,
+        [System.Boolean]
+        $ProtectedFromAccidentalDeletion = $true,
 
         [Parameter()]
         [ValidateNotNull()]
-        [System.String] $Description = '',
+        [System.String]
+        $Description = '',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -81,15 +96,15 @@ function Test-TargetResource
             if ([System.String]::IsNullOrEmpty($Description))
             {
                 $isCompliant = (($targetResource.Name -eq $Name) -and
-                                    ($targetResource.Path -eq $Path) -and
-                                        ($targetResource.ProtectedFromAccidentalDeletion -eq $ProtectedFromAccidentalDeletion))
+                    ($targetResource.Path -eq $Path) -and
+                    ($targetResource.ProtectedFromAccidentalDeletion -eq $ProtectedFromAccidentalDeletion))
             }
             else
             {
                 $isCompliant = (($targetResource.Name -eq $Name) -and
-                                    ($targetResource.Path -eq $Path) -and
-                                        ($targetResource.ProtectedFromAccidentalDeletion -eq $ProtectedFromAccidentalDeletion) -and
-                                            ($targetResource.Description -eq $Description))
+                    ($targetResource.Path -eq $Path) -and
+                    ($targetResource.ProtectedFromAccidentalDeletion -eq $ProtectedFromAccidentalDeletion) -and
+                    ($targetResource.Description -eq $Description))
             }
 
             if ($isCompliant)
@@ -132,10 +147,12 @@ function Set-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [System.String] $Name,
+        [System.String]
+        $Name,
 
         [Parameter(Mandatory = $true)]
-        [System.String] $Path,
+        [System.String]
+        $Path,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -150,11 +167,13 @@ function Set-TargetResource
 
         [Parameter()]
         [ValidateNotNull()]
-        [System.Boolean] $ProtectedFromAccidentalDeletion = $true,
+        [System.Boolean]
+        $ProtectedFromAccidentalDeletion = $true,
 
         [Parameter()]
         [ValidateNotNull()]
-        [System.String] $Description = '',
+        [System.String]
+        $Description = '',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -163,58 +182,69 @@ function Set-TargetResource
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
+
     $targetResource = Get-TargetResource -Name $Name -Path $Path
 
     if ($targetResource.Ensure -eq 'Present')
     {
         $ou = Get-ADOrganizationalUnit -Filter { Name -eq $Name } -SearchBase $Path -SearchScope OneLevel
+
         if ($Ensure -eq 'Present')
         {
             Write-Verbose ($script:localizedData.UpdatingOU -f $targetResource.Name)
+
             $setADOrganizationalUnitParams = @{
-                Identity = $ou
-                Description = $Description
+                Identity                        = $ou
+                Description                     = $Description
                 ProtectedFromAccidentalDeletion = $ProtectedFromAccidentalDeletion
             }
+
             if ($Credential)
             {
                 $setADOrganizationalUnitParams['Credential'] = $Credential
             }
+
             Set-ADOrganizationalUnit @setADOrganizationalUnitParams
         }
         else
         {
             Write-Verbose ($script:localizedData.DeletingOU -f $targetResource.Name)
+
             if ($targetResource.ProtectedFromAccidentalDeletion)
             {
                 $setADOrganizationalUnitParams = @{
-                    Identity = $ou
+                    Identity                        = $ou
                     ProtectedFromAccidentalDeletion = $ProtectedFromAccidentalDeletion
                 }
+
                 if ($Credential)
                 {
                     $setADOrganizationalUnitParams['Credential'] = $Credential
                 }
+
                 Set-ADOrganizationalUnit @setADOrganizationalUnitParams
             }
 
             $removeADOrganizationalUnitParams = @{
                 Identity = $ou
             }
+
             if ($Credential)
             {
                 $removeADOrganizationalUnitParams['Credential'] = $Credential
             }
+
             Remove-ADOrganizationalUnit @removeADOrganizationalUnitParams
         }
 
-        return # return from Set method to make it easier to test for a succesful restore
+        return # return from Set method to make it easier to test for a successful restore
     }
     else
     {
-        if  ($RestoreFromRecycleBin)
+        if ($RestoreFromRecycleBin)
         {
             Write-Verbose -Message ($script:localizedData.RestoringOu -f $Name)
+
             $restoreParams = @{
                 Identity    = $Name
                 ObjectClass = 'OrganizationalUnit'
@@ -232,16 +262,19 @@ function Set-TargetResource
         if (-not $RestoreFromRecycleBin -or ($RestoreFromRecycleBin -and -not $restoreSuccessful))
         {
             Write-Verbose ($script:localizedData.CreatingOU -f $targetResource.Name)
+
             $newADOrganizationalUnitParams = @{
-                Name = $Name
-                Path = $Path
-                Description = $Description
+                Name                            = $Name
+                Path                            = $Path
+                Description                     = $Description
                 ProtectedFromAccidentalDeletion = $ProtectedFromAccidentalDeletion
             }
+
             if ($Credential)
             {
                 $newADOrganizationalUnitParams['Credential'] = $Credential
             }
+
             New-ADOrganizationalUnit @newADOrganizationalUnitParams
         }
     }
