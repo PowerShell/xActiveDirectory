@@ -180,7 +180,7 @@ try
         }
 
         Describe 'MSFT_xADRecycleBin\Set-TargetResource' {
-            Mock -CommandName Enable-ADOptionalFeature -MockWith { }
+            Mock -CommandName Enable-ADOptionalFeature
 
             Context 'When minimum forest level is too low' {
                 Mock -CommandName Get-ADForest -MockWith { $mockADForestLevel3 }
