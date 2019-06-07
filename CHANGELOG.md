@@ -34,6 +34,8 @@
     used to enforce the `Enabled` property of computer accounts. This
     resource replaces the deprecated `Enabled` property in the resource
     xADComputer.
+  - Cleanup of code
+    - Removed semicolon throughout where it is not needed.
 - Changes to xADComputer
   - Refactored the resource and the unit tests.
   - BREAKING CHANGE: The `Enabled` property is **DEPRECATED** and is no
