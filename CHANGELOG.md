@@ -63,6 +63,7 @@
 - Changes to xADUser
   - Change the description of the property RestoreFromRecycleBin.
   - Added ServicePrincipalNames property ([issue #153](https://github.com/PowerShell/xActiveDirectory/issues/153)).
+  - Code cleanup.
 - Changes to xADDomainController
   - Change the `#Requires` statement in the Examples to require the correct
     module.
