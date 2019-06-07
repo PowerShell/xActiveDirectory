@@ -219,7 +219,7 @@ try
             Context 'When the desired ace is present' {
 
                 Mock -CommandName 'Get-Acl' -MockWith $mockGetAclPresent
-                Mock -CommandName 'Set-Acl'  Verifiable
+                Mock -CommandName 'Set-Acl' -Verifiable
 
                 It 'Should call "Assert-ADPSDrive" to check AD PS Drive is created' {
                     $targetResource = Get-TargetResource @testDefaultParameters -Verbose
