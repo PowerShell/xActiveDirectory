@@ -71,6 +71,14 @@
   - Added ServicePrincipalNames property ([issue #153](https://github.com/PowerShell/xActiveDirectory/issues/153)).
   - Added ChangePasswordAtLogon property ([issue #246](https://github.com/PowerShell/xActiveDirectory/issues/246)).
   - Code cleanup.
+  - Added LogonWorkstations property
+  - Added Organization property
+  - Added OtherName property
+  - Added AccountNotDelegated property
+  - Added AllowReversiblePasswordEncryption property
+  - Added CompoundIdentitySupported property
+  - Added PasswordNotRequired property
+  - Added SmartcardLogonRequired property
 - Changes to xADDomainController
   - Change the `#Requires` statement in the Examples to require the correct
     module.
