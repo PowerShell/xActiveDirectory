@@ -17,4 +17,6 @@ ConvertFrom-StringData @'
     ExpectedGlobalCatalogEnabled  = The domain controller does not contain a Global Catalog, but it was expected to have a Global Catalog.
     ExpectedGlobalCatalogDisabled = The domain controller have a Global Catalog, but it was expected to not have a Global Catalog.
     ExpectedDomainController      = Expected the node to be a domain controller, but did not get a domain controller object. (ADDC0017)
+    AllowedSyncAccountsMismatch   = There is a mismatch in AllowPasswordReplicationAccountName list. Got {0}, expected was {1} . (ADDC0018)
+    DenySyncAccountsMismatch      = There is a mismatch in DenyPasswordReplicationAccountName list. Got {0}, expected was {1} . (ADDC0019)
 '@
