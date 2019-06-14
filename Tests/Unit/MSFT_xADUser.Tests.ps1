@@ -63,9 +63,13 @@ try
             'UserPrincipalName', 'DisplayName', 'Path', 'GivenName', 'Initials', 'Surname', 'Description', 'StreetAddress',
             'POBox', 'City', 'State', 'PostalCode', 'Country', 'Department', 'Division', 'Company', 'Office', 'JobTitle',
             'EmailAddress', 'EmployeeID', 'EmployeeNumber', 'HomeDirectory', 'HomeDrive', 'HomePage', 'ProfilePath',
-            'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone', 'CommonName'
+            'LogonScript', 'Notes', 'OfficePhone', 'MobilePhone', 'Fax', 'Pager', 'IPPhone', 'HomePhone', 'CommonName',
+            'Manager', 'LogonWorkstations', 'Organization', 'OtherName'
         )
-        $testBooleanProperties = @('PasswordNeverExpires', 'CannotChangePassword', 'ChangePasswordAtLogon', 'TrustedForDelegation', 'Enabled')
+        $testBooleanProperties = @(
+            'PasswordNeverExpires', 'CannotChangePassword', 'TrustedForDelegation', 'Enabled','AccountNotDelegated',
+            'AllowReversiblePasswordEncryption', 'CompoundIdentitySupported', 'PasswordNotRequired', 'SmartcardLogonRequired'
+            )
         $testArrayProperties = @('ServicePrincipalNames')
 
         #region Function Get-TargetResource
