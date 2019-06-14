@@ -40,6 +40,9 @@ class MSFT_xADUser : OMI_BaseResource
     [Write, Description("Specifies the user's pager number (ldapDisplayName 'pager')")] String Pager;
     [Write, Description("Specifies the user's IP telephony phone number (ldapDisplayName 'ipPhone')")] String IPPhone;
     [Write, Description("Specifies the user's manager specified as a Distinguished Name (ldapDisplayName 'manager')")] String Manager;
+    [Write, Description("Specifies the computers that the user can access. To specify more than one computer, create a single comma-separated list. You can identify a computer by using the Security Account Manager (SAM) account name (sAMAccountName) or the DNS host name of the computer. The SAM account name is the same as the NetBIOS name of the computer. The LDAP display name (ldapDisplayName) for this property is userWorkStations.")] String LogonWorkstations;
+    [Write, Description("Specifies the user's organization. This parameter sets the Organization property of a user object. The LDAP display name (ldapDisplayName) of this property is o.")] String Organization;
+    [Write, Description("Specifies a name in addition to a user's given name and surname, such as the user's middle name. This parameter sets the OtherName property of a user object. The LDAP display name (ldapDisplayName) of this property is middleName.")] String OtherName;
     [Write, Description("Specifies if the account is enabled (default True)")] Boolean Enabled;
     [Write, Description("Specifies whether the account password can be changed")] Boolean CannotChangePassword;
     [Write, Description("Specifies whether the account password must be changed during the next logon attempt. This cannot be set to true if the PasswordNeverExpires property is also set to true")] Boolean ChangePasswordAtLogon;
@@ -51,5 +54,10 @@ class MSFT_xADUser : OMI_BaseResource
     [Write, Description("Specifies whether an account is trusted for Kerberos delegation (default $false)")] Boolean TrustedForDelegation;
     [Write, Description("Try to restore the user object from the recycle bin before creating a new one.")] Boolean RestoreFromRecycleBin;
     [Write, Description("Specifies the service principal names for the user account.")] String ServicePrincipalNames[];
+    [Write, Description("Indicates whether the security context of the user is delegated to a service.  When this parameter is set to true, the security context of the account is not delegated to a service even when the service account is set as trusted for Kerberos delegation. This parameter sets the AccountNotDelegated property for an Active Directory account. This parameter also sets the ADS_UF_NOT_DELEGATED flag of the Active Directory User Account Control (UAC) attribute.")] Boolean AccountNotDelegated;
+    [Write, Description("Indicates whether reversible password encryption is allowed for the account. This parameter sets the AllowReversiblePasswordEncryption property of the account. This parameter also sets the ADS_UF_ENCRYPTED_TEXT_PASSWORD_ALLOWED flag of the Active Directory User Account Control (UAC) attribute.")] Boolean AllowReversiblePasswordEncryption;
+    [Write, Description("Specifies whether an account supports Kerberos service tickets which includes the authorization data for the user's device. This value sets the compound identity supported flag of the Active Directory msDS-SupportedEncryptionTypes attribute.")] Boolean CompoundIdentitySupported;
+    [Write, Description("Specifies whether the account requires a password. A password is not required for a new account. This parameter sets the PasswordNotRequired property of an account object.")] Boolean PasswordNotRequired;
+    [Write, Description("Specifies whether a smart card is required to logon. This parameter sets the SmartCardLoginRequired property for a user object. This parameter also sets the ADS_UF_SMARTCARD_REQUIRED flag of the Active Directory User Account Control attribute.")] Boolean SmartcardLogonRequired;
     [Read, Description("Returns the X.500 path of the object")] String DistinguishedName;
 };
