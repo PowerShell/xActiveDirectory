@@ -49,9 +49,17 @@ $adPropertyMap = @(
     @{ Parameter = 'HomePhone'; }
     @{ Parameter = 'Enabled'; }
     @{ Parameter = 'Manager'; }
+    @{ Parameter = 'LogonWorkstations'}
+    @{ Parameter = 'Organization'}
+    @{ Parameter = 'OtherName'}
     @{ Parameter = 'PasswordNeverExpires'; UseCmdletParameter = $true; }
     @{ Parameter = 'CannotChangePassword'; UseCmdletParameter = $true; }
     @{ Parameter = 'TrustedForDelegation'; UseCmdletParameter = $true; }
+    @{ Parameter = 'AccountNotDelegated'; UseCmdletParameter = $true; }
+    @{ Parameter = 'AllowReversiblePasswordEncryption'; UseCmdletParameter = $true; }
+    @{ Parameter = 'CompoundIdentitySupported'; UseCmdletParameter = $true; }
+    @{ Parameter = 'PasswordNotRequired'; UseCmdletParameter = $true; }
+    @{ Parameter = 'SmartcardLogonRequired'; UseCmdletParameter = $true; }
     @{ Parameter = 'ServicePrincipalNames'; }
 )
 
@@ -294,6 +302,24 @@ function Get-TargetResource
         [System.String]
         $Manager,
 
+        # Specifies the computers that the user can access. (ldapDisplayName 'userWorkStations')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $LogonWorkstations,
+
+        # Specifies the user's organization (ldapDisplayName 'o')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $Organization,
+
+        # Specifies a name in addition to a user's given name and surname (ldaDisplayName 'middleName')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $OtherName,
+
         # Specifies if the account is enabled (default True)
         [Parameter()]
         [ValidateNotNull()]
@@ -317,6 +343,36 @@ function Get-TargetResource
         [ValidateNotNull()]
         [System.Boolean]
         $TrustedForDelegation,
+
+        # Indicates whether the security context of the user is delegated to a service.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AccountNotDelegated,
+
+        # Indicates whether reversible password encryption is allowed for the account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AllowReversiblePasswordEncryption,
+
+        # Specifies whether an account supports Kerberos service tickets which includes the authorization data for the user's device.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $CompoundIdentitySupported,
+
+        # Specifies whether the account requires a password. A password is not required for a new account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $PasswordNotRequired,
+
+        # Specifies whether a smart card is required to logon.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $SmartcardLogonRequired,
 
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]
@@ -669,6 +725,24 @@ function Test-TargetResource
         [System.String]
         $Manager,
 
+        # Specifies the computers that the user can access. (ldapDisplayName 'userWorkStations')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $LogonWorkstations,
+
+        # Specifies the user's organization (ldapDisplayName 'o')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $Organization,
+
+        # Specifies a name in addition to a user's given name and surname (ldaDisplayName 'middleName')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $OtherName,
+
         # Specifies if the account is enabled (default True)
         [Parameter()]
         [ValidateNotNull()]
@@ -692,6 +766,36 @@ function Test-TargetResource
         [ValidateNotNull()]
         [System.Boolean]
         $TrustedForDelegation,
+
+        # Indicates whether the security context of the user is delegated to a service.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AccountNotDelegated,
+
+        # Indicates whether reversible password encryption is allowed for the account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AllowReversiblePasswordEncryption,
+
+        # Specifies whether an account supports Kerberos service tickets which includes the authorization data for the user's device.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $CompoundIdentitySupported,
+
+        # Specifies whether the account requires a password. A password is not required for a new account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $PasswordNotRequired,
+
+        # Specifies whether a smart card is required to logon.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $SmartcardLogonRequired,
 
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]
@@ -1043,6 +1147,24 @@ function Set-TargetResource
         [System.String]
         $Manager,
 
+        # Specifies the computers that the user can access. (ldapDisplayName 'userWorkStations')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $LogonWorkstations,
+
+        # Specifies the user's organization (ldapDisplayName 'o')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $Organization,
+
+        # Specifies a name in addition to a user's given name and surname (ldaDisplayName 'middleName')
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $OtherName,
+
         # Specifies if the account is enabled (default True)
         [Parameter()]
         [ValidateNotNull()]
@@ -1066,6 +1188,36 @@ function Set-TargetResource
         [ValidateNotNull()]
         [System.Boolean]
         $TrustedForDelegation,
+
+        # Indicates whether the security context of the user is delegated to a service.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AccountNotDelegated,
+
+        # Indicates whether reversible password encryption is allowed for the account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $AllowReversiblePasswordEncryption,
+
+        # Specifies whether an account supports Kerberos service tickets which includes the authorization data for the user's device.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $CompoundIdentitySupported,
+
+        # Specifies whether the account requires a password. A password is not required for a new account.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $PasswordNotRequired,
+
+        # Specifies whether a smart card is required to logon.
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Boolean]
+        $SmartcardLogonRequired,
 
         # Specifies the Active Directory Domain Services instance to use to perform the task.
         [Parameter()]
