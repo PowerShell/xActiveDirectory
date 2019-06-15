@@ -479,7 +479,7 @@ function Assert-HasDomainAdminRights
         $User
     )
 
-    $windowsPrincipal = New-Object -TypeName System.Security.Principal.WindowsPrincipal($User)
+    $windowsPrincipal = New-Object -TypeName 'System.Security.Principal.WindowsPrincipal' -ArgumentList @($User)
     $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
 
     Write-Verbose -Message ($script:localizedData.CheckingDomainAdminUserRights -f $User.Name)

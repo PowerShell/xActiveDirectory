@@ -94,7 +94,11 @@ try
         }
 
         $testDomainController = 'TESTDC'
-        $testCredentials = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
+
+        $testCredentials = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'DummyUser',
+            (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+        )
 
         #region Function Get-TargetResource
         Describe 'xADGroup\Get-TargetResource' {

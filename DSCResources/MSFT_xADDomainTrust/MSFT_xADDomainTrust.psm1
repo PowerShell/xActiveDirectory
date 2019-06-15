@@ -68,11 +68,11 @@ function Get-TargetResource
         }
 
         # Create the target object
-        $trgDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
+        $trgDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
         $trgDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($trgDirectoryContext)
 
         # Create the source object
-        $srcDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext($DomainOrForest, $SourceDomainName)
+        $srcDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $SourceDomainName)
         $srcDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($srcDirectoryContext)
 
         # Find trust between source & destination.
@@ -266,11 +266,11 @@ function Confirm-ResourceProperties
         }
 
         # Create the target object
-        $trgDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
+        $trgDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
         $trgDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($trgDirectoryContext)
 
         # Create the source object
-        $srcDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext($DomainOrForest, $SourceDomainName)
+        $srcDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $SourceDomainName)
         $srcDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($srcDirectoryContext)
 
         # Find trust

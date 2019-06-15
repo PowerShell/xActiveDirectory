@@ -49,8 +49,8 @@ try
                 $DeepCopyObject
             )
 
-            $memStream = New-Object IO.MemoryStream
-            $formatter = New-Object Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            $memStream = New-Object -TypeName 'IO.MemoryStream'
+            $formatter = New-Object -TypeName 'Runtime.Serialization.Formatters.Binary.BinaryFormatter'
             $formatter.Serialize($memStream,$DeepCopyObject)
             $memStream.Position=0
             $formatter.Deserialize($memStream)
@@ -58,7 +58,11 @@ try
 
         $mockPath               = 'OU=Fake,DC=contoso,DC=com'
         $mockDomainController   = 'MockDC'
-        $mockCredentials        = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
+
+        $mockCredentials        = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'DummyUser',
+            (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+        )
 
         $mockADUSer = @{
             SamAccountName    = 'User1'

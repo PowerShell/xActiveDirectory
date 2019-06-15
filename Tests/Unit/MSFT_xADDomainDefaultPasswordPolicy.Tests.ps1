@@ -44,8 +44,12 @@ try
             DomainName = $testDomainName
         }
         $testDomainController = 'testserver.contoso.com'
-        $testPassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-        $testCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testPassword
+
+        $testPassword = ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force
+        $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'Safemode',
+            $testPassword
+        )
 
         $fakePasswordPolicy = @{
             ComplexityEnabled = $true
@@ -121,8 +125,12 @@ try
                 DomainName = $testDomainName
             }
             $testDomainController = 'testserver.contoso.com'
-            $testPassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-            $testCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testPassword
+
+            $testPassword = ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force
+            $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'Safemode',
+                $testPassword
+            )
 
             $stubPasswordPolicy = @{
                 ComplexityEnabled = $true
@@ -205,8 +213,12 @@ try
                 DomainName = $testDomainName
             }
             $testDomainController = 'testserver.contoso.com'
-            $testPassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-            $testCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testPassword
+
+            $testPassword = ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force
+            $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'Safemode',
+                $testPassword
+            )
 
             $stubPasswordPolicy = @{
                 ComplexityEnabled = $true

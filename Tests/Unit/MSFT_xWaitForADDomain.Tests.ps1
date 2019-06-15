@@ -39,19 +39,22 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        $password = 'Password' | ConvertTo-SecureString -AsPlainText -Force
-        $DomainUserCredential = New-Object pscredential('Username', $password)
+        $domainUserCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'Username',
+            $(ConvertTo-SecureString -String 'Password' -AsPlainText -Force)
+        )
+
         $domainName = 'example.com'
         $testParams = @{
             DomainName = $domainName
-            DomainUserCredential = $DomainUserCredential
+            DomainUserCredential = $domainUserCredential
             RetryIntervalSec = 10
             RetryCount = 5
         }
 
         $rebootTestParams = @{
             DomainName = $domainName
-            DomainUserCredential = $DomainUserCredential
+            DomainUserCredential = $domainUserCredential
             RetryIntervalSec = 10
             RetryCount = 5
             RebootRetryCount = 3

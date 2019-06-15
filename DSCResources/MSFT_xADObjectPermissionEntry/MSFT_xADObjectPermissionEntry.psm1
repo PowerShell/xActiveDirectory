@@ -198,12 +198,14 @@ function Set-TargetResource
 
         $ntAccount = New-Object -TypeName 'System.Security.Principal.NTAccount' -ArgumentList $IdentityReference
 
-        $ace = New-Object -TypeName 'System.DirectoryServices.ActiveDirectoryAccessRule' -ArgumentList $ntAccount,
-        $ActiveDirectoryRights,
-        $AccessControlType,
-        $ObjectType,
-        $ActiveDirectorySecurityInheritance,
-        $InheritedObjectType
+        $ace = New-Object -TypeName 'System.DirectoryServices.ActiveDirectoryAccessRule' -ArgumentList @(
+            $ntAccount,
+            $ActiveDirectoryRights,
+            $AccessControlType,
+            $ObjectType,
+            $ActiveDirectorySecurityInheritance,
+            $InheritedObjectType
+        )
 
         $acl.AddAccessRule($ace)
     }

@@ -324,8 +324,8 @@ InModuleScope 'xActiveDirectory.Common' {
                     }
                 }
 
-                $mockCurrentValues = @{ Example = New-Object -TypeName MockUnknownType }
-                $mockDesiredValues = @{ Example = New-Object -TypeName MockUnknownType }
+                $mockCurrentValues = @{ Example = New-Object -TypeName 'MockUnknownType' }
+                $mockDesiredValues = @{ Example = New-Object -TypeName 'MockUnknownType' }
 
                 $testParameters = @{
                     CurrentValues = $mockCurrentValues
@@ -477,8 +477,8 @@ InModuleScope 'xActiveDirectory.Common' {
                 $mockErrorMessage = 'Mocked error'
                 $mockExceptionErrorMessage = 'Mocked exception error message'
 
-                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
-                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+                $mockException = New-Object -TypeName 'System.Exception' -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @($mockException, $null, 'InvalidResult', $null)
 
                 { New-InvalidResultException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.Exception: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
             }
@@ -501,8 +501,8 @@ InModuleScope 'xActiveDirectory.Common' {
                 $mockErrorMessage = 'Mocked error'
                 $mockExceptionErrorMessage = 'Mocked exception error message'
 
-                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
-                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+                $mockException = New-Object -TypeName 'System.Exception' -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @($mockException, $null, 'InvalidResult', $null)
 
                 { New-ObjectNotFoundException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.Exception: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
             }
@@ -525,8 +525,8 @@ InModuleScope 'xActiveDirectory.Common' {
                 $mockErrorMessage = 'Mocked error'
                 $mockExceptionErrorMessage = 'Mocked exception error message'
 
-                $mockException = New-Object -TypeName System.Exception -ArgumentList $mockExceptionErrorMessage
-                $mockErrorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $mockException, $null, 'InvalidResult', $null
+                $mockException = New-Object -TypeName 'System.Exception' -ArgumentList $mockExceptionErrorMessage
+                $mockErrorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @($mockException, $null, 'InvalidResult', $null)
 
                 { New-InvalidOperationException -Message $mockErrorMessage -ErrorRecord $mockErrorRecord } | Should -Throw ('System.InvalidOperationException: {0} ---> System.Exception: {1}' -f $mockErrorMessage, $mockExceptionErrorMessage)
             }
@@ -1741,8 +1741,8 @@ InModuleScope 'xActiveDirectory.Common' {
                 }
 
                 $mockValues = @{
-                    CurrentValue = New-Object -TypeName MockUnknownType
-                    DesiredValue = New-Object -TypeName MockUnknownType
+                    CurrentValue = New-Object -TypeName 'MockUnknownType'
+                    DesiredValue = New-Object -TypeName 'MockUnknownType'
                 }
 
                 Test-DscPropertyState -Values $mockValues | Should -Be $false

@@ -57,8 +57,16 @@ try
         $mgmtForestMode = [Microsoft.ActiveDirectory.Management.ADForestMode]::Windows2012R2Forest
         $domainMode = [Microsoft.DirectoryServices.Deployment.Types.DomainMode]::Win2012R2
         $mgmtDomainMode = [Microsoft.ActiveDirectory.Management.ADDomainMode]::Windows2012R2Domain
-        $testAdminCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-        $invalidCredential = New-Object System.Management.Automation.PSCredential 'Invalid', (ConvertTo-SecureString 'InvalidPassword' -AsPlainText -Force)
+
+        $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'DummyUser',
+            (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+        )
+
+        $invalidCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'Invalid',
+            (ConvertTo-SecureString -String 'InvalidPassword' -AsPlainText -Force)
+        )
 
         $testDefaultParams = @{
             DomainAdministratorCredential = $testAdminCredential
@@ -185,7 +193,10 @@ try
             $correctDomainNetBIOSName = 'PRESENT'
             $incorrectDomainName = 'incorrect.com'
             $parentDomainName = 'parent.com'
-            $testAdminCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
+            $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'DummyUser',
+                (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+            )
 
             $testDefaultParams = @{
                 DomainAdministratorCredential = $testAdminCredential
@@ -279,10 +290,22 @@ try
             $testParentDomainName = 'parent.com'
             $testDomainNetBIOSNameName = 'PRESENT'
             $testDomainForestMode = 'WinThreshold'
-            $testAdminCredential = New-Object System.Management.Automation.PSCredential 'Admin', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-            $testSafemodePassword = (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
-            $testSafemodeCredential = New-Object System.Management.Automation.PSCredential 'Safemode', $testSafemodePassword
-            $testDelegationCredential = New-Object System.Management.Automation.PSCredential 'Delegation', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
+
+            $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'Admin',
+                (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+            )
+
+            $testSafemodePassword = (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+            $testSafemodeCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'Safemode',
+                $testSafemodePassword
+            )
+
+            $testDelegationCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                'Delegation',
+                (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+            )
 
             $newForestParams = @{
                 DomainName = $testDomainName

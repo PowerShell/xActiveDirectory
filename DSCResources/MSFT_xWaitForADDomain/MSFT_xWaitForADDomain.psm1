@@ -1,4 +1,4 @@
-$script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
+﻿$script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules'
 
 $script:localizationModulePath = Join-Path -Path $script:modulesFolderPath -ChildPath 'xActiveDirectory.Common'
@@ -209,11 +209,11 @@ function Get-Domain
 
     if ($DomainUserCredential)
     {
-        $context = new-object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName, $DomainUserCredential.UserName, $DomainUserCredential.GetNetworkCredential().Password)
+        $context = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @('Domain', $DomainName, $DomainUserCredential.UserName, $DomainUserCredential.GetNetworkCredential().Password)
     }
     else
     {
-        $context = new-object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain',$DomainName)
+        $context = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @('Domain', $DomainName)
     }
 
     try

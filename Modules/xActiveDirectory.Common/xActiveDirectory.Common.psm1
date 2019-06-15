@@ -705,7 +705,7 @@ function Remove-DuplicateMembers
     }
 
     # Create the output array.
-    $destination = New-Object -TypeName System.String[] -ArgumentList $destIndex
+    $destination = New-Object -TypeName 'System.String[]' -ArgumentList $destIndex
 
     # Copy only distinct elements from the original array to the destination array.
     [System.Array]::Copy($Members, $destination, $destIndex)
@@ -1055,9 +1055,9 @@ function ThrowInvalidOperationError
         $ErrorMessage
     )
 
-    $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $ErrorMessage
+    $exception = New-Object -TypeName 'System.InvalidOperationException' -ArgumentList $ErrorMessage
     $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
-    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $exception, $ErrorId, $errorCategory, $null
+    $errorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @($exception, $ErrorId, $errorCategory, $null)
     throw $errorRecord
 }
 
@@ -1077,9 +1077,9 @@ function ThrowInvalidArgumentError
         $ErrorMessage
     )
 
-    $exception = New-Object -TypeName System.ArgumentException -ArgumentList $ErrorMessage
+    $exception = New-Object -TypeName 'System.ArgumentException' -ArgumentList $ErrorMessage
     $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidArgument
-    $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $exception, $ErrorId, $errorCategory, $null
+    $errorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @($exception, $ErrorId, $errorCategory, $null)
     throw $errorRecord
 
 } #end function ThrowInvalidArgumentError

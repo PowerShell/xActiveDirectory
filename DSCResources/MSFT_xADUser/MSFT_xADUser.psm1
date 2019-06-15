@@ -1525,7 +1525,7 @@ function Test-Password
 
     if ($DomainAdministratorCredential)
     {
-        $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext(
+        $principalContext = New-Object -TypeName 'System.DirectoryServices.AccountManagement.PrincipalContext' -ArgumentList @(
             [System.DirectoryServices.AccountManagement.ContextType]::Domain,
             $DomainName,
             $DomainAdministratorCredential.UserName,
@@ -1534,7 +1534,7 @@ function Test-Password
     }
     else
     {
-        $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext(
+        $principalContext = New-Object -TypeName 'System.DirectoryServices.AccountManagement.PrincipalContext' -ArgumentList @(
             [System.DirectoryServices.AccountManagement.ContextType]::Domain,
             $DomainName,
             $null,

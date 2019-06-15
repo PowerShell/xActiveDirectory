@@ -44,7 +44,10 @@ try
         function Remove-ADOrganizationalUnit { param ($Name, $Credential) }
         function New-ADOrganizationalUnit { param ($Name, $Credential) }
 
-        $testCredential = New-Object System.Management.Automation.PSCredential 'DummyUser', (ConvertTo-SecureString 'DummyPassword' -AsPlainText -Force)
+        $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            'DummyUser',
+            (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
+        )
 
         $testPresentParams = @{
             Name = 'TestOU'
