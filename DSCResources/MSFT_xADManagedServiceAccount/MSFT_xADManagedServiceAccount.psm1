@@ -413,6 +413,7 @@ function Set-TargetResource
         if ($Ensure -eq 'Present')
         {
             $isEnsureNonCompliant = $false
+
             if ($compareTargetResourceNonCompliant |
                     Where-Object -FilterScript { $_.Parameter -eq 'Ensure' })
             {
