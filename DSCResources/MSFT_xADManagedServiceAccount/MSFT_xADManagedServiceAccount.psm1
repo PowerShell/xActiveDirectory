@@ -249,13 +249,13 @@ function Test-TargetResource
     $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
 
     $compareTargetResourceNonCompliant = Compare-TargetResourceState @PSBoundParameters |
-        Where-Object { $_.Pass -eq $false }
+        Where-Object -FilterScript { $_.Pass -eq $false }
 
     # Check if Absent, if so then we don't need to propagate any other parameters
     if ($Ensure -eq 'Absent')
     {
         $ensureState = $compareTargetResourceNonCompliant |
-            Where-Object { $_.Parameter -eq 'Ensure' }
+            Where-Object -FilterScript { $_.Parameter -eq 'Ensure' }
 
         if ($ensureState)
         {
@@ -402,7 +402,7 @@ function Set-TargetResource
 
     $compareTargetResource = Compare-TargetResourceState @PSBoundParameters
     $compareTargetResourceNonCompliant = @($compareTargetResource |
-            Where-Object { $_.Pass -eq $false })
+            Where-Object -FilterScript { $_.Pass -eq $false })
 
     $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters
     $setServiceAccountParameters = $adServiceAccountParameters.Clone()
@@ -414,7 +414,7 @@ function Set-TargetResource
         {
             $isEnsureNonCompliant = $false
             if ($compareTargetResourceNonCompliant |
-                    Where-Object { $_.Parameter -eq 'Ensure' })
+                    Where-Object -FilterScript { $_.Parameter -eq 'Ensure' })
             {
                 $isEnsureNonCompliant = $true
             }
@@ -429,7 +429,7 @@ function Set-TargetResource
             {
                 #region Check if AccountType is compliant
                 $accountTypeState = $compareTargetResourceNonCompliant |
-                    Where-Object { $_.Parameter -eq 'AccountType' }
+                    Where-Object -FilterScript { $_.Parameter -eq 'AccountType' }
 
                 # Account already exist, need to update parameters that are not in compliance
                 if ($accountTypeState)
@@ -450,13 +450,13 @@ function Set-TargetResource
 
                 # Remove AccountType since we don't want to enumerate down below
                 $compareTargetResourceNonCompliant = @($compareTargetResourceNonCompliant |
-                        Where-Object { $_.Parameter -ne 'AccountType' })
+                        Where-Object -FilterScript { $_.Parameter -ne 'AccountType' })
                 #endregion Check if AccountType is compliant
 
                 #region Check if Path is compliant
                 $isPathNonCompliant = $false
                 if ($compareTargetResourceNonCompliant |
-                        Where-Object { $_.Parameter -eq 'Path' })
+                        Where-Object -FilterScript { $_.Parameter -eq 'Path' })
                 {
                     $isPathNonCompliant = $true
                 }
@@ -465,7 +465,7 @@ function Set-TargetResource
                 {
                     Write-Verbose -Message ($script:localizedData.MovingManagedServiceAccount -f $ServiceAccountName, $Path)
                     $distinguishedNameObject = $compareTargetResource |
-                        Where-Object { $_.Parameter -eq 'DistinguishedName' }
+                        Where-Object -FilterScript { $_.Parameter -eq 'DistinguishedName' }
 
                     $moveADObjectParameters['Identity'] = $distinguishedNameObject.Actual
 
@@ -473,7 +473,7 @@ function Set-TargetResource
                 }
 
                 $compareTargetResourceNonCompliant = @($compareTargetResourceNonCompliant |
-                        Where-Object { $_.Parameter -ne 'Path' })
+                        Where-Object -FilterScript { $_.Parameter -ne 'Path' })
                 #endregion Check if Path is compliant
 
                 #region Check if other parameters are compliant
@@ -511,7 +511,7 @@ function Set-TargetResource
         {
             $isEnsureNonCompliant = $false
             if ($compareTargetResourceNonCompliant |
-                    Where-Object { $_.Parameter -eq 'Ensure' })
+                    Where-Object -FilterScript { $_.Parameter -eq 'Ensure' })
             {
                 $isEnsureNonCompliant = $true
             }

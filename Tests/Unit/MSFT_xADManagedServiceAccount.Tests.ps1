@@ -663,7 +663,7 @@ try
                 $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersSingleNotCompliant
                 $testCases = @()
                 # Need to remove parameters that will always be true
-                $getTargetResourceResult = $getTargetResourceResult | Where-Object {
+                $getTargetResourceResult = $getTargetResourceResult | Where-Object -FilterScript {
                     $_.Parameter -ne 'ServiceAccountName' -and
                     $_.Parameter -ne 'DistinguishedName' -and
                     $_.Parameter -ne 'MembershipAttribute'
@@ -750,7 +750,7 @@ try
                 $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersGroup
                 $testCases = @()
                 # Need to remove parameters that will always be true
-                $getTargetResourceResult = $getTargetResourceResult | Where-Object {
+                $getTargetResourceResult = $getTargetResourceResult | Where-Object -FilterScript {
                     $_.Parameter -ne 'ServiceAccountName' -and
                     $_.Parameter -ne 'DistinguishedName' -and
                     $_.Parameter -ne 'MembershipAttribute'
@@ -793,7 +793,7 @@ try
 
                     $getTargetResourceResultSAM  = Compare-TargetResourceState @testResourceParametersGroupSAM
 
-                    $membersState = $getTargetResourceResultSAM | Where-Object {$_.Parameter -eq 'Members'}
+                    $membersState = $getTargetResourceResultSAM | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
                     $membersState.Expected | Should -Not -BeExactly $membersState.Actual
                     $membersState.Pass | Should -BeFalse
                 }
@@ -808,7 +808,7 @@ try
 
                     $getTargetResourceResultDN  = Compare-TargetResourceState @testResourceParametersGroupDN
 
-                    $membersState = $getTargetResourceResultDN | Where-Object {$_.Parameter -eq 'Members'}
+                    $membersState = $getTargetResourceResultDN | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
                     $membersState.Expected | Should -Not -BeExactly $membersState.Actual
                     $membersState.Pass | Should -BeFalse
                 }
@@ -823,7 +823,7 @@ try
 
                     $getTargetResourceResultSID  = Compare-TargetResourceState @testResourceParametersGroupSID
 
-                    $membersState = $getTargetResourceResultSID | Where-Object {$_.Parameter -eq 'Members'}
+                    $membersState = $getTargetResourceResultSID | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
                     $membersState.Expected | Should -Not -BeExactly $membersState.Actual
                     $membersState.Pass | Should -BeFalse
                 }
@@ -838,7 +838,7 @@ try
 
                     $getTargetResourceResultGUID  = Compare-TargetResourceState @testResourceParametersGroupGUID
 
-                    $membersState = $getTargetResourceResultGUID | Where-Object {$_.Parameter -eq 'Members'}
+                    $membersState = $getTargetResourceResultGUID | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
                     $membersState.Expected | Should -Not -BeExactly $membersState.Actual
                     $membersState.Pass | Should -BeFalse
                 }
@@ -897,7 +897,7 @@ try
             Context -Name "When the system is in the desired state and 'Ensure' is 'Absent' (Both)" {
                 It "Should pass when 'Ensure' is set to 'Absent" {
                     $mockCompareSingleServiceAccountEnsureAbsent = $mockCompareSingleServiceAccount.Clone()
-                    $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                    $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                     $objectEnsure.Actual = 'Absent'
                     $objectEnsure.Pass = $true
 
@@ -931,7 +931,7 @@ try
                 $testCases = @()
                 foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
                 {
-                    $objectParameter = $mockCompareSingleServiceAccountNotCompliant | Where-Object { $_.Parameter -eq $incorrectParameter.Name }
+                    $objectParameter = $mockCompareSingleServiceAccountNotCompliant | Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
                     $objectParameter.Expected = $incorrectParameter.Value
                     $objectParameter.Pass = $false
 
@@ -983,7 +983,7 @@ try
                 $testCases = @()
                 foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
                 {
-                    $objectParameter = $mockCompareGroupServiceAccountNotCompliant | Where-Object { $_.Parameter -eq $incorrectParameter.Name }
+                    $objectParameter = $mockCompareGroupServiceAccountNotCompliant | Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
                     $objectParameter.Expected = $incorrectParameter.Value
                     $objectParameter.Pass = $false
 
@@ -1133,7 +1133,7 @@ try
 
             Context -Name "When the system is in the desired state and 'Ensure' is 'Absent' (Both)" {
                 $mockCompareSingleServiceAccountEnsureAbsent = $mockCompareSingleServiceAccount.Clone()
-                $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                 $objectEnsure.Actual = 'Absent'
                 $objectEnsure.Pass = $true
 
@@ -1167,7 +1167,7 @@ try
                 $mockCompareSingleServiceAccountNotCompliantEnsure = Copy-ArrayObjects $mockCompareSingleServiceAccount
 
                 #region Incorrect Path setup
-                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object {$_.Parameter -eq 'Path'}
+                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
                 $objectPath.Expected = 'WrongPath'
                 $objectPath.Pass = $false
 
@@ -1203,7 +1203,7 @@ try
                 foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
                 {
                     $objectParameter = $mockCompareSingleServiceAccountNotCompliantOtherParameters |
-                                            Where-Object { $_.Parameter -eq $incorrectParameter.Name }
+                                            Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
                     $objectParameter.Expected = $incorrectParameter.Value
                     $objectParameter.Pass = $false
 
@@ -1245,7 +1245,7 @@ try
                 }
 
                 #region Incorrect Account type setup
-                $objectAccountType = $mockCompareSingleServiceAccountNotCompliantAccountType | Where-Object {$_.Parameter -eq 'AccountType'}
+                $objectAccountType = $mockCompareSingleServiceAccountNotCompliantAccountType | Where-Object -FilterScript {$_.Parameter -eq 'AccountType'}
                 $objectAccountType.Expected = 'Group'
                 $objectAccountType.Pass = $false
 
@@ -1291,7 +1291,7 @@ try
                 }
 
                 #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareSingleServiceAccountNotCompliantEnsure | Where-Object {$_.Parameter -eq 'Ensure'}
+                $objectEnsure = $mockCompareSingleServiceAccountNotCompliantEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                 $objectEnsure.Expected = 'Absent'
                 $objectEnsure.Pass = $false
 
@@ -1327,7 +1327,7 @@ try
                 $mockCompareGroupServiceAccountNotCompliantEnsure = Copy-ArrayObjects $mockCompareGroupServiceAccount
 
                 #region Incorrect Path setup
-                $objectPath = $mockCompareGroupServiceAccountNotCompliantPath | Where-Object {$_.Parameter -eq 'Path'}
+                $objectPath = $mockCompareGroupServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
                 $objectPath.Expected = 'WrongPath'
                 $objectPath.Pass = $false
 
@@ -1365,7 +1365,7 @@ try
                 foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
                 {
                     $objectParameter = $mockCompareGroupServiceAccountNotCompliantOtherParameters |
-                                            Where-Object { $_.Parameter -eq $incorrectParameter.Name }
+                                            Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
                     $objectParameter.Expected = $incorrectParameter.Value
                     $objectParameter.Pass = $false
 
@@ -1408,7 +1408,7 @@ try
                 }
 
                 #region Incorrect Account type setup
-                $objectAccountType = $mockCompareGroupServiceAccountNotCompliantAccountType | Where-Object {$_.Parameter -eq 'AccountType'}
+                $objectAccountType = $mockCompareGroupServiceAccountNotCompliantAccountType | Where-Object -FilterScript {$_.Parameter -eq 'AccountType'}
                 $objectAccountType.Expected = 'Single'
                 $objectAccountType.Pass = $false
 
@@ -1453,7 +1453,7 @@ try
                 }
 
                 #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareGroupServiceAccountNotCompliantEnsure | Where-Object {$_.Parameter -eq 'Ensure'}
+                $objectEnsure = $mockCompareGroupServiceAccountNotCompliantEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                 $objectEnsure.Expected = 'Absent'
                 $objectEnsure.Pass = $false
 
@@ -1486,7 +1486,7 @@ try
                 $mockCompareSingleServiceAccountNotEnsure = Copy-ArrayObjects $mockCompareSingleServiceAccount
 
                 #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareSingleServiceAccountNotEnsure | Where-Object {$_.Parameter -eq 'Ensure'}
+                $objectEnsure = $mockCompareSingleServiceAccountNotEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                 $objectEnsure.Expected = 'Present'
                 $objectEnsure.Actual = 'Absent'
                 $objectEnsure.Pass = $false
@@ -1524,7 +1524,7 @@ try
                 $mockCompareSingleServiceAccountNotCompliantPath = Copy-ArrayObjects $mockCompareSingleServiceAccount
 
                 #region Incorrect Path setup
-                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object {$_.Parameter -eq 'Path'}
+                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
                 $objectPath.Expected = 'WrongPath'
                 $objectPath.Pass = $false
 

@@ -506,9 +506,7 @@ function Get-ADRootDomainDN
 {
     [CmdletBinding()]
     [OutputType([System.String])]
-    param
-    (
-    )
+    param ()
 
     $rootDomainDN = (New-Object -TypeName System.DirectoryServices.DirectoryEntry('LDAP://RootDSE')).Get('rootDomainNamingContext')
     Write-Verbose -Message ($script:localizedData.RetrievedRootDomainDN -f $rootDomainDN)

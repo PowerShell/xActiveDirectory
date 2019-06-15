@@ -1353,7 +1353,7 @@ function Set-TargetResource
                 {
                     # Find the associated AD property
                     $adProperty = $adPropertyMap |
-                        Where-Object { $_.Parameter -eq $parameter }
+                        Where-Object -FilterScript { $_.Parameter -eq $parameter }
 
                     if ([System.String]::IsNullOrEmpty($adProperty))
                     {

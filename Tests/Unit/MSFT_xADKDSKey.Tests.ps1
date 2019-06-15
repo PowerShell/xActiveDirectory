@@ -489,7 +489,7 @@ try
                 $compareTargetResourceResult = Compare-TargetResourceState @compareTargetResourceParametersFuture
                 $testCases = @()
                 # Need to remove parameters that will always be true
-                $compareTargetResourceResult = $compareTargetResourceResult | Where-Object {
+                $compareTargetResourceResult = $compareTargetResourceResult | Where-Object -FilterScript {
                     $_.Parameter -ne 'EffectiveTime' -and
                     $_.Parameter -ne 'DistinguishedName'
                 }
@@ -549,7 +549,7 @@ try
             Context -Name "When the system is in the desired state and 'Ensure' is 'Absent'" {
                 It "Should pass when 'Ensure' is set to 'Absent" {
                     $mockKDSRootKeyFutureCompareEnsureAbsent = Copy-ArrayObjects $mockKDSRootKeyFutureCompare
-                    $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                    $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                     $objectEnsure.Actual = 'Absent'
                     $objectEnsure.Pass = $true
 
@@ -580,7 +580,7 @@ try
                 $testCases = @()
                 foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
                 {
-                    $objectParameter = $mockKDSRootKeyFutureCompareNotCompliant | Where-Object { $_.Parameter -eq $incorrectParameter.Name }
+                    $objectParameter = $mockKDSRootKeyFutureCompareNotCompliant | Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
                     $objectParameter.Expected = $incorrectParameter.Value
                     $objectParameter.Pass = $false
 
@@ -648,7 +648,7 @@ try
 
             Context -Name 'When the system is in the desired state and KDS Root Key is Absent' {
                 $mockKDSRootKeyFutureCompareEnsureAbsent = Copy-ArrayObjects $mockKDSRootKeyFutureCompare
-                $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                 $objectEnsure.Expected = 'Absent'
                 $objectEnsure.Pass = $false
 
@@ -676,7 +676,7 @@ try
             Context -Name 'When the system is NOT in the desired state and need to remove KDS Root Key' {
                 BeforeEach {
                     $mockKDSRootKeyFutureCompareEnsureAbsent = Copy-ArrayObjects $mockKDSRootKeyFutureCompare
-                    $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                    $objectEnsure = $mockKDSRootKeyFutureCompareEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                     $objectEnsure.Actual = 'Present'
                     $objectEnsure.Pass = $false
 
@@ -768,7 +768,7 @@ try
             Context -Name 'When the system is NOT in the desired state and need to add KDS Root Key' {
                 BeforeEach {
                     $mockKDSRootKeyCompareEnsureAbsent = Copy-ArrayObjects $mockKDSRootKeyFutureCompare
-                    $objectEnsure = $mockKDSRootKeyCompareEnsureAbsent | Where-Object {$_.Parameter -eq 'Ensure'}
+                    $objectEnsure = $mockKDSRootKeyCompareEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
                     $objectEnsure.Actual = 'Absent'
                     $objectEnsure.Pass = $false
 
