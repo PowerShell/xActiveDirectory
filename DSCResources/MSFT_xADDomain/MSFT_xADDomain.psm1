@@ -378,18 +378,22 @@ function Set-TargetResource
         $installADDSParams['DnsDelegationCredential'] = $DnsDelegationCredential
         $installADDSParams['CreateDnsDelegation'] = $true
     }
+
     if ($PSBoundParameters.ContainsKey('DatabasePath'))
     {
         $installADDSParams['DatabasePath'] = $DatabasePath
     }
+
     if ($PSBoundParameters.ContainsKey('LogPath'))
     {
         $installADDSParams['LogPath'] = $LogPath
     }
+
     if ($PSBoundParameters.ContainsKey('SysvolPath'))
     {
         $installADDSParams['SysvolPath'] = $SysvolPath
     }
+
     if ($PSBoundParameters.ContainsKey('DomainMode'))
     {
         $installADDSParams['DomainMode'] = $DomainMode
@@ -402,6 +406,7 @@ function Set-TargetResource
         $installADDSParams['NewDomainName'] = $DomainName
         $installADDSParams['ParentDomainName'] = $ParentDomainName
         $installADDSParams['DomainType'] = 'ChildDomain'
+
         if ($PSBoundParameters.ContainsKey('DomainNetBIOSName'))
         {
             $installADDSParams['NewDomainNetbiosName'] = $DomainNetBIOSName
@@ -415,10 +420,12 @@ function Set-TargetResource
     {
         Write-Verbose -Message ($script:localizedData.CreatingForest -f $DomainName)
         $installADDSParams['DomainName'] = $DomainName
+
         if ($PSBoundParameters.ContainsKey('DomainNetbiosName'))
         {
             $installADDSParams['DomainNetbiosName'] = $DomainNetBIOSName
         }
+
         if ($PSBoundParameters.ContainsKey('ForestMode'))
         {
             $installADDSParams['ForestMode'] = $ForestMode
