@@ -438,8 +438,10 @@ function Set-TargetResource
 
     'Finished' | Out-File -FilePath (Get-TrackingFilename -DomainName $DomainName) -Force
 
-    # Signal to the LCM to reboot the node to compensate for the one we
-    # suppressed from Install-ADDSForest/Install-ADDSDomain
+    <#
+        Signal to the LCM to reboot the node to compensate for the one we
+        suppressed from Install-ADDSForest/Install-ADDSDomain.
+    #>
     $global:DSCMachineStatus = 1
 } #end function Set-TargetResource
 
