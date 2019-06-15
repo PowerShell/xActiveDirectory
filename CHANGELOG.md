@@ -8,28 +8,28 @@
     - Convert-PropertyMapToObjectProperties
     - Compare-ResourcePropertyState
     - Test-DscPropertyState
-  - Move the examples in the README.md to Examples folder
-  - Fix Script Analyzer rule failures
+  - Move the examples in the README.md to Examples folder.
+  - Fix Script Analyzer rule failures.
   - Opt-in to the following DSC Resource Common Meta Tests:
     - Common Tests - Custom Script Analyzer Rules
     - Common Tests - Required Script Analyzer Rules
     - Common Tests - Flagged Script Analyzer Rules
-    - Common Tests - Validate Module Files ([Issue #282](https://github.com/PowerShell/xActiveDirectory/issues/282))
-    - Common Tests - Validate Script Files ([Issue #283](https://github.com/PowerShell/xActiveDirectory/issues/283))
-    - Common Tests - Relative Path Length ([Issue #284](https://github.com/PowerShell/xActiveDirectory/issues/284))
-    - Common Tests - Validate Markdown Links ([Issue #280](https://github.com/PowerShell/xActiveDirectory/issues/280))
-    - Common Tests - Validate Localization ([Issue #281](https://github.com/PowerShell/xActiveDirectory/issues/281))
-    - Common Tests - Validate Example Files ([Issue #279](https://github.com/PowerShell/xActiveDirectory/issues/279))
-    - Common Tests - Validate Example Files To Be Published ([Issue #311](https://github.com/PowerShell/xActiveDirectory/issues/311))
-  - Move resource descriptions to Wiki using auto-documentation ([Issue #289](https://github.com/PowerShell/xActiveDirectory/issues/289))
+    - Common Tests - Validate Module Files ([issue #282](https://github.com/PowerShell/xActiveDirectory/issues/282))
+    - Common Tests - Validate Script Files ([issue #283](https://github.com/PowerShell/xActiveDirectory/issues/283))
+    - Common Tests - Relative Path Length ([issue #284](https://github.com/PowerShell/xActiveDirectory/issues/284))
+    - Common Tests - Validate Markdown Links ([issue #280](https://github.com/PowerShell/xActiveDirectory/issues/280))
+    - Common Tests - Validate Localization ([issue #281](https://github.com/PowerShell/xActiveDirectory/issues/281))
+    - Common Tests - Validate Example Files ([issue #279](https://github.com/PowerShell/xActiveDirectory/issues/279))
+    - Common Tests - Validate Example Files To Be Published ([issue #311](https://github.com/PowerShell/xActiveDirectory/issues/311))
+  - Move resource descriptions to Wiki using auto-documentation ([issue #289](https://github.com/PowerShell/xActiveDirectory/issues/289))
   - Move helper functions from MSFT_xADCommon to the module
-    xActiveDirectory.Common ([issue #288](https://github.com/PowerShell/xActiveDirectory/issues/288))
+    xActiveDirectory.Common ([issue #288](https://github.com/PowerShell/xActiveDirectory/issues/288)).
     - Removed helper function `Test-ADDomain` since it was not used. The
       helper function had design flaws too.
     - Now the helper function `Test-Members` outputs all the members that
       are not in desired state when verbose output is enabled.
   - Update all unit tests to latest unit test template.
-  - Deleted the obsolete xActiveDirectory_TechNetDocumentation.html file
+  - Deleted the obsolete xActiveDirectory_TechNetDocumentation.html file.
   - Added new resource xADObjectEnabledState. This resource should be
     used to enforce the `Enabled` property of computer accounts. This
     resource replaces the deprecated `Enabled` property in the resource
@@ -53,15 +53,15 @@
     if the computer account is created enabled or disabled.
   - Moved examples from the README.md to separate example files in the
     Examples folder.
-  - Fix the RestoreFromRecycleBin Description
-  - Fix unnecessary cast in `Test-TargetResource` ([Issue #295](https://github.com/PowerShell/xActiveDirectory/issues/295))
+  - Fix the RestoreFromRecycleBin description.
+  - Fix unnecessary cast in `Test-TargetResource` ([issue #295](https://github.com/PowerShell/xActiveDirectory/issues/295)).
 - Changes to xADGroup
   - Change the description of the property RestoreFromRecycleBin.
   - Code cleanup.
 - Changes to xADObjectPermissionEntry
   - Change the description of the property IdentityReference.
-  - Fix failure when applied in the same configuration as xADDomain
-  - Localize and Improve verbose messaging
+  - Fix failure when applied in the same configuration as xADDomain.
+  - Localize and Improve verbose messaging.
   - Code cleanup.
 - Changes to xADOrganizationalUnit
   - Change the description of the property RestoreFromRecycleBin.
