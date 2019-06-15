@@ -118,7 +118,7 @@ function Get-TargetResource
         {
             if ($isDomainMember)
             {
-                ## We're already a domain member, so take the credentials out of the equation
+                # We're already a domain member, so take the credentials out of the equation
                 Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN)
                 $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop
                 $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
@@ -129,9 +129,11 @@ function Get-TargetResource
                 $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
             }
 
-            ## No need to check whether the node is actually a domain controller. If we don't throw an exception,
-            ## the domain is already UP - and this resource shouldn't run. Domain controller functionality
-            ## should be checked by the xADDomainController resource?
+            <#
+                No need to check whether the node is actually a domain controller. If we don't throw an exception,
+                the domain is already UP - and this resource shouldn't run. Domain controller functionality
+                should be checked by the xADDomainController resource?
+            #>
             Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot)
 
             $targetResource = @{
@@ -172,7 +174,7 @@ function Get-TargetResource
             }
             else
             {
-                ## Not sure what's gone on here!
+                # Not sure what's gone on here!
                 throw $_
             }
         }
@@ -250,8 +252,10 @@ function Test-TargetResource
     $targetResource = Get-TargetResource @PSBoundParameters
     $isCompliant = $true
 
-    ## The Get-Target resource returns .DomainName as the domain's FQDN. Therefore, we
-    ## need to resolve this before comparison.
+    <#
+        The Get-Target resource returns .DomainName as the domain's FQDN. Therefore, we
+        need to resolve this before comparison.
+    #>
     $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
     if ($domainFQDN -ne $targetResource.DomainName)
     {
@@ -359,7 +363,8 @@ function Set-TargetResource
 
     # Debug can pause Install-ADDSForest/Install-ADDSDomain, so we remove it.
     [ref] $null = $PSBoundParameters.Remove('Debug')
-    ## Not entirely necessary, but run Get-TargetResouece to ensure we raise any pre-flight errors.
+
+    # Not entirely necessary, but run Get-TargetResource to ensure we raise any pre-flight errors.
     $targetResource = Get-TargetResource @PSBoundParameters
 
     $installADDSParams = @{

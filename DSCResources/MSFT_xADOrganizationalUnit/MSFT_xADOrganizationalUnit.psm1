@@ -92,7 +92,7 @@ function Test-TargetResource
     {
         if ($Ensure -eq 'Present')
         {
-            ## Organizational unit exists
+            # Organizational unit exists
             if ([System.String]::IsNullOrEmpty($Description))
             {
                 $isCompliant = (($targetResource.Name -eq $Name) -and
@@ -124,7 +124,7 @@ function Test-TargetResource
     }
     else
     {
-        ## Organizational unit does not exist
+        # Organizational unit does not exist
         if ($Ensure -eq 'Present')
         {
             $isCompliant = $false

@@ -132,7 +132,7 @@ try
                     Write-Error -Exception (New-Object System.Security.Authentication.AuthenticationException)
                 }
 
-                ## Match operator is case-sensitive!
+                # Match operator is case-sensitive!
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw 'invalid credentials'
             }
 
@@ -197,7 +197,7 @@ try
                 DomainNetBIOSName = $correctDomainNetBIOSName
             }
 
-            ## Get-TargetResource returns the domain FQDN for .DomainName
+            # Get-TargetResource returns the domain FQDN for .DomainName
             $stubChildDomain = @{
                 DomainName = "$correctChildDomainName.$parentDomainName"
                 ParentDomainName = $parentDomainName
@@ -390,7 +390,7 @@ try
                 Assert-MockCalled -CommandName Install-ADDSForest -ParameterFilter { $DomainMode -eq $testDomainForestMode } -Scope It
             }
 
-            #### ADDSDomain
+            # ADDSDomain
 
             It 'Calls "Install-ADDSDomain" with "NewDomainName" when creating child domain' {
                 Mock -CommandName Install-ADDSDomain -ParameterFilter { $NewDomainName -eq $testDomainName }

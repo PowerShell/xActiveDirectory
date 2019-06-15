@@ -6,7 +6,7 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomainDefaultPasswordPolicy'
 
-## List of changeable policy properties
+# List of changeable policy properties
 $mutablePropertyMap = @(
     @{
         Name = 'ComplexityEnabled'

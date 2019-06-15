@@ -669,7 +669,7 @@ function Assert-MemberParameters
 
 } #end function Assert-MemberParameters
 
-## Internal function to remove duplicate strings (members) from a string array
+# Internal function to remove duplicate strings (members) from a string array
 function Remove-DuplicateMembers
 {
     [CmdletBinding()]
@@ -722,25 +722,25 @@ function Test-Members
     [OutputType([System.Boolean])]
     param
     (
-        ## Existing array members
+        # Existing array members
         [Parameter()]
         [AllowNull()]
         [System.String[]]
         $ExistingMembers,
 
-        ## Explicit array members
+        # Explicit array members
         [Parameter()]
         [AllowNull()]
         [System.String[]]
         $Members,
 
-        ## Compulsory array members
+        # Compulsory array members
         [Parameter()]
         [AllowNull()]
         [System.String[]]
         $MembersToInclude,
 
-        ## Excluded array members
+        # Excluded array members
         [Parameter()]
         [AllowNull()]
         [System.String[]]
@@ -998,7 +998,7 @@ function Get-ADCommonParameters
         [System.Management.Automation.SwitchParameter]
         $PreferCommonName,
 
-        ## Catch all to enable splatted $PSBoundParameters
+        # Catch all to enable splatted $PSBoundParameters
         [Parameter(ValueFromRemainingArguments)]
         $RemainingArguments
     )
@@ -1084,7 +1084,7 @@ function ThrowInvalidArgumentError
 
 } #end function ThrowInvalidArgumentError
 
-## Internal function to test site availability
+# Internal function to test site availability
 function Test-ADReplicationSite
 {
     [CmdletBinding()]
