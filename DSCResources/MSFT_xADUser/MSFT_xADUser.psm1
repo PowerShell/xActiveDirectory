@@ -153,6 +153,7 @@ $adPropertyMap = @(
     @{
         Parameter          = 'ChangePasswordAtLogon'
         UseCmdletParameter = $true
+        ADProperty         = 'pwdLastSet'
     }
     @{
         Parameter          = 'TrustedForDelegation'
