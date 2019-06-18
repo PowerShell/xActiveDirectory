@@ -107,7 +107,15 @@ try
                 $InstallationMediaPath,
 
                 [Parameter()]
-                $NoGlobalCatalog
+                $NoGlobalCatalog,
+
+                [Parameter()]
+                [System.String[]]
+                $AllowPasswordReplicationAccountName,
+
+                [Parameter()]
+                [System.String[]]
+                $DenyPasswordReplicationAccountName
             )
 
             throw [exception] 'Not Implemented'
@@ -132,11 +140,11 @@ try
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject {
-                    return @{
-                        Site            = $correctSiteName
-                        Domain          = $correctDomainName
-                        IsGlobalCatalog = $true
-                    }
+                    $domainControllerObject = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                    $domainControllerObject.Site = $correctSiteName
+                    $domainControllerObject.Domain = $correctDomainName
+                    $domainControllerObject.IsGlobalCatalog = $true
+                    return $domainControllerObject
                 }
 
                 Mock -CommandName Get-ItemProperty -ParameterFilter { $Path -eq 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters' } -MockWith {
@@ -152,7 +160,7 @@ try
                     }
                 }
 
-                Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -MockWith {
+                Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
                     return [PSCustomObject]@{
                         SamAccountName = $allowedAccount
                     }
@@ -212,15 +220,32 @@ try
                 Verbose                       = $true
             }
 
+            $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+            $stubDomainController.Domain = $correctDomainName
+
+            Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
+
+            Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
+                return [PSCustomObject]@{
+                    SamAccountName = $allowedAccount
+                }
+            }
+
+            Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
+                return [PSCustomObject]@{
+                    SamAccountName = $deniedAccount
+                }
+            }
+
             It 'Returns "False" when "SiteName" does not match' {
                 $stubDomain = @{
                     DNSRoot = $correctDomainName
                 }
 
-                $stubDomainController = @{
-                    Site   = $incorrectSiteName
-                    Domain = $correctDomainName
-                }
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Site = $incorrectSiteName
+                $stubDomainController.Domain = $correctDomainName
+
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
@@ -232,12 +257,12 @@ try
                 $result | Should -Be $false
             }
 
+
             It 'Returns "True" when "SiteName" matches' {
 
-                $stubDomainController = @{
-                    Site   = $correctSiteName
-                    Domain = $correctDomainName
-                }
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Site = $correctSiteName
+                $stubDomainController.Domain = $correctDomainName
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
@@ -251,10 +276,10 @@ try
 
             It 'Throws if "SiteName" is wrong' {
 
-                $stubDomainController = @{
-                    Site   = $correctSiteName
-                    Domain = $correctDomainName
-                }
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Site = $correctSiteName
+                $stubDomainController.Domain = $correctDomainName
+
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
@@ -270,11 +295,10 @@ try
                     DNSRoot = $correctDomainName
                 }
 
-                $stubDomainController = @{
-                    Site            = $correctSiteName
-                    Domain          = $correctDomainName
-                    IsGlobalCatalog = $false
-                }
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Site = $correctSiteName
+                $stubDomainController.Domain = $correctDomainName
+                $stubDomainController.IsGlobalCatalog = $false
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
@@ -291,11 +315,10 @@ try
                     DNSRoot = $correctDomainName
                 }
 
-                $stubDomainController = @{
-                    Site            = $correctSiteName
-                    Domain          = $correctDomainName
-                    IsGlobalCatalog = $true
-                }
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Site = $correctSiteName
+                $stubDomainController.Domain = $correctDomainName
+                $stubDomainController.IsGlobalCatalog = $true
 
                 Mock -CommandName Get-ADDomain -MockWith { return $true }
                 Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
@@ -320,7 +343,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
 
                 $result | Should -Be $true
             }
@@ -341,7 +364,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
 
                 $result | Should -Be $false
             }
@@ -356,7 +379,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
 
                 $result | Should -Be $false
 
@@ -375,7 +398,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName 'allowedAccount1', 'allowedAccount2'
 
                 $result | Should -Be $false
 
@@ -394,7 +417,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
 
                 $result | Should -Be $true
             }
@@ -415,7 +438,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
 
                 $result | Should -Be $false
             }
@@ -430,7 +453,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
 
                 $result | Should -Be $false
 
@@ -449,7 +472,7 @@ try
                     )
                 }
 
-                $result = Test-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
+                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName 'deniedAccount1', 'deniedAccount2'
 
                 $result | Should -Be $false
 
@@ -543,7 +566,7 @@ try
                 Context 'When adding a domain controller with AllowPasswordReplicationAccountName' {
 
                     It 'It should call the correct mocks' {
-                        { Set-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
 
                         Assert-MockCalled -CommandName Install-ADDSDomainController -ParameterFilter {
                             $AllowPasswordReplicationAccountName -eq $allowedAccount
@@ -554,7 +577,7 @@ try
                 Context 'When adding a domain controller with DenyPasswordReplicationAccountName' {
 
                     It 'It should call the correct mocks' {
-                        { Set-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName $deniedAccount } | Should -Not -Throw
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName $deniedAccount } | Should -Not -Throw
 
                         Assert-MockCalled -CommandName Install-ADDSDomainController -ParameterFilter {
                             $DenyPasswordReplicationAccountName -eq $deniedAccount
@@ -570,6 +593,10 @@ try
                                 Ensure   = $true
                                 SiteName = 'IncorrectSite'
                             }
+                        }
+                        #Without this line the local tests are crashing powershell.exe (both 5 and 6). See line 606
+                        Mock -CommandName Get-DomainControllerObject -MockWith {
+                            return (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController)
                         }
                     }
 
@@ -666,35 +693,48 @@ try
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
                             Ensure                              = $true
-                            AllowPasswordReplicationAccountName = 'allowedAccount2'
+                            AllowPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList 'allowedAccount2')
                         }
                     }
 
-                    It "Should call the correct mock to set AllowPasswordReplicationAccountName Attribute" {
-                        { Set-TargetResource @testDefaultParams -AllowPasswordReplicationAccountName $allowedAccount | Should -Not -Throw }
+                    Mock -CommandName Get-DomainControllerObject -MockWith {
+                        return (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController)
+                    }
 
-                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList -eq 'allowedAccount2' } -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList -eq $allowedAccount } -Exactly -Times 1 -Scope It
+                    It "Should call the correct mock to set AllowPasswordReplicationAccountName Attribute" {
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList.SamAccountName -eq 'allowedAccount2' } -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList.SamAccountName -eq $allowedAccount } -Exactly -Times 1 -Scope It
                     }
                 }
                 Context 'When DenyPasswordReplicationAccountName is not compliant' {
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
-                            Ensure                              = $true
-                            AllowPasswordReplicationAccountName = 'deniedAccount2'
+                            Ensure                             = $true
+                            DenyPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList 'deniedAccount2')
                         }
                     }
 
-                    It "Should call the correct mock to set DenyPasswordReplicationAccountName Attribute" {
-                        { Set-TargetResource @testDefaultParams -DenyPasswordReplicationAccountName $deniedAccount | Should -Not -Throw }
+                    Mock -CommandName Get-DomainControllerObject -MockWith {
+                        return (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController)
+                    }
 
-                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList -eq 'deniedAccount2' } -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList -eq $deniedAccount } -Exactly -Times 1 -Scope It
+                    It "Should call the correct mock to set DenyPasswordReplicationAccountName Attribute" {
+                        { Set-TargetResource @testDefaultParams  -DomainName $correctDomainName -DenyPasswordReplicationAccountName $deniedAccount } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList.SamAccountName -eq 'deniedAccount2' } -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList.SamAccountName -eq $deniedAccount } -Exactly -Times 1 -Scope It
                     }
                 }
             }
 
             Context 'When the system is in the desired state' {
+                BeforeAll {
+                    Mock -CommandName Remove-ADDomainControllerPasswordReplicationPolicy
+                    Mock -CommandName Add-ADDomainControllerPasswordReplicationPolicy
+                }
+
                 Context 'When a domain controller is in the correct site' {
                     BeforeAll {
                         Mock -CommandName Move-ADDirectoryServer
@@ -703,6 +743,9 @@ try
                                 Ensure   = $true
                                 SiteName = 'PresentSite'
                             }
+                        }
+                        Mock -CommandName Get-DomainControllerObject {
+                            return (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController)
                         }
                     }
 
@@ -777,6 +820,41 @@ try
 
                             Assert-MockCalled -CommandName Set-ADObject -Exactly -Times 0 -Scope It
                         }
+                    }
+                }
+
+                Context 'When RODC Sync Accounts are compliant' {
+                    BeforeAll {
+                        Mock -CommandName Get-DomainControllerObject -MockWith {
+                            return (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController)
+                        }
+                    }
+
+                    It 'AllowPasswordReplicationAccountName is correct' {
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure                              = $true
+                                AllowPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $allowedAccount)
+                            }
+                        }
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 0 -Scope It
+                    }
+
+                    It 'DenyPasswordReplicationAccountName is correct' {
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure                             = $true
+                                DenyPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $deniedAccount)
+                            }
+                        }
+
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -DenyPasswordReplicationAccountName $deniedAccount } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 0 -Scope It
                     }
                 }
             }

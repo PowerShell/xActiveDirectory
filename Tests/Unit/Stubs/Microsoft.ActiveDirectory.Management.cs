@@ -56,7 +56,7 @@ namespace Microsoft.ActiveDirectory.Management
 
     public class ADAuthType
     {
-        public ADAuthType():base(){}
+        public ADAuthType() : base() { }
     }
 
     public class ADComputer
@@ -67,20 +67,23 @@ namespace Microsoft.ActiveDirectory.Management
 
     public class ADDomain
     {
-        public ADDomain():base(){}
-        public ADDomain(System.String Identity):base(){}
+        public ADDomain() : base() { }
+        public ADDomain(System.String Identity) : base() { }
     }
 
     public class ADDomainController
     {
-        public ADDomainController():base(){}
-        public ADDomainController(System.String Identity):base(){}
+        public ADDomainController() : base() { }
+        public ADDomainController(System.String Identity) : base() { }
+        public string Site;
+        public string Domain;
+        public bool IsGlobalCatalog;
     }
 
     public class ADDirectoryServer
     {
-        public ADDirectoryServer():base(){}
-        public ADDirectoryServer(System.String Identity):base(){}
+        public ADDirectoryServer() : base() { }
+        public ADDirectoryServer(System.String Identity) : base() { }
     }
 
     public class ADIdentityNotFoundException : System.Exception
@@ -103,7 +106,14 @@ namespace Microsoft.ActiveDirectory.Management
     public class ADReplicationSite
     {
         string site;
-        public ADReplicationSite(System.String s){ site = s; }
+        public ADReplicationSite(System.String s) { site = s; }
+    }
+
+    public class ADPrincipal
+    {
+        public ADPrincipal() : base() { }
+        public ADPrincipal(System.String Identity) : base() { SamAccountName = Identity; }
+        public string SamAccountName { get; set; }
     }
 }
 
@@ -111,16 +121,16 @@ namespace Microsoft.ActiveDirectory.Management.Commands
 {
     public class ADCurrentDomainType
     {
-        public ADCurrentDomainType():base(){}
+        public ADCurrentDomainType() : base() { }
     }
 
     public class ADMinimumDirectoryServiceVersion
     {
-        public ADMinimumDirectoryServiceVersion():base(){}
+        public ADMinimumDirectoryServiceVersion() : base() { }
     }
 
     public class ADDiscoverableService
     {
-        public ADDiscoverableService():base(){}
+        public ADDiscoverableService() : base() { }
     }
 }
