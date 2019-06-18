@@ -361,14 +361,14 @@ function Set-TargetResource
 		if($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName'))
 		{
 			$testMembersParams = @{
-				ExistingMembers = $targetResource.AllowPasswordReplicationAccountName
+				ExistingMembers = $targetResource.AllowPasswordReplicationAccountName.SamAccountName
 				Members         = $AllowPasswordReplicationAccountName;
 			}
 			if (-not (Test-Members @testMembersParams))
 			{
 				$removeADPasswordPolicy = @{
 					Identity    = $domainControllerObject
-					AllowedList = $targetResource.AllowPasswordReplicationAccountName
+					AllowedList = $targetResource.AllowPasswordReplicationAccountName.SamAccountName
 				}
 				$addADPasswordPolicy = @{
 					Identity    = $domainControllerObject
@@ -381,7 +381,7 @@ function Set-TargetResource
 		if($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName'))
 		{
 			$testMembersParams = @{
-				ExistingMembers = $targetResource.DenyPasswordReplicationAccountName
+				ExistingMembers = $targetResource.DenyPasswordReplicationAccountName.sAMAccountName
 				Members         = $DenyPasswordReplicationAccountName;
 			}
 			if (-not (Test-Members @testMembersParams))
@@ -552,8 +552,8 @@ function Test-TargetResource
 		{
 			Write-Verbose -Message (
 				$script:localizedData.AllowedSyncAccountsMismatch -f
-				$existingResource.AllowPasswordReplicationAccountName -join ',',
-				$AllowPasswordReplicationAccountName -join ','
+				($existingResource.AllowPasswordReplicationAccountName -join ';'),
+				($AllowPasswordReplicationAccountName -join ';')
 			)
 			$testTargetResourceReturnValue = $false
 		}
@@ -563,15 +563,15 @@ function Test-TargetResource
 			$null -ne $existingResource.DenyPasswordReplicationAccountName)
 	{
 		$testMembersParams = @{
-			ExistingMembers = $targetResource.DenyPasswordReplicationAccountName
+			ExistingMembers = $existingResource.DenyPasswordReplicationAccountName
 			Members         = $DenyPasswordReplicationAccountName;
 		}
 		if(-not (Test-Members @testMembersParams))
 		{
 			Write-Verbose -Message (
 				$script:localizedData.DenySyncAccountsMismatch -f
-				$existingResource.DenyPasswordReplicationAccountName -join ',',
-				$DenyPasswordReplicationAccountName -join ','
+				($existingResource.DenyPasswordReplicationAccountName -join ';'),
+				($DenyPasswordReplicationAccountName -join ';')
 			)
 			$testTargetResourceReturnValue = $false
 		}
