@@ -1380,11 +1380,11 @@ InModuleScope 'xActiveDirectory.Common' {
             Mock -CommandName Get-ADObject -MockWith {
                 param (
                     [Parameter()]
-                    [string]
+                    [System.String]
                     $Identity,
 
                     [Parameter()]
-                    [string]
+                    [System.String]
                     $Server,
 
                     [Parameter()]

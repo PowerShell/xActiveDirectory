@@ -333,10 +333,10 @@ function Test-TargetResource
     if ($Ensure -eq 'Present')
     {
         # Convert to array to a string for easy compare
-        [String] $currentActiveDirectoryRights = ($currentState.ActiveDirectoryRights |
+        [System.String] $currentActiveDirectoryRights = ($currentState.ActiveDirectoryRights |
                 Sort-Object) -join ', '
 
-        [String] $desiredActiveDirectoryRights = ($ActiveDirectoryRights |
+        [System.String] $desiredActiveDirectoryRights = ($ActiveDirectoryRights |
                 Sort-Object) -join ', '
 
         $returnValue = $returnValue -and $currentActiveDirectoryRights -eq $desiredActiveDirectoryRights

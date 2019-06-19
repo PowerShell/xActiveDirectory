@@ -258,7 +258,7 @@ function Set-TargetResource
             $installADDSDomainControllerParameters.Add('NoGlobalCatalog', $true)
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($InstallationMediaPath))
+        if (-not [System.String]::IsNullOrWhiteSpace($InstallationMediaPath))
         {
             $installADDSDomainControllerParameters.Add('InstallationMediaPath', $InstallationMediaPath)
         }

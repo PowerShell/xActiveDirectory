@@ -25,18 +25,21 @@
 
 Configuration CreateADOU_Config
 {
-    Param(
-        [parameter(Mandatory = $true)]
+    param
+    (
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Name,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $Path,
 
+        [Parameter()]
         [System.Boolean]
         $ProtectedFromAccidentalDeletion = $true,
 
+        [Parameter()]
         [ValidateNotNull()]
         [System.String]
         $Description = ''
@@ -44,9 +47,9 @@ Configuration CreateADOU_Config
 
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADOrganizationalUnit ExampleOU
+        xADOrganizationalUnit 'ExampleOU'
         {
             Name                            = $Name
             Path                            = $Path

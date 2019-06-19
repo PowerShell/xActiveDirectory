@@ -30,7 +30,7 @@ Configuration CreateKDSRootKey_Config
 
     Node localhost
     {
-        xADKDSKey ExampleKDSRootKey
+        xADKDSKey 'ExampleKDSRootKey'
         {
             Ensure        = 'Present'
             EffectiveTime = '1/1/2030 13:00'

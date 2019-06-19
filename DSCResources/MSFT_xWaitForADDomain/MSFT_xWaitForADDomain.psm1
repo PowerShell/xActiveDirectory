@@ -12,7 +12,7 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter()]
@@ -73,7 +73,7 @@ function Set-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter()]
@@ -153,19 +153,24 @@ function Test-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]$DomainName,
+        [System.String]
+        $DomainName,
 
         [Parameter()]
-        [PSCredential]$DomainUserCredential,
+        [PSCredential]
+        $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]$RetryIntervalSec = 60,
+        [UInt64]
+        $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]$RetryCount = 10,
+        [UInt32]
+        $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]$RebootRetryCount = 0
+        [UInt32]
+        $RebootRetryCount = 0
 
     )
 
@@ -197,7 +202,7 @@ function Get-Domain
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter()]

@@ -36,9 +36,9 @@ Configuration CreateUserAndIgnorePasswordChanges_Config
 
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADUser Contoso\ExampleUser
+        xADUser 'Contoso\ExampleUser'
         {
             Ensure              = 'Present'
             UserName            = "ExampleUser"

@@ -29,70 +29,85 @@ Configuration NewDomainWithTwoDCs_Config
 {
     param
     (
-        [Parameter(Mandatory)]
-        [pscredential]$safemodeAdministratorCred,
-        [Parameter(Mandatory)]
-        [pscredential]$domainCred,
-        [Parameter(Mandatory)]
-        [pscredential]$DNSDelegationCred,
-        [Parameter(Mandatory)]
-        [pscredential]$NewADUserCred
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $SafemodeAdministratorCred,
+
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $domainCred,
+
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $DNSDelegationCred,
+
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $NewADUserCred
     )
+
     Import-DscResource -ModuleName xActiveDirectory
-    Node $AllNodes.Where{ $_.Role -eq "Primary DC" }.Nodename
+
+    Node $AllNodes.Where{ $_.Role -eq 'Primary DC' }.NodeName
     {
-        WindowsFeature ADDSInstall
+        WindowsFeature 'ADDSInstall'
         {
-            Ensure = "Present"
-            Name   = "AD-Domain-Services"
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
         }
-        xADDomain FirstDS
+
+        xADDomain 'FirstDS'
         {
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $safemodeAdministratorCred
+            SafemodeAdministratorPassword = $SafemodeAdministratorCred
             DnsDelegationCredential       = $DNSDelegationCred
-            DependsOn                     = "[WindowsFeature]ADDSInstall"
+            DependsOn                     = '[WindowsFeature]ADDSInstall'
         }
-        xWaitForADDomain DscForestWait
+
+        xWaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
             DomainUserCredential = $domainCred
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[xADDomain]FirstDS"
+            DependsOn            = '[xADDomain]FirstDS'
         }
-        xADUser FirstUser
+
+        xADUser 'FirstUser'
         {
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domainCred
-            UserName                      = "dummy"
+            UserName                      = 'dummy'
             Password                      = $NewADUserCred
-            Ensure                        = "Present"
-            DependsOn                     = "[xWaitForADDomain]DscForestWait"
+            Ensure                        = 'Present'
+            DependsOn                     = '[xWaitForADDomain]DscForestWait'
         }
     }
-    Node $AllNodes.Where{ $_.Role -eq "Replica DC" }.Nodename
+
+    Node $AllNodes.Where{ $_.Role -eq 'Replica DC' }.NodeName
     {
-        WindowsFeature ADDSInstall
+        WindowsFeature 'ADDSInstall'
         {
-            Ensure = "Present"
-            Name   = "AD-Domain-Services"
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
         }
-        xWaitForADDomain DscForestWait
+
+        xWaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
             DomainUserCredential = $domainCred
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[WindowsFeature]ADDSInstall"
+            DependsOn            = '[WindowsFeature]ADDSInstall'
         }
-        xADDomainController SecondDC
+
+        xADDomainController 'SecondDC'
         {
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $safemodeAdministratorCred
-            DependsOn                     = "[xWaitForADDomain]DscForestWait"
+            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DependsOn                     = '[xWaitForADDomain]DscForestWait'
         }
     }
 }
@@ -101,20 +116,20 @@ Configuration NewDomainWithTwoDCs_Config
 $ConfigurationData = @{
     AllNodes = @(
         @{
-            Nodename         = "dsc-testNode1"
-            Role             = "Primary DC"
-            DomainName       = "dsc-test.contoso.com"
-            CertificateFile  = "C:\publicKeys\targetNode.cer"
-            Thumbprint       = "AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8"
+            NodeName         = 'dsc-testNode1'
+            Role             = 'Primary DC'
+            DomainName       = 'dsc-test.contoso.com'
+            CertificateFile  = 'C:\publicKeys\targetNode.cer'
+            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
             RetryCount       = 20
             RetryIntervalSec = 30
         },
         @{
-            Nodename         = "dsc-testNode2"
-            Role             = "Replica DC"
-            DomainName       = "dsc-test.contoso.com"
-            CertificateFile  = "C:\publicKeys\targetNode.cer"
-            Thumbprint       = "AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8"
+            NodeName         = 'dsc-testNode2'
+            Role             = 'Replica DC'
+            DomainName       = 'dsc-test.contoso.com'
+            CertificateFile  = 'C:\publicKeys\targetNode.cer'
+            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
             RetryCount       = 20
             RetryIntervalSec = 30
         }

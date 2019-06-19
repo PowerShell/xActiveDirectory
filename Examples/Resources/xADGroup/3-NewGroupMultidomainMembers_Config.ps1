@@ -23,13 +23,13 @@
         three members in different domains.
 #>
 
-Configuration NewGroupMultidomainMembers_Config
+Configuration NewGroupMultiDomainMembers_Config
 {
     Import-DscResource -ModuleName xActiveDirectory
 
     node localhost
     {
-        xADGroup dl1
+        xADGroup0 'dl1'
         {
             GroupName           = 'DL_APP_1'
             GroupScope          = 'DomainLocal'

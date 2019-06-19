@@ -28,7 +28,7 @@ Configuration CreateGroupManagedServiceAccountWithMembers_Config
 
     Node localhost
     {
-        xADManagedServiceAccount AddingMembersUsingSamAccountName
+        xADManagedServiceAccount 'AddingMembersUsingSamAccountName'
         {
             Ensure             = 'Present'
             ServiceAccountName = 'Service01'
@@ -37,7 +37,7 @@ Configuration CreateGroupManagedServiceAccountWithMembers_Config
             Members            = 'User01', 'Computer01$'
         }
 
-        xADManagedServiceAccount AddingMembersUsingDN
+        xADManagedServiceAccount 'AddingMembersUsingDN'
         {
             Ensure             = 'Present'
             ServiceAccountName = 'Service02'

@@ -28,7 +28,7 @@ Configuration CreateManagedServiceAccount_Config
 
     Node localhost
     {
-        xADManagedServiceAccount ExampleSingleMSA
+        xADManagedServiceAccount 'ExampleSingleMSA'
         {
             Ensure             = 'Present'
             ServiceAccountName = 'Service01'

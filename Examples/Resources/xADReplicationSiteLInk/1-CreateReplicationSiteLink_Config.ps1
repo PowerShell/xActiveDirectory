@@ -28,7 +28,7 @@ Configuration CreateReplicationSiteLink_Config
 
     Node localhost
     {
-        xADReplicationSiteLink HQSiteLink
+        xADReplicationSiteLink 'HQSiteLink'
         {
             Name                          = 'HQSiteLInk'
             SitesIncluded                 = @('site1', 'site2')

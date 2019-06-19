@@ -25,21 +25,22 @@
 
 Configuration EnableADRecycleBin_Config
 {
-    Param(
-        [parameter(Mandatory = $true)]
+    param
+    (
+        [Parameter(Mandatory = $true)]
         [System.String]
         $ForestFQDN,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $EACredential
     )
 
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADRecycleBin RecycleBin
+        xADRecycleBin 'RecycleBin'
         {
             EnterpriseAdministratorCredential = $EACredential
             ForestFQDN                        = $ForestFQDN

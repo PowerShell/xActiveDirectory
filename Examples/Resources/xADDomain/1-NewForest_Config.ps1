@@ -35,15 +35,16 @@ Configuration NewForest_Config
 
     Import-DscResource -ModuleName PSDscResources
     Import-DscResource -ModuleName xActiveDirectory
+
     node $AllNodes.NodeName
     {
-        WindowsFeature ADDS
+        WindowsFeature 'ADDS'
         {
             Name   = 'AD-Domain-Services'
             Ensure = 'Present'
         }
 
-        WindowsFeature RSAT
+        WindowsFeature 'RSAT'
         {
             Name   = 'RSAT-AD-PowerShell'
             Ensure = 'Present'

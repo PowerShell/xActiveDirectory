@@ -29,9 +29,9 @@ Configuration DelegateFullControl_Config
 {
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADObjectPermissionEntry ADObjectPermissionEntry
+        xADObjectPermissionEntry 'ADObjectPermissionEntry'
         {
             Ensure                             = 'Present'
             Path                               = 'CN=ROLE01,CN=Computers,DC=contoso,DC=com'

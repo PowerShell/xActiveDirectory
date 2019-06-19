@@ -100,7 +100,7 @@ function Set-TargetResource
             Throw an exception, if no account was specified or the account does
             not exist.
         #>
-        if ([String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
+        if ([System.String]::IsNullOrEmpty($Account) -or ($null -eq (Get-ADObject -Filter { SamAccountName -eq $Account })))
         {
             throw ($script:localizedData.AccountNotFound -f $Account)
         }

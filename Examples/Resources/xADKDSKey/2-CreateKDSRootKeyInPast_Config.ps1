@@ -31,7 +31,7 @@ Configuration CreateKDSRootKeyInPast_Config
 
     Node localhost
     {
-        xADKDSKey ExampleKDSRootKeyInPast
+        xADKDSKey 'ExampleKDSRootKeyInPast'
         {
             Ensure                   = 'Present'
             EffectiveTime            = '1/1/1999 13:00'

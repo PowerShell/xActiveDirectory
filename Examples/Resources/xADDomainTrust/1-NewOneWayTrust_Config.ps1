@@ -27,18 +27,24 @@ Configuration NewOneWayTrust_Config
 {
     param
     (
-        [Parameter(Mandatory)]
-        [String]$SourceDomain,
-        [Parameter(Mandatory)]
-        [String]$TargetDomain,
-        [Parameter(Mandatory)]
-        [PSCredential]$TargetDomainAdminCred
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceDomain,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $TargetDomain,
+
+        [Parameter(Mandatory = $true)]
+        [PSCredential]
+        $TargetDomainAdminCred
     )
 
     Import-DscResource -module xActiveDirectory
-    Node $AllNodes.NodeName
+
+    node localhost
     {
-        xADDomainTrust trust
+        xADDomainTrust 'Trust'
         {
             Ensure                              = 'Present'
             SourceDomainName                    = $SourceDomain

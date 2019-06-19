@@ -30,7 +30,7 @@ Configuration CreateKDSRootKeyRemoveLastKey_Config
 
     Node localhost
     {
-        xADKDSKey ExampleKDSRootKeyForceRemove
+        xADKDSKey 'ExampleKDSRootKeyForceRemove'
         {
             Ensure        = 'Absent'
             EffectiveTime = '1/1/2030 13:00'

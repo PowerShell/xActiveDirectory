@@ -19,48 +19,34 @@
 
 <#
     .DESCRIPTION
-        This configuation will manage the Service and User Principal name suffixes
+        This configuration will manage the Service and User Principal name suffixes
         in the forest by replacing any existing suffixes with the ones specified
         in the configuration.
 #>
 
 Configuration ReplaceForestProperties_Config
 {
-    Param
-    (
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $TargetName,
-
-        [parameter(Mandatory = $true)]
-        [System.String]
-        $ForestName,
-
-        [parameter(Mandatory = $true)]
-        [String[]]
-        $UserPrincipalNameSuffix,
-
-        [parameter(Mandatory = $true)]
-        [String[]]
-        $ServicePrincipalNameSuffix
-    )
-
     Import-DscResource -ModuleName xActiveDirectory
 
-    node $TargetName
+    node $AllNodes.NodeName
     {
-        xADForestProperties $ForestName
+        xADForestProperties $Node.ForestName
         {
-            ForestName                 = $ForestName
-            UserPrincipalNameSuffix    = $UserPrincipalNameSuffix
-            ServicePrincipalNameSuffix = $ServicePrincipalNameSuffix
+            ForestName                 = $Node.ForestName
+            UserPrincipalNameSuffix    = $Node.UserPrincipalNameSuffix
+            ServicePrincipalNameSuffix = $Node.ServicePrincipalNameSuffix
         }
     }
 }
 
-$parameters = @{
-    TargetName                 = 'dc.contoso.com'
-    ForestName                 = 'contoso.com'
-    UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
-    ServicePrincipalNameSuffix = 'corporate.com'
+$ConfigurationData = @{
+    AllNodes = @(
+        @{
+            NodeName                   = 'dc.contoso.com'
+            ForestName                 = 'contoso.com'
+            UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
+            ServicePrincipalNameSuffix = 'corporate.com'
+        }
+    )
 }
+

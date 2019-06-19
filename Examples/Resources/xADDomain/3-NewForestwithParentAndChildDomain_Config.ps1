@@ -23,111 +23,114 @@
         another node.
 #>
 
-Configuration NewForestwithParentAndChildDomain_Config
+Configuration NewForestWithParentAndChildDomain_Config
 {
     param
     (
-        [Parameter(Mandatory)]
-        [pscredential]$safemodeAdministratorCred,
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $SafemodeAdministratorCred,
 
-        [Parameter(Mandatory)]
-        [pscredential]$domainCred,
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $DomainCred,
 
-        [Parameter(Mandatory)]
-        [pscredential]$DNSDelegationCred,
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $DnsDelegationCred,
 
-        [Parameter(Mandatory)]
-        [pscredential]$NewADUserCred
+        [Parameter(Mandatory = $true)]
+        [pscredential]
+        $NewADUserCred
     )
 
     Import-DscResource -ModuleName xActiveDirectory
 
-    Node $AllNodes.Where{ $_.Role -eq "Parent DC" }.Nodename
+    Node $AllNodes.Where{ $_.Role -eq 'Parent DC' }.NodeName
     {
-        WindowsFeature ADDSInstall
+        WindowsFeature 'ADDSInstall'
         {
-            Ensure = "Present"
-            Name   = "AD-Domain-Services"
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
         }
 
-        xADDomain FirstDS
+        xADDomain 'FirstDS'
         {
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $safemodeAdministratorCred
-            DnsDelegationCredential       = $DNSDelegationCred
-            DependsOn                     = "[WindowsFeature]ADDSInstall"
+            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DnsDelegationCredential       = $DnsDelegationCred
+            DependsOn                     = '[WindowsFeature]ADDSInstall'
         }
 
-        xWaitForADDomain DscForestWait
+        xWaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
             DomainUserCredential = $domainCred
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[xADDomain]FirstDS"
+            DependsOn            = '[xADDomain]FirstDS'
         }
 
-        xADUser FirstUser
+        xADUser 'FirstUser'
         {
             DomainName                    = $Node.DomainName
             DomainAdministratorCredential = $domaincred
-            UserName                      = "dummy"
+            UserName                      = 'dummy'
             Password                      = $NewADUserCred
-            Ensure                        = "Present"
-            DependsOn                     = "[xWaitForADDomain]DscForestWait"
+            Ensure                        = 'Present'
+            DependsOn                     = '[xWaitForADDomain]DscForestWait'
         }
 
     }
 
-    Node $AllNodes.Where{ $_.Role -eq "Child DC" }.Nodename
+    Node $AllNodes.Where{ $_.Role -eq 'Child DC' }.NodeName
     {
-        WindowsFeature ADDSInstall
+        WindowsFeature 'ADDSInstall'
         {
-            Ensure = "Present"
-            Name   = "AD-Domain-Services"
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
         }
 
-        xWaitForADDomain DscForestWait
+        xWaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.ParentDomainName
             DomainUserCredential = $domainCred
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[WindowsFeature]ADDSInstall"
+            DependsOn            = '[WindowsFeature]ADDSInstall'
         }
 
-        xADDomain ChildDS
+        xADDomain 'ChildDS'
         {
             DomainName                    = $Node.DomainName
             ParentDomainName              = $Node.ParentDomainName
             DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $safemodeAdministratorCred
-            DependsOn                     = "[xWaitForADDomain]DscForestWait"
+            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DependsOn                     = '[xWaitForADDomain]DscForestWait'
         }
     }
 }
 
 $ConfigurationData = @{
-
     AllNodes = @(
         @{
-            Nodename         = "dsc-testNode1"
-            Role             = "Parent DC"
-            DomainName       = "dsc-test.contoso.com"
-            CertificateFile  = "C:\publicKeys\targetNode.cer"
-            Thumbprint       = "AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8"
+            NodeName         = 'dsc-testNode1'
+            Role             = 'Parent DC'
+            DomainName       = 'dsc-test.contoso.com'
+            CertificateFile  = 'C:\publicKeys\targetNode.cer'
+            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
             RetryCount       = 50
             RetryIntervalSec = 30
         },
 
         @{
-            Nodename         = "dsc-testNode2"
-            Role             = "Child DC"
-            DomainName       = "dsc-child"
-            ParentDomainName = "dsc-test.contoso.com"
-            CertificateFile  = "C:\publicKeys\targetNode.cer"
-            Thumbprint       = "AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8"
+            NodeName         = 'dsc-testNode2'
+            Role             = 'Child DC'
+            DomainName       = 'dsc-child'
+            ParentDomainName = 'dsc-test.contoso.com'
+            CertificateFile  = 'C:\publicKeys\targetNode.cer'
+            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
             RetryCount       = 50
             RetryIntervalSec = 30
         }

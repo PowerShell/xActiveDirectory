@@ -449,7 +449,7 @@ try
                 Mock -CommandName Get-ADDomainNameFromDistinguishedName -MockWith {
                     param (
                         [Parameter()]
-                        [string]
+                        [System.String]
                         $DistinguishedName
                     )
 

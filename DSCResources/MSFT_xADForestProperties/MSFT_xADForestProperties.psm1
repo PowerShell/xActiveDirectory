@@ -47,7 +47,7 @@ function Get-TargetResource
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ForestName,
 
         [Parameter()]
@@ -143,7 +143,7 @@ function Test-TargetResource
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ForestName,
 
         [Parameter()]
@@ -272,7 +272,7 @@ function Set-TargetResource
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $ForestName,
 
         [Parameter()]

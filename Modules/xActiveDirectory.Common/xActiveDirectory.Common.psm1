@@ -1766,7 +1766,7 @@ function Assert-ADPSDrive
     param
     (
         [Parameter()]
-        [String]
+        [System.String]
         $Root = '//RootDSE/'
     )
 

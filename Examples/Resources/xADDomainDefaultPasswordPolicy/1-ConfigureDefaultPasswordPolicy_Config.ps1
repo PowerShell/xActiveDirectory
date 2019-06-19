@@ -42,7 +42,7 @@ Configuration ConfigureDefaultPasswordPolicy_Config
 
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         xADDomainDefaultPasswordPolicy 'DefaultPasswordPolicy'
         {

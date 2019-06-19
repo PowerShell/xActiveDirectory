@@ -71,7 +71,7 @@ function Get-TargetResource
             Ensure   = 'Present'
             Name     = $Name
             Site     = $replicationSiteName
-            Location = [String] $replicationSubnet.Location
+            Location = [System.String] $replicationSubnet.Location
         }
     }
 
@@ -158,7 +158,7 @@ function Set-TargetResource
             does not accept an empty string for the location, but $null.
         #>
         $nullableLocation = $Location
-        if ([String]::IsNullOrEmpty($Location))
+        if ([System.String]::IsNullOrEmpty($Location))
         {
             $nullableLocation = $null
         }

@@ -28,7 +28,7 @@ Configuration CreateADReplicationSiteRenameDefault_Config
 {
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
         xADReplicationSite 'SeattleSite'
         {

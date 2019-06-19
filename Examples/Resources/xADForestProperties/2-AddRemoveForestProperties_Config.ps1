@@ -30,7 +30,7 @@ Configuration AddRemoveForestProperties_Config
 
     node localhost
     {
-        xADForestProperties ContosoProperties
+        xADForestProperties 'ContosoProperties'
         {
             ForestName                         = 'contoso.com'
             ServicePrincipalNameSuffixToAdd    = 'test.net'

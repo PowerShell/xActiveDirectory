@@ -34,12 +34,12 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomain'
 #>
 function Get-TrackingFilename
 {
-    [OutputType([String])]
+    [OutputType([System.String])]
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName
     )
 
@@ -52,7 +52,7 @@ function Get-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter(Mandatory = $true)]
@@ -65,12 +65,12 @@ function Get-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $ParentDomainName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DomainNetBIOSName,
 
         [Parameter()]
@@ -80,27 +80,27 @@ function Get-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DatabasePath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $LogPath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SysvolPath,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $ForestMode,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $DomainMode
     )
 
@@ -141,8 +141,8 @@ function Get-TargetResource
                 DomainName = $domain.DnsRoot
                 ParentDomainName = $domain.ParentDomain
                 DomainNetBIOSName = $domain.NetBIOSName
-                ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [String]
-                DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [String]
+                ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [System.String]
+                DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [System.String]
             }
 
             return $targetResource
@@ -198,7 +198,7 @@ function Test-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter(Mandatory = $true)]
@@ -211,12 +211,12 @@ function Test-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $ParentDomainName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DomainNetBIOSName,
 
         [Parameter()]
@@ -226,27 +226,27 @@ function Test-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DatabasePath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $LogPath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SysvolPath,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $ForestMode,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $DomainMode
     )
 
@@ -310,7 +310,7 @@ function Set-TargetResource
     param
     (
         [Parameter(Mandatory = $true)]
-        [String]
+        [System.String]
         $DomainName,
 
         [Parameter(Mandatory = $true)]
@@ -323,12 +323,12 @@ function Set-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $ParentDomainName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DomainNetBIOSName,
 
         [Parameter()]
@@ -338,27 +338,27 @@ function Set-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $DatabasePath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $LogPath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]
+        [System.String]
         $SysvolPath,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $ForestMode,
 
         [Parameter()]
         [ValidateSet('Win2008', 'Win2008R2', 'Win2012', 'Win2012R2', 'WinThreshold')]
-        [String]
+        [System.String]
         $DomainMode
     )
 

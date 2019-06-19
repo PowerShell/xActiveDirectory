@@ -28,9 +28,9 @@ Configuration CreateDeleteComputerObject_Config
 {
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADObjectPermissionEntry ADObjectPermissionEntry
+        xADObjectPermissionEntry 'ADObjectPermissionEntry'
         {
             Ensure                             = 'Present'
             Path                               = 'OU=ContosoComputers,DC=contoso,DC=com'

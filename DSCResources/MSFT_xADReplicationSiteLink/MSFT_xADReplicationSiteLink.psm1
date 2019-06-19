@@ -339,7 +339,7 @@ function Test-TargetResource
 function Resolve-SiteLinkName
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCmdletCorrectly", "")]
-    [OutputType([string])]
+    [OutputType([System.String])]
     [CmdletBinding()]
     param
     (

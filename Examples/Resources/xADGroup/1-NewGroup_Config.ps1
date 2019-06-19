@@ -24,7 +24,8 @@
 
 Configuration NewGroup_Config
 {
-    Param(
+    param
+    (
         [parameter(Mandatory = $true)]
         [System.String]
         $GroupName,
@@ -44,9 +45,9 @@ Configuration NewGroup_Config
 
     Import-DscResource -Module xActiveDirectory
 
-    Node $AllNodes.NodeName
+    Node localhost
     {
-        xADGroup ExampleGroup
+        xADGroup 'ExampleGroup'
         {
             GroupName   = $GroupName
             GroupScope  = $Scope
