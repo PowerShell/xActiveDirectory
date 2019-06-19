@@ -482,7 +482,7 @@ function Assert-Module
         $ModuleName = 'ActiveDirectory',
 
         [Parameter()]
-        [switch]
+        [System.Management.Automation.SwitchParameter]
         $ImportModule
     )
 
@@ -1129,7 +1129,7 @@ function ConvertTo-DeploymentForestMode
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'ById')]
-        [UInt16]
+        [System.UInt16]
         $ModeId,
 
         [Parameter(
@@ -1174,7 +1174,7 @@ function ConvertTo-DeploymentDomainMode
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'ById')]
-        [UInt16]
+        [System.UInt16]
         $ModeId,
 
         [Parameter(
@@ -1337,7 +1337,7 @@ function Add-ADCommonGroupMember
     param
     (
         [Parameter()]
-        [string[]]
+        [System.String[]]
         $Members,
 
         [Parameter()]
@@ -1345,7 +1345,7 @@ function Add-ADCommonGroupMember
         $Parameters,
 
         [Parameter()]
-        [switch]
+        [System.Management.Automation.SwitchParameter]
         $MembersInMultipleDomains
     )
 

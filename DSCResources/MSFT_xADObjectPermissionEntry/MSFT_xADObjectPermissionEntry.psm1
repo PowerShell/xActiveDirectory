@@ -98,7 +98,7 @@ function Get-TargetResource
                 Write-Verbose -Message ($script:localizedData.ObjectPermissionEntryFound -f $Path)
 
                 $returnValue['Ensure'] = 'Present'
-                $returnValue['ActiveDirectoryRights'] = [String[]] $access.ActiveDirectoryRights.ToString().Split(',').ForEach( { $_.Trim() })
+                $returnValue['ActiveDirectoryRights'] = [System.String[]] $access.ActiveDirectoryRights.ToString().Split(',').ForEach( { $_.Trim() })
 
                 return $returnValue
             }

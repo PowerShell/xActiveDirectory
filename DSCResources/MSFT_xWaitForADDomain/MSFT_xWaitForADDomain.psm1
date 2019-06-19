@@ -16,19 +16,19 @@ function Get-TargetResource
         $DomainName,
 
         [Parameter()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]
+        [System.UInt64]
         $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RebootRetryCount = 0
     )
 
@@ -77,19 +77,19 @@ function Set-TargetResource
         $DomainName,
 
         [Parameter()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]
+        [System.UInt64]
         $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RebootRetryCount = 0
 
     )
@@ -123,7 +123,7 @@ function Set-TargetResource
     {
         if ($RebootRetryCount -gt 0)
         {
-            [UInt32] $rebootCount = Get-Content $RebootLogFile -ErrorAction SilentlyContinue
+            [System.UInt32] $rebootCount = Get-Content $RebootLogFile -ErrorAction SilentlyContinue
 
             if ($rebootCount -lt $RebootRetryCount)
             {
@@ -157,19 +157,19 @@ function Test-TargetResource
         $DomainName,
 
         [Parameter()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainUserCredential,
 
         [Parameter()]
-        [UInt64]
+        [System.UInt64]
         $RetryIntervalSec = 60,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RetryCount = 10,
 
         [Parameter()]
-        [UInt32]
+        [System.UInt32]
         $RebootRetryCount = 0
 
     )
@@ -206,7 +206,7 @@ function Get-Domain
         $DomainName,
 
         [Parameter()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainUserCredential
     )
 

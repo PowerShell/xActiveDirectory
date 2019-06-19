@@ -21,7 +21,7 @@ function Get-TargetResource
         $TargetDomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $TargetDomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
@@ -122,7 +122,7 @@ function Set-TargetResource
         $TargetDomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $TargetDomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
@@ -166,7 +166,7 @@ function Test-TargetResource
         $TargetDomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $TargetDomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
@@ -224,7 +224,7 @@ function Confirm-ResourceProperties
         $TargetDomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $TargetDomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
@@ -243,7 +243,7 @@ function Confirm-ResourceProperties
         $Ensure = 'Present',
 
         [Parameter()]
-        [Switch]
+        [System.Management.Automation.SwitchParameter]
         $Apply
     )
 

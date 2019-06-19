@@ -36,7 +36,7 @@ Configuration NewOneWayTrust_Config
         $TargetDomain,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $TargetDomainAdminCred
     )
 

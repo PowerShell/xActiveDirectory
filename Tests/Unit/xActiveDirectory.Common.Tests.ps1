@@ -54,7 +54,7 @@ InModuleScope 'xActiveDirectory.Common' {
                 Test-DscParameterState @testParameters | Should -Be $false
             }
 
-            It 'Should return false when a value is different for [Int16]' {
+            It 'Should return false when a value is different for [System.Int16]' {
                 $mockCurrentValues = @{ Example = [System.Int16] 1 }
                 $mockDesiredValues = @{ Example = [System.Int16] 2 }
 
@@ -66,7 +66,7 @@ InModuleScope 'xActiveDirectory.Common' {
                 Test-DscParameterState @testParameters | Should -Be $false
             }
 
-            It 'Should return false when a value is different for [UInt16]' {
+            It 'Should return false when a value is different for [System.UInt16]' {
                 $mockCurrentValues = @{ Example = [System.UInt16] 1 }
                 $mockDesiredValues = @{ Example = [System.UInt16] 2 }
 
@@ -78,7 +78,7 @@ InModuleScope 'xActiveDirectory.Common' {
                 Test-DscParameterState @testParameters | Should -Be $false
             }
 
-            It 'Should return false when a value is different for [Boolean]' {
+            It 'Should return false when a value is different for [System.Boolean]' {
                 $mockCurrentValues = @{ Example = [System.Boolean] $true }
                 $mockDesiredValues = @{ Example = [System.Boolean] $false }
 
@@ -1388,7 +1388,7 @@ InModuleScope 'xActiveDirectory.Common' {
                     $Server,
 
                     [Parameter()]
-                    [string[]]
+                    [System.String[]]
                     $Properties
                 )
 
@@ -1643,7 +1643,7 @@ InModuleScope 'xActiveDirectory.Common' {
                 Test-DscPropertyState -Values $mockValues | Should -Be $false
             }
 
-            It 'Should return false when a value is different for [Int16]' {
+            It 'Should return false when a value is different for [System.Int16]' {
                 $mockValues = @{
                     CurrentValue = [System.Int16] 1
                     DesiredValue = [System.Int16] 2
@@ -1652,7 +1652,7 @@ InModuleScope 'xActiveDirectory.Common' {
                 Test-DscPropertyState -Values $mockValues | Should -Be $false
             }
 
-            It 'Should return false when a value is different for [UInt16]' {
+            It 'Should return false when a value is different for [System.UInt16]' {
                 $mockValues = @{
                     CurrentValue = [System.UInt16] 1
                     DesiredValue = [System.UInt16] 2
@@ -1672,7 +1672,7 @@ InModuleScope 'xActiveDirectory.Common' {
         }
 
         Context 'When comparing booleans' {
-            It 'Should return false when a value is different for [Boolean]' {
+            It 'Should return false when a value is different for [System.Boolean]' {
                 $mockValues = @{
                     CurrentValue = [System.Boolean] $true
                     DesiredValue = [System.Boolean] $false

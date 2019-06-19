@@ -56,11 +56,11 @@ function Get-TargetResource
         $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $SafemodeAdministratorPassword,
 
         [Parameter()]
@@ -75,7 +75,7 @@ function Get-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DnsDelegationCredential,
 
         [Parameter()]
@@ -202,11 +202,11 @@ function Test-TargetResource
         $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $SafemodeAdministratorPassword,
 
         [Parameter()]
@@ -221,7 +221,7 @@ function Test-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DnsDelegationCredential,
 
         [Parameter()]
@@ -314,11 +314,11 @@ function Set-TargetResource
         $DomainName,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DomainAdministratorCredential,
 
         [Parameter(Mandatory = $true)]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $SafemodeAdministratorPassword,
 
         [Parameter()]
@@ -333,7 +333,7 @@ function Set-TargetResource
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [PSCredential]
+        [System.Management.Automation.PSCredential]
         $DnsDelegationCredential,
 
         [Parameter()]

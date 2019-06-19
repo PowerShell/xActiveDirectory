@@ -30,19 +30,19 @@ Configuration NewDomainWithTwoDCs_Config
     param
     (
         [Parameter(Mandatory = $true)]
-        [pscredential]
+        [System.Management.Automation.PSCredential]
         $SafemodeAdministratorCred,
 
         [Parameter(Mandatory = $true)]
-        [pscredential]
+        [System.Management.Automation.PSCredential]
         $domainCred,
 
         [Parameter(Mandatory = $true)]
-        [pscredential]
+        [System.Management.Automation.PSCredential]
         $DNSDelegationCred,
 
         [Parameter(Mandatory = $true)]
-        [pscredential]
+        [System.Management.Automation.PSCredential]
         $NewADUserCred
     )
 
