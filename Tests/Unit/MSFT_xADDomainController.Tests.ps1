@@ -8,7 +8,7 @@ $script:dscResourceName = 'MSFT_xADDomainController'
 # Unit Test Template Version: 1.2.4
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+(-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
     & git.exe @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
@@ -17,10 +17,10 @@ Import-Module -Name (Join-Path -Path $script:moduleRoot -ChildPath (Join-Path -P
 
 # TODO: Insert the correct <ModuleName> and <ResourceName> for your resource
 $TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $script:dscModuleName `
-    -DSCResourceName $script:dscResourceName `
-    -ResourceType 'Mof' `
-    -TestType Unit
+-DSCModuleName $script:dscModuleName `
+-DSCResourceName $script:dscResourceName `
+-ResourceType 'Mof' `
+-TestType Unit
 
 #endregion HEADER
 
@@ -74,48 +74,48 @@ try
             [CmdletBinding()]
             param
             (
-                [Parameter()]
-                $DomainName,
+            [Parameter()]
+            $DomainName,
 
-                [Parameter()]
-                [System.Management.Automation.PSCredential]
-                $SafeModeAdministratorPassword,
+            [Parameter()]
+            [System.Management.Automation.PSCredential]
+            $SafeModeAdministratorPassword,
 
-                [Parameter()]
-                [System.Management.Automation.PSCredential]
-                $Credential,
+            [Parameter()]
+            [System.Management.Automation.PSCredential]
+            $Credential,
 
-                [Parameter()]
-                $NoRebootOnCompletion,
+            [Parameter()]
+            $NoRebootOnCompletion,
 
-                [Parameter()]
-                $Force,
+            [Parameter()]
+            $Force,
 
-                [Parameter()]
-                $DatabasePath,
+            [Parameter()]
+            $DatabasePath,
 
-                [Parameter()]
-                $LogPath,
+            [Parameter()]
+            $LogPath,
 
-                [Parameter()]
-                $SysvolPath,
+            [Parameter()]
+            $SysvolPath,
 
-                [Parameter()]
-                $SiteName,
+            [Parameter()]
+            $SiteName,
 
-                [Parameter()]
-                $InstallationMediaPath,
+            [Parameter()]
+            $InstallationMediaPath,
 
-                [Parameter()]
-                $NoGlobalCatalog,
+            [Parameter()]
+            $NoGlobalCatalog,
 
-                [Parameter()]
-                [System.String[]]
-                $AllowPasswordReplicationAccountName,
+            [Parameter()]
+            [System.String[]]
+            $AllowPasswordReplicationAccountName,
 
-                [Parameter()]
-                [System.String[]]
-                $DenyPasswordReplicationAccountName
+            [Parameter()]
+            [System.String[]]
+            $DenyPasswordReplicationAccountName
             )
 
             throw [exception] 'Not Implemented'
@@ -214,29 +214,31 @@ try
 
         #region Function Test-TargetResource
         Describe 'xActiveDirectory\Test-TargetResource' -Tag 'Test' {
-            $testDefaultParams = @{
-                DomainAdministratorCredential = $testAdminCredential
-                SafemodeAdministratorPassword = $testAdminCredential
-                Verbose                       = $true
-            }
-
-            $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
-            $stubDomainController.Domain = $correctDomainName
-
-            Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
-
-            Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
-                return [PSCustomObject]@{
-                    SamAccountName = $allowedAccount
+            BeforeAll {
+                $testDefaultParams = @{
+                    DomainAdministratorCredential = $testAdminCredential
+                    SafemodeAdministratorPassword = $testAdminCredential
+                    Verbose                       = $true
                 }
-            }
 
-            Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
-                return [PSCustomObject]@{
-                    SamAccountName = $deniedAccount
+                $stubDomainController = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                $stubDomainController.Domain = $correctDomainName
+
+                Mock -CommandName Get-DomainControllerObject -MockWith { return $stubDomainController }
+
+                Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
+                    return [PSCustomObject]@{
+                        SamAccountName = $allowedAccount
+                    }
                 }
-            }
 
+                Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
+                    return [PSCustomObject]@{
+                        SamAccountName = $deniedAccount
+                    }
+                }
+
+            }
             It 'Returns "False" when "SiteName" does not match' {
                 $stubDomain = @{
                     DNSRoot = $correctDomainName
@@ -334,12 +336,12 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount1'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount2'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount1'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount2'
+                    }
                     )
                 }
 
@@ -352,15 +354,15 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount1'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount2'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount3'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount1'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount2'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount3'
+                    }
                     )
                 }
 
@@ -373,9 +375,9 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount1'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount1'
+                    }
                     )
                 }
 
@@ -389,12 +391,12 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Allowed.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount3'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'allowedAccount4'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount3'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'allowedAccount4'
+                    }
                     )
                 }
 
@@ -408,12 +410,12 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount1'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount2'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount1'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount2'
+                    }
                     )
                 }
 
@@ -426,15 +428,15 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount1'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount2'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount3'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount1'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount2'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount3'
+                    }
                     )
                 }
 
@@ -447,9 +449,9 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount1'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount1'
+                    }
                     )
                 }
 
@@ -463,12 +465,12 @@ try
 
                 Mock -CommandName Get-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $Denied.IsPresent } -MockWith {
                     return @(
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount3'
-                        }
-                        [PSCustomObject]@{
-                            SamAccountName = 'deniedAccount4'
-                        }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount3'
+                    }
+                    [PSCustomObject]@{
+                        SamAccountName = 'deniedAccount4'
+                    }
                     )
                 }
 
