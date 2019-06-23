@@ -250,17 +250,21 @@ function Set-TargetResource
 			NoRebootOnCompletion          = $true
 			Force                         = $true
 		}
-		if($ReadOnlyReplica)
+		if($PSBoundParameters.ContainsKey('ReadOnlyReplica') -and $ReadOnlyReplica -eq $true)
 		{
+			if($PSBoundParameters.ContainsKey('SiteName') -eq $false)
+			{
+				New-InvalidOperationException -Message $script:localizedData.RODCMissingSite
+			}
 			$installADDSDomainControllerParameters.Add('ReadOnlyReplica', $true)
 		}
 
-		if($AllowPasswordReplicationAccountName)
+		if($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName'))
 		{
 			$installADDSDomainControllerParameters.Add('AllowPasswordReplicationAccountName', $AllowPasswordReplicationAccountName)
 		}
 
-		if($DenyPasswordReplicationAccountName)
+		if($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName'))
 		{
 			$installADDSDomainControllerParameters.Add('DenyPasswordReplicationAccountName', $DenyPasswordReplicationAccountName)
 		}
@@ -378,6 +382,7 @@ function Set-TargetResource
 				Add-ADDomainControllerPasswordReplicationPolicy @addADPasswordPolicy
 			}
 		}
+
 		if($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName'))
 		{
 			$testMembersParams = @{
@@ -542,7 +547,7 @@ function Test-TargetResource
 	}
 
 	if($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName') -and
-			$null -ne $existingResource.AllowPasswordReplicationAccountName)
+	$null -ne $existingResource.AllowPasswordReplicationAccountName)
 	{
 		$testMembersParams = @{
 			ExistingMembers = $existingResource.AllowPasswordReplicationAccountName
@@ -551,16 +556,16 @@ function Test-TargetResource
 		if(-not (Test-Members @testMembersParams))
 		{
 			Write-Verbose -Message (
-				$script:localizedData.AllowedSyncAccountsMismatch -f
-				($existingResource.AllowPasswordReplicationAccountName -join ';'),
-				($AllowPasswordReplicationAccountName -join ';')
+			$script:localizedData.AllowedSyncAccountsMismatch -f
+			($existingResource.AllowPasswordReplicationAccountName -join ';'),
+			($AllowPasswordReplicationAccountName -join ';')
 			)
 			$testTargetResourceReturnValue = $false
 		}
 	}
 
 	if($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName') -and
-			$null -ne $existingResource.DenyPasswordReplicationAccountName)
+	$null -ne $existingResource.DenyPasswordReplicationAccountName)
 	{
 		$testMembersParams = @{
 			ExistingMembers = $existingResource.DenyPasswordReplicationAccountName
@@ -569,9 +574,9 @@ function Test-TargetResource
 		if(-not (Test-Members @testMembersParams))
 		{
 			Write-Verbose -Message (
-				$script:localizedData.DenySyncAccountsMismatch -f
-				($existingResource.DenyPasswordReplicationAccountName -join ';'),
-				($DenyPasswordReplicationAccountName -join ';')
+			$script:localizedData.DenySyncAccountsMismatch -f
+			($existingResource.DenyPasswordReplicationAccountName -join ';'),
+			($DenyPasswordReplicationAccountName -join ';')
 			)
 			$testTargetResourceReturnValue = $false
 		}

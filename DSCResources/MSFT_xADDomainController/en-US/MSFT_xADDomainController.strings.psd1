@@ -19,4 +19,5 @@ ConvertFrom-StringData @'
     ExpectedDomainController      = Expected the node to be a domain controller, but did not get a domain controller object. (ADDC0017)
     AllowedSyncAccountsMismatch   = There is a mismatch in AllowPasswordReplicationAccountName list. Got {0}, expected was {1} . (ADDC0018)
     DenySyncAccountsMismatch      = There is a mismatch in DenyPasswordReplicationAccountName list. Got {0}, expected was {1} . (ADDC0019)
+    RODCMissingSite               = You have specified 'ReadonlyReplica', but did not provide a site name. (ADDC0020)
 '@
