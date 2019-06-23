@@ -95,6 +95,7 @@
     resource is using the `$global:DSCMachineStatus` variable to trigger
     a reboot.
   - Code cleanup.
+  - Added RODC Creation Support.
 - Changes to xADDomain
   - Suppressing the Script Analyzer rule `PSAvoidGlobalVars` since the
     resource is using the `$global:DSCMachineStatus` variable to trigger
