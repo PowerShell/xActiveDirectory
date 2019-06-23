@@ -44,14 +44,14 @@ namespace Microsoft.ActiveDirectory.Management
 
     public class ADAuthenticationPolicy
     {
-        public ADAuthenticationPolicy():base(){}
-        public ADAuthenticationPolicy(System.String Identity):base(){}
+        public ADAuthenticationPolicy() : base() { }
+        public ADAuthenticationPolicy(System.String Identity) : base() { }
     }
 
     public class ADAuthenticationPolicySilo
     {
-        public ADAuthenticationPolicySilo():base(){}
-        public ADAuthenticationPolicySilo(System.String Identity):base(){}
+        public ADAuthenticationPolicySilo() : base() { }
+        public ADAuthenticationPolicySilo(System.String Identity) : base() { }
     }
 
     public class ADAuthType
@@ -61,8 +61,8 @@ namespace Microsoft.ActiveDirectory.Management
 
     public class ADComputer
     {
-        public ADComputer():base(){}
-        public ADComputer(System.String Identity):base(){}
+        public ADComputer() : base() { }
+        public ADComputer(System.String Identity) : base() { }
     }
 
     public class ADDomain
@@ -88,25 +88,13 @@ namespace Microsoft.ActiveDirectory.Management
 
     public class ADIdentityNotFoundException : System.Exception
     {
-        public ADIdentityNotFoundException():base(){}
+        public ADIdentityNotFoundException() : base() { }
     }
 
     public class ADObject
     {
-        public ADObject():base(){}
-        public ADObject(System.String Identity):base(){}
-    }
-
-    public class ADPrincipal
-    {
-        public ADPrincipal():base(){}
-        public ADPrincipal(System.String Identity):base(){}
-    }
-
-    public class ADReplicationSite
-    {
-        string site;
-        public ADReplicationSite(System.String s) { site = s; }
+        public ADObject() : base() { }
+        public ADObject(System.String Identity) : base() { }
     }
 
     public class ADPrincipal
@@ -114,6 +102,12 @@ namespace Microsoft.ActiveDirectory.Management
         public ADPrincipal() : base() { }
         public ADPrincipal(System.String Identity) : base() { SamAccountName = Identity; }
         public string SamAccountName { get; set; }
+    }
+
+    public class ADReplicationSite
+    {
+        string site;
+        public ADReplicationSite(System.String s) { site = s; }
     }
 }
 

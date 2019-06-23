@@ -1,4 +1,4 @@
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', 'PSAvoidUsingPlainTextForPassword')]
 param()
 
 #region HEADER
@@ -695,7 +695,7 @@ try
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
                             Ensure                              = $true
-                            AllowPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList 'allowedAccount2')
+                            AllowPasswordReplicationAccountName = 'allowedAccount2'
                         }
                     }
 
@@ -714,7 +714,7 @@ try
                     Mock -CommandName Get-TargetResource -MockWith {
                         return @{
                             Ensure                             = $true
-                            DenyPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList 'deniedAccount2')
+                            DenyPasswordReplicationAccountName = 'deniedAccount2'
                         }
                     }
 
@@ -836,7 +836,7 @@ try
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
                                 Ensure                              = $true
-                                AllowPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $allowedAccount)
+                                AllowPasswordReplicationAccountName = $allowedAccount
                             }
                         }
                         { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
@@ -849,7 +849,7 @@ try
                         Mock -CommandName Get-TargetResource -MockWith {
                             return @{
                                 Ensure                             = $true
-                                DenyPasswordReplicationAccountName = (New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $deniedAccount)
+                                DenyPasswordReplicationAccountName = $deniedAccount
                             }
                         }
 
