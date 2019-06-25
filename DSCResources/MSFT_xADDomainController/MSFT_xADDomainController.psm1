@@ -106,6 +106,7 @@ function Get-TargetResource
         Write-Verbose -Message (
             $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
         )
+
         $allowedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject |ForEach-Object sAMAccountName
         $deniedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Denied -Identity $domainControllerObject | ForEach-Object sAMAccountName
         $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
@@ -177,14 +178,14 @@ function Get-TargetResource
 function Set-TargetResource
 {
     <#
-    Suppressing this rule because $global:DSCMachineStatus is used to
-    trigger a reboot for the one that was suppressed when calling
-    Install-ADDSDomainController.
+        Suppressing this rule because $global:DSCMachineStatus is used to
+        trigger a reboot for the one that was suppressed when calling
+        Install-ADDSDomainController.
     #>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     <#
-    Suppressing this rule because $global:DSCMachineStatus is only set,
-    never used (by design of Desired State Configuration).
+        Suppressing this rule because $global:DSCMachineStatus is only set,
+        never used (by design of Desired State Configuration).
     #>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='DSCMachineStatus')]
     [CmdletBinding()]
@@ -317,8 +318,8 @@ function Set-TargetResource
         )
 
         <#
-        Signal to the LCM to reboot the node to compensate for the one we
-        suppressed from Install-ADDSDomainController
+            Signal to the LCM to reboot the node to compensate for the one we
+            suppressed from Install-ADDSDomainController
         #>
         $global:DSCMachineStatus = 1
     }
@@ -443,7 +444,7 @@ function Set-TargetResource
     }
 }
 
-    <#
+<#
     .SYNOPSIS
         Determines if the domain controller is in desired state.
 
@@ -486,7 +487,7 @@ function Set-TargetResource
     .PARAMETER AllowPasswordReplicationAccountName
         Provides a list of the users, computers, and groups to add to the password replication denied list.
 #>
-    function Test-TargetResource
+function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
@@ -573,7 +574,7 @@ function Set-TargetResource
         $testTargetResourceReturnValue = $false
     }
 
-    ## Check Global Catalog Config
+    # Check Global Catalog Config
     if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
     {
         if ($IsGlobalCatalog)
