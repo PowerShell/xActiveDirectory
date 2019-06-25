@@ -1,3 +1,5 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("AvoidUsingPlainTextForPassword", "",
+        Justification = 'RODC Creation support($AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
 $script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules'
 
@@ -8,30 +10,30 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomainControlle
 
 <#
 .SYNOPSIS
-Returns the current state of the domain controller.
+    Returns the current state of the domain controller.
 
 .PARAMETER DomainName
-Provide the FQDN of the domain the Domain Controller is being added to.
+    Provide the FQDN of the domain the Domain Controller is being added to.
 
 .PARAMETER DomainAdministrationCredential
-Specifies the credential for the account used to install the domain controller.
-This account must have permission to access the other domain controllers
-in the domain to be able replicate domain information.
+    Specifies the credential for the account used to install the domain controller.
+    This account must have permission to access the other domain controllers
+    in the domain to be able replicate domain information.
 
 .PARAMETER SafemodeAdministratorPassword
-Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
 .PARAMETER DatabasePath
-Provide the path where the NTDS.dit will be created and stored.
+    Provide the path where the NTDS.dit will be created and stored.
 
 .PARAMETER LogPath
-Provide the path where the logs for the NTDS will be created and stored.
+    Provide the path where the logs for the NTDS will be created and stored.
 
 .PARAMETER SysvolPath
-Provide the path where the Sysvol will be created and stored.
+    Provide the path where the Sysvol will be created and stored.
 
 .PARAMETER SiteName
-Provide the name of the site you want the Domain Controller to be added to.
+    Provide the name of the site you want the Domain Controller to be added to.
 #>
 function Get-TargetResource
 {
@@ -39,33 +41,33 @@ function Get-TargetResource
     [OutputType([System.Collections.Hashtable])]
     param
     (
-    [Parameter(Mandatory = $true)]
-    [System.String]
-    $DomainName,
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DomainName,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $DomainAdministratorCredential,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $DomainAdministratorCredential,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $SafemodeAdministratorPassword,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $SafemodeAdministratorPassword,
 
-    [Parameter()]
-    [System.String]
-    $DatabasePath,
+        [Parameter()]
+        [System.String]
+        $DatabasePath,
 
-    [Parameter()]
-    [System.String]
-    $LogPath,
+        [Parameter()]
+        [System.String]
+        $LogPath,
 
-    [Parameter()]
-    [System.String]
-    $SysvolPath,
+        [Parameter()]
+        [System.String]
+        $SysvolPath,
 
-    [Parameter()]
-    [System.String]
-    $SiteName
+        [Parameter()]
+        [System.String]
+        $SiteName
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
@@ -77,7 +79,7 @@ function Get-TargetResource
     }
 
     Write-Verbose -Message (
-    $script:localizedData.ResolveDomainName -f $DomainName
+        $script:localizedData.ResolveDomainName -f $DomainName
     )
 
     try
@@ -91,18 +93,18 @@ function Get-TargetResource
     }
 
     Write-Verbose -Message (
-    $script:localizedData.DomainPresent -f $DomainName
+        $script:localizedData.DomainPresent -f $DomainName
     )
 
     $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
     if ($domainControllerObject)
     {
         Write-Verbose -Message (
-        $script:localizedData.FoundDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+            $script:localizedData.FoundDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
         )
 
         Write-Verbose -Message (
-        $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
+            $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
         )
         $allowedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject |ForEach-Object sAMAccountName
         $deniedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Denied -Identity $domainControllerObject | ForEach-Object sAMAccountName
@@ -122,7 +124,7 @@ function Get-TargetResource
     else
     {
         Write-Verbose -Message (
-        $script:localizedData.NotDomainController -f $env:COMPUTERNAME
+            $script:localizedData.NotDomainController -f $env:COMPUTERNAME
         )
     }
 
@@ -131,37 +133,47 @@ function Get-TargetResource
 
 <#
 .SYNOPSIS
-Installs, or change properties on, a domain controller.
+    Installs, or change properties on, a domain controller.
 
 .PARAMETER DomainName
-Provide the FQDN of the domain the Domain Controller is being added to.
+    Provide the FQDN of the domain the Domain Controller is being added to.
 
 .PARAMETER DomainAdministrationCredential
-Specifies the credential for the account used to install the domain controller.
-This account must have permission to access the other domain controllers
-in the domain to be able replicate domain information.
+    Specifies the credential for the account used to install the domain controller.
+    This account must have permission to access the other domain controllers
+    in the domain to be able replicate domain information.
 
 .PARAMETER SafemodeAdministratorPassword
-Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
 .PARAMETER DatabasePath
-Provide the path where the NTDS.dit will be created and stored.
+    Provide the path where the NTDS.dit will be created and stored.
 
 .PARAMETER LogPath
-Provide the path where the logs for the NTDS will be created and stored.
+    Provide the path where the logs for the NTDS will be created and stored.
 
 .PARAMETER SysvolPath
-Provide the path where the Sysvol will be created and stored.
+    Provide the path where the Sysvol will be created and stored.
 
 .PARAMETER SiteName
-Provide the name of the site you want the Domain Controller to be added to.
+    Provide the name of the site you want the Domain Controller to be added to.
 
 .PARAMETER InstallationMediaPath
-Provide the path for the IFM folder that was created with ntdsutil.
-This should not be on a share but locally to the Domain Controller being promoted.
+    Provide the path for the IFM folder that was created with ntdsutil.
+    This should not be on a share but locally to the Domain Controller being promoted.
 
 .PARAMETER IsGlobalCatalog
-Specifies if the domain controller will be a Global Catalog (GC).
+    Specifies if the domain controller will be a Global Catalog (GC).
+
+.PARAMETER ReadOnlyReplica
+    Specifies if the domain controller should be provisioned as read-only domain controller
+
+.PARAMETER AllowPasswordReplicationAccountName
+    Provides a list of the users, computers, and groups to add to the password replication allowed list.
+
+.PARAMETER AllowPasswordReplicationAccountName
+    Provides a list of the users, computers, and groups to add to the password replication denied list.
+
 #>
 function Set-TargetResource
 {
@@ -179,53 +191,53 @@ function Set-TargetResource
     [CmdletBinding()]
     param
     (
-    [Parameter(Mandatory = $true)]
-    [System.String]
-    $DomainName,
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DomainName,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $DomainAdministratorCredential,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $DomainAdministratorCredential,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $SafemodeAdministratorPassword,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $SafemodeAdministratorPassword,
 
-    [Parameter()]
-    [System.String]
-    $DatabasePath,
+        [Parameter()]
+        [System.String]
+        $DatabasePath,
 
-    [Parameter()]
-    [System.String]
-    $LogPath,
+        [Parameter()]
+        [System.String]
+        $LogPath,
 
-    [Parameter()]
-    [System.String]
-    $SysvolPath,
+        [Parameter()]
+        [System.String]
+        $SysvolPath,
 
-    [Parameter()]
-    [System.String]
-    $SiteName,
+        [Parameter()]
+        [System.String]
+        $SiteName,
 
-    [Parameter()]
-    [System.String]
-    $InstallationMediaPath,
+        [Parameter()]
+        [System.String]
+        $InstallationMediaPath,
 
-    [Parameter()]
-    [System.Boolean]
-    $IsGlobalCatalog,
+        [Parameter()]
+        [System.Boolean]
+        $IsGlobalCatalog,
 
-    [Parameter()]
-    [System.Boolean]
-    $ReadOnlyReplica,
+        [Parameter()]
+        [System.Boolean]
+        $ReadOnlyReplica,
 
-    [Parameter()]
-    [System.String[]]
-    $AllowPasswordReplicationAccountName,
+        [Parameter()]
+        [System.String[]]
+        $AllowPasswordReplicationAccountName,
 
-    [Parameter()]
-    [System.String[]]
-    $DenyPasswordReplicationAccountName
+        [Parameter()]
+        [System.String[]]
+        $DenyPasswordReplicationAccountName
     )
 
     $getTargetResourceParameters = @{} + $PSBoundParameters
@@ -239,7 +251,7 @@ function Set-TargetResource
     if ($targetResource.Ensure -eq $false)
     {
         Write-Verbose -Message (
-        $script:localizedData.Promoting -f $env:COMPUTERNAME, $DomainName
+            $script:localizedData.Promoting -f $env:COMPUTERNAME, $DomainName
         )
 
         # Node is not a domain controller so we promote it.
@@ -294,7 +306,7 @@ function Set-TargetResource
             $installADDSDomainControllerParameters.Add('NoGlobalCatalog', $true)
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($InstallationMediaPath))
+        if (-not [System.String]::IsNullOrWhiteSpace($InstallationMediaPath))
         {
             $installADDSDomainControllerParameters.Add('InstallationMediaPath', $InstallationMediaPath)
         }
@@ -302,7 +314,7 @@ function Set-TargetResource
         Install-ADDSDomainController @installADDSDomainControllerParameters
 
         Write-Verbose -Message (
-        $script:localizedData.Promoted -f $env:COMPUTERNAME, $DomainName
+            $script:localizedData.Promoted -f $env:COMPUTERNAME, $DomainName
         )
 
         <#
@@ -316,7 +328,7 @@ function Set-TargetResource
         # Node is a domain controller. We check if other properties are in desired state
 
         Write-Verbose -Message (
-        $script:localizedData.IsDomainController -f $env:COMPUTERNAME, $DomainName
+            $script:localizedData.IsDomainController -f $env:COMPUTERNAME, $DomainName
         )
 
         $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
@@ -354,7 +366,7 @@ function Set-TargetResource
         if ($PSBoundParameters.ContainsKey('SiteName') -and $targetResource.SiteName -ne $SiteName)
         {
             Write-Verbose -Message (
-            $script:localizedData.IsDomainController -f $targetResource.SiteName, $SiteName
+                $script:localizedData.IsDomainController -f $targetResource.SiteName, $SiteName
             )
 
             # DC is not in correct site. Move it.
@@ -421,7 +433,7 @@ function Set-TargetResource
                     DeniedList  = $adPrincipalsToAdd
                 }
                 Write-Verbose -Message (
-                $script:localizedData.DenySyncAccountsMismatch -f
+                    $script:localizedData.DenySyncAccountsMismatch -f
                 ($existingResource.DenyPasswordReplicationAccountName -join ';'),
                 ($DenyPasswordReplicationAccountName -join ';')
                 )
@@ -434,37 +446,47 @@ function Set-TargetResource
 
 <#
 .SYNOPSIS
-Determines if the domain controller is in desired state.
+    Determines if the domain controller is in desired state.
 
 .PARAMETER DomainName
-Provide the FQDN of the domain the Domain Controller is being added to.
+    Provide the FQDN of the domain the Domain Controller is being added to.
 
 .PARAMETER DomainAdministrationCredential
-Specifies the credential for the account used to install the domain controller.
-This account must have permission to access the other domain controllers
-in the domain to be able replicate domain information.
+    Specifies the credential for the account used to install the domain controller.
+    This account must have permission to access the other domain controllers
+    in the domain to be able replicate domain information.
 
 .PARAMETER SafemodeAdministratorPassword
-Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
 .PARAMETER DatabasePath
-Provide the path where the NTDS.dit will be created and stored.
+    Provide the path where the NTDS.dit will be created and stored.
 
 .PARAMETER LogPath
-Provide the path where the logs for the NTDS will be created and stored.
+    Provide the path where the logs for the NTDS will be created and stored.
 
 .PARAMETER SysvolPath
-Provide the path where the Sysvol will be created and stored.
+    Provide the path where the Sysvol will be created and stored.
 
 .PARAMETER SiteName
-Provide the name of the site you want the Domain Controller to be added to.
+    Provide the name of the site you want the Domain Controller to be added to.
 
 .PARAMETER InstallationMediaPath
-Provide the path for the IFM folder that was created with ntdsutil.
-This should not be on a share but locally to the Domain Controller being promoted.
+    Provide the path for the IFM folder that was created with ntdsutil.
+    This should not be on a share but locally to the Domain Controller being promoted.
 
 .PARAMETER IsGlobalCatalog
-Specifies if the domain controller will be a Global Catalog (GC).
+    Specifies if the domain controller will be a Global Catalog (GC).
+
+.PARAMETER ReadOnlyReplica
+    Specifies if the domain controller should be provisioned as read-only domain controller
+
+.PARAMETER AllowPasswordReplicationAccountName
+    Provides a list of the users, computers, and groups to add to the password replication allowed list.
+
+.PARAMETER AllowPasswordReplicationAccountName
+    Provides a list of the users, computers, and groups to add to the password replication denied list.
+
 #>
 function Test-TargetResource
 {
@@ -522,7 +544,7 @@ function Test-TargetResource
     )
 
     Write-Verbose -Message (
-    $script:localizedData.TestingConfiguration -f $env:COMPUTERNAME, $DomainName
+        $script:localizedData.TestingConfiguration -f $env:COMPUTERNAME, $DomainName
     )
 
     if ($PSBoundParameters.SiteName)
@@ -547,7 +569,7 @@ function Test-TargetResource
     if ($PSBoundParameters.ContainsKey('SiteName') -and $existingResource.SiteName -ne $SiteName)
     {
         Write-Verbose -Message (
-        $script:localizedData.WrongSite -f $existingResource.SiteName, $SiteName
+            $script:localizedData.WrongSite -f $existingResource.SiteName, $SiteName
         )
 
         $testTargetResourceReturnValue = $false
@@ -559,13 +581,13 @@ function Test-TargetResource
         if ($IsGlobalCatalog)
         {
             Write-Verbose -Message (
-            $script:localizedData.ExpectedGlobalCatalogEnabled -f $existingResource.SiteName, $SiteName
+                $script:localizedData.ExpectedGlobalCatalogEnabled -f $existingResource.SiteName, $SiteName
             )
         }
         else
         {
             Write-Verbose -Message (
-            $script:localizedData.ExpectedGlobalCatalogDisabled -f $existingResource.SiteName, $SiteName
+                $script:localizedData.ExpectedGlobalCatalogDisabled -f $existingResource.SiteName, $SiteName
             )
         }
 
@@ -582,9 +604,9 @@ function Test-TargetResource
         if(-not (Test-Members @testMembersParams))
         {
             Write-Verbose -Message (
-            $script:localizedData.AllowedSyncAccountsMismatch -f
-            ($existingResource.AllowPasswordReplicationAccountName -join ';'),
-            ($AllowPasswordReplicationAccountName -join ';')
+                $script:localizedData.AllowedSyncAccountsMismatch -f
+                ($existingResource.AllowPasswordReplicationAccountName -join ';'),
+                ($AllowPasswordReplicationAccountName -join ';')
             )
             $testTargetResourceReturnValue = $false
         }
@@ -600,9 +622,9 @@ function Test-TargetResource
         if(-not (Test-Members @testMembersParams))
         {
             Write-Verbose -Message (
-            $script:localizedData.DenySyncAccountsMismatch -f
-            ($existingResource.DenyPasswordReplicationAccountName -join ';'),
-            ($DenyPasswordReplicationAccountName -join ';')
+                $script:localizedData.DenySyncAccountsMismatch -f
+                ($existingResource.DenyPasswordReplicationAccountName -join ';'),
+                ($DenyPasswordReplicationAccountName -join ';')
             )
             $testTargetResourceReturnValue = $false
         }
