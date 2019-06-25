@@ -8,7 +8,7 @@ $script:dscResourceName = 'MSFT_xADDomainController'
 # Unit Test Template Version: 1.2.4
 $script:moduleRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if ( (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests'))) -or `
-    (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
+     (-not (Test-Path -Path (Join-Path -Path $script:moduleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1'))) )
 {
     & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $script:moduleRoot -ChildPath 'DscResource.Tests'))
 }
@@ -706,7 +706,7 @@ try
                     It "Should call the correct mock to set AllowPasswordReplicationAccountName Attribute" {
                         { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -AllowPasswordReplicationAccountName $allowedAccount } | Should -Not -Throw
 
-                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList.SamAccountName -eq 'allowedAccount2' } -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList.SamAccountName -contains 'allowedAccount2' } -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $AllowedList.SamAccountName -eq $allowedAccount } -Exactly -Times 1 -Scope It
                     }
                 }
@@ -725,7 +725,7 @@ try
                     It "Should call the correct mock to set DenyPasswordReplicationAccountName Attribute" {
                         { Set-TargetResource @testDefaultParams  -DomainName $correctDomainName -DenyPasswordReplicationAccountName $deniedAccount } | Should -Not -Throw
 
-                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList.SamAccountName -eq 'deniedAccount2' } -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList.SamAccountName -contains 'deniedAccount2' } -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -ParameterFilter { $DeniedList.SamAccountName -eq $deniedAccount } -Exactly -Times 1 -Scope It
                     }
                 }

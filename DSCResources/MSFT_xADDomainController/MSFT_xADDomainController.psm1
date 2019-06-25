@@ -1,5 +1,3 @@
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("AvoidUsingPlainTextForPassword", "",
-        Justification = 'RODC Creation support($AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
 $script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules'
 
@@ -107,7 +105,7 @@ function Get-TargetResource
             $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
         )
 
-        $allowedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject |ForEach-Object sAMAccountName
+        $allowedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject | ForEach-Object sAMAccountName
         $deniedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Denied -Identity $domainControllerObject | ForEach-Object sAMAccountName
         $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
         $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
@@ -188,6 +186,8 @@ function Set-TargetResource
         never used (by design of Desired State Configuration).
     #>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='DSCMachineStatus')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '',
+        Justification = 'RODC Creation support(AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
     [CmdletBinding()]
     param
     (
@@ -399,9 +399,9 @@ function Set-TargetResource
                     AllowedList = $adPrincipalsToAdd
                 }
                 Write-Verbose -Message (
-                $script:localizedData.AllowedSyncAccountsMismatch -f
-                ($targetResource.AllowPasswordReplicationAccountName -join ';'),
-                ($AllowPasswordReplicationAccountName -join ';')
+                    $script:localizedData.AllowedSyncAccountsMismatch -f
+                    ($targetResource.AllowPasswordReplicationAccountName -join ';'),
+                    ($AllowPasswordReplicationAccountName -join ';')
                 )
                 Remove-ADDomainControllerPasswordReplicationPolicy @removeADPasswordPolicy
                 Add-ADDomainControllerPasswordReplicationPolicy @addADPasswordPolicy
@@ -434,8 +434,8 @@ function Set-TargetResource
                 }
                 Write-Verbose -Message (
                     $script:localizedData.DenySyncAccountsMismatch -f
-                ($existingResource.DenyPasswordReplicationAccountName -join ';'),
-                ($DenyPasswordReplicationAccountName -join ';')
+                    ($existingResource.DenyPasswordReplicationAccountName -join ';'),
+                    ($DenyPasswordReplicationAccountName -join ';')
                 )
                 Remove-ADDomainControllerPasswordReplicationPolicy @removeADPasswordPolicy
                 Add-ADDomainControllerPasswordReplicationPolicy @addADPasswordPolicy
@@ -489,6 +489,8 @@ function Set-TargetResource
 #>
 function Test-TargetResource
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "",
+        Justification = 'RODC Creation support($AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -573,7 +575,8 @@ function Test-TargetResource
 
         $testTargetResourceReturnValue = $false
     }
-
+    #Just trying to debug the AppVeyour faling tests - this line wiil go away
+    Write-Verbose -Message $existingResource.Values
     # Check Global Catalog Config
     if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $existingResource.IsGlobalCatalog -ne $IsGlobalCatalog)
     {
