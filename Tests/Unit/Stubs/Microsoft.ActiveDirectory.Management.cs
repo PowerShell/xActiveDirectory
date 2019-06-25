@@ -86,7 +86,7 @@ namespace Microsoft.ActiveDirectory.Management
         public ADDirectoryServer(System.String Identity):base(){}
     }
 
-    public class ADIdentityNotFoundException:System.Exception
+    public class ADIdentityNotFoundException : System.Exception
     {
         public ADIdentityNotFoundException():base(){}
     }
@@ -100,14 +100,14 @@ namespace Microsoft.ActiveDirectory.Management
     public class ADPrincipal
     {
         public ADPrincipal():base(){}
-        public ADPrincipal(System.String Identity):base() { SamAccountName = Identity; }
+        public ADPrincipal(System.String Identity):base(){ SamAccountName = Identity; }
         public string SamAccountName { get; set; }
     }
 
     public class ADReplicationSite
     {
         string site;
-        public ADReplicationSite(System.String s) { site = s; }
+        public ADReplicationSite(System.String s){ site = s; }
     }
 }
 
