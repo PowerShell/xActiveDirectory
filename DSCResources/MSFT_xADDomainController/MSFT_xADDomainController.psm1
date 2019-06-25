@@ -9,31 +9,31 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomainController'
 
 <#
-.SYNOPSIS
-    Returns the current state of the domain controller.
+    .SYNOPSIS
+        Returns the current state of the domain controller.
 
-.PARAMETER DomainName
-    Provide the FQDN of the domain the Domain Controller is being added to.
+    .PARAMETER DomainName
+        Provide the FQDN of the domain the Domain Controller is being added to.
 
-.PARAMETER DomainAdministrationCredential
-    Specifies the credential for the account used to install the domain controller.
-    This account must have permission to access the other domain controllers
-    in the domain to be able replicate domain information.
+    .PARAMETER DomainAdministrationCredential
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
-.PARAMETER SafemodeAdministratorPassword
-    Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    .PARAMETER SafemodeAdministratorPassword
+        Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
-.PARAMETER DatabasePath
-    Provide the path where the NTDS.dit will be created and stored.
+    .PARAMETER DatabasePath
+        Provide the path where the NTDS.dit will be created and stored.
 
-.PARAMETER LogPath
-    Provide the path where the logs for the NTDS will be created and stored.
+    .PARAMETER LogPath
+        Provide the path where the logs for the NTDS will be created and stored.
 
-.PARAMETER SysvolPath
-    Provide the path where the Sysvol will be created and stored.
+    .PARAMETER SysvolPath
+        Provide the path where the Sysvol will be created and stored.
 
-.PARAMETER SiteName
-    Provide the name of the site you want the Domain Controller to be added to.
+    .PARAMETER SiteName
+        Provide the name of the site you want the Domain Controller to be added to.
 #>
 function Get-TargetResource
 {
@@ -132,48 +132,47 @@ function Get-TargetResource
 }
 
 <#
-.SYNOPSIS
-    Installs, or change properties on, a domain controller.
+    .SYNOPSIS
+        Installs, or change properties on, a domain controller.
 
-.PARAMETER DomainName
-    Provide the FQDN of the domain the Domain Controller is being added to.
+    .PARAMETER DomainName
+        Provide the FQDN of the domain the Domain Controller is being added to.
 
-.PARAMETER DomainAdministrationCredential
-    Specifies the credential for the account used to install the domain controller.
-    This account must have permission to access the other domain controllers
-    in the domain to be able replicate domain information.
+    .PARAMETER DomainAdministrationCredential
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
-.PARAMETER SafemodeAdministratorPassword
-    Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    .PARAMETER SafemodeAdministratorPassword
+        Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
-.PARAMETER DatabasePath
-    Provide the path where the NTDS.dit will be created and stored.
+    .PARAMETER DatabasePath
+        Provide the path where the NTDS.dit will be created and stored.
 
-.PARAMETER LogPath
-    Provide the path where the logs for the NTDS will be created and stored.
+    .PARAMETER LogPath
+        Provide the path where the logs for the NTDS will be created and stored.
 
-.PARAMETER SysvolPath
-    Provide the path where the Sysvol will be created and stored.
+    .PARAMETER SysvolPath
+        Provide the path where the Sysvol will be created and stored.
 
-.PARAMETER SiteName
-    Provide the name of the site you want the Domain Controller to be added to.
+    .PARAMETER SiteName
+        Provide the name of the site you want the Domain Controller to be added to.
 
-.PARAMETER InstallationMediaPath
-    Provide the path for the IFM folder that was created with ntdsutil.
-    This should not be on a share but locally to the Domain Controller being promoted.
+    .PARAMETER InstallationMediaPath
+        Provide the path for the IFM folder that was created with ntdsutil.
+        This should not be on a share but locally to the Domain Controller being promoted.
 
-.PARAMETER IsGlobalCatalog
-    Specifies if the domain controller will be a Global Catalog (GC).
+    .PARAMETER IsGlobalCatalog
+        Specifies if the domain controller will be a Global Catalog (GC).
 
-.PARAMETER ReadOnlyReplica
-    Specifies if the domain controller should be provisioned as read-only domain controller
+    .PARAMETER ReadOnlyReplica
+        Specifies if the domain controller should be provisioned as read-only domain controller
 
-.PARAMETER AllowPasswordReplicationAccountName
-    Provides a list of the users, computers, and groups to add to the password replication allowed list.
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication allowed list.
 
-.PARAMETER AllowPasswordReplicationAccountName
-    Provides a list of the users, computers, and groups to add to the password replication denied list.
-
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication denied list.
 #>
 function Set-TargetResource
 {
@@ -444,103 +443,102 @@ function Set-TargetResource
     }
 }
 
-<#
-.SYNOPSIS
-    Determines if the domain controller is in desired state.
+    <#
+    .SYNOPSIS
+        Determines if the domain controller is in desired state.
 
-.PARAMETER DomainName
-    Provide the FQDN of the domain the Domain Controller is being added to.
+    .PARAMETER DomainName
+        Provide the FQDN of the domain the Domain Controller is being added to.
 
-.PARAMETER DomainAdministrationCredential
-    Specifies the credential for the account used to install the domain controller.
-    This account must have permission to access the other domain controllers
-    in the domain to be able replicate domain information.
+    .PARAMETER DomainAdministrationCredential
+        Specifies the credential for the account used to install the domain controller.
+        This account must have permission to access the other domain controllers
+        in the domain to be able replicate domain information.
 
-.PARAMETER SafemodeAdministratorPassword
-    Provide a password that will be used to set the DSRM password. This is a PSCredential.
+    .PARAMETER SafemodeAdministratorPassword
+        Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
-.PARAMETER DatabasePath
-    Provide the path where the NTDS.dit will be created and stored.
+    .PARAMETER DatabasePath
+        Provide the path where the NTDS.dit will be created and stored.
 
-.PARAMETER LogPath
-    Provide the path where the logs for the NTDS will be created and stored.
+    .PARAMETER LogPath
+        Provide the path where the logs for the NTDS will be created and stored.
 
-.PARAMETER SysvolPath
-    Provide the path where the Sysvol will be created and stored.
+    .PARAMETER SysvolPath
+        Provide the path where the Sysvol will be created and stored.
 
-.PARAMETER SiteName
-    Provide the name of the site you want the Domain Controller to be added to.
+    .PARAMETER SiteName
+        Provide the name of the site you want the Domain Controller to be added to.
 
-.PARAMETER InstallationMediaPath
-    Provide the path for the IFM folder that was created with ntdsutil.
-    This should not be on a share but locally to the Domain Controller being promoted.
+    .PARAMETER InstallationMediaPath
+        Provide the path for the IFM folder that was created with ntdsutil.
+        This should not be on a share but locally to the Domain Controller being promoted.
 
-.PARAMETER IsGlobalCatalog
-    Specifies if the domain controller will be a Global Catalog (GC).
+    .PARAMETER IsGlobalCatalog
+        Specifies if the domain controller will be a Global Catalog (GC).
 
-.PARAMETER ReadOnlyReplica
-    Specifies if the domain controller should be provisioned as read-only domain controller
+    .PARAMETER ReadOnlyReplica
+        Specifies if the domain controller should be provisioned as read-only domain controller
 
-.PARAMETER AllowPasswordReplicationAccountName
-    Provides a list of the users, computers, and groups to add to the password replication allowed list.
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication allowed list.
 
-.PARAMETER AllowPasswordReplicationAccountName
-    Provides a list of the users, computers, and groups to add to the password replication denied list.
-
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication denied list.
 #>
-function Test-TargetResource
+    function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
     (
-    [Parameter(Mandatory = $true)]
-    [System.String]
-    $DomainName,
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DomainName,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $DomainAdministratorCredential,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $DomainAdministratorCredential,
 
-    [Parameter(Mandatory = $true)]
-    [System.Management.Automation.PSCredential]
-    $SafemodeAdministratorPassword,
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $SafemodeAdministratorPassword,
 
-    [Parameter()]
-    [System.String]
-    $DatabasePath,
+        [Parameter()]
+        [System.String]
+        $DatabasePath,
 
-    [Parameter()]
-    [System.String]
-    $LogPath,
+        [Parameter()]
+        [System.String]
+        $LogPath,
 
-    [Parameter()]
-    [System.String]
-    $SysvolPath,
+        [Parameter()]
+        [System.String]
+        $SysvolPath,
 
-    [Parameter()]
-    [System.String]
-    $SiteName,
+        [Parameter()]
+        [System.String]
+        $SiteName,
 
-    [Parameter()]
-    [System.String]
-    $InstallationMediaPath,
+        [Parameter()]
+        [System.String]
+        $InstallationMediaPath,
 
-    [Parameter()]
-    [System.Boolean]
-    $IsGlobalCatalog,
+        [Parameter()]
+        [System.Boolean]
+        $IsGlobalCatalog,
 
-    [Parameter()]
-    [System.Boolean]
-    $ReadOnlyReplica,
+        [Parameter()]
+        [System.Boolean]
+        $ReadOnlyReplica,
 
-    [Parameter()]
-    [System.String[]]
-    $AllowPasswordReplicationAccountName,
+        [Parameter()]
+        [System.String[]]
+        $AllowPasswordReplicationAccountName,
 
-    [Parameter()]
-    [System.String[]]
-    $DenyPasswordReplicationAccountName
+        [Parameter()]
+        [System.String[]]
+        $DenyPasswordReplicationAccountName
     )
 
     Write-Verbose -Message (

@@ -74,48 +74,48 @@ try
             [CmdletBinding()]
             param
             (
-            [Parameter()]
-            $DomainName,
+                [Parameter()]
+                $DomainName,
 
-            [Parameter()]
-            [System.Management.Automation.PSCredential]
-            $SafeModeAdministratorPassword,
+                [Parameter()]
+                [System.Management.Automation.PSCredential]
+                $SafeModeAdministratorPassword,
 
-            [Parameter()]
-            [System.Management.Automation.PSCredential]
-            $Credential,
+                [Parameter()]
+                [System.Management.Automation.PSCredential]
+                $Credential,
 
-            [Parameter()]
-            $NoRebootOnCompletion,
+                [Parameter()]
+                $NoRebootOnCompletion,
 
-            [Parameter()]
-            $Force,
+                [Parameter()]
+                $Force,
 
-            [Parameter()]
-            $DatabasePath,
+                [Parameter()]
+                $DatabasePath,
 
-            [Parameter()]
-            $LogPath,
+                [Parameter()]
+                $LogPath,
 
-            [Parameter()]
-            $SysvolPath,
+                [Parameter()]
+                $SysvolPath,
 
-            [Parameter()]
-            $SiteName,
+                [Parameter()]
+                $SiteName,
 
-            [Parameter()]
-            $InstallationMediaPath,
+                [Parameter()]
+                $InstallationMediaPath,
 
-            [Parameter()]
-            $NoGlobalCatalog,
+                [Parameter()]
+                $NoGlobalCatalog,
 
-            [Parameter()]
-            [System.String[]]
-            $AllowPasswordReplicationAccountName,
+                [Parameter()]
+                [System.String[]]
+                $AllowPasswordReplicationAccountName,
 
-            [Parameter()]
-            [System.String[]]
-            $DenyPasswordReplicationAccountName
+                [Parameter()]
+                [System.String[]]
+                $DenyPasswordReplicationAccountName
             )
 
             throw [exception] 'Not Implemented'
