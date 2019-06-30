@@ -75,6 +75,9 @@ namespace Microsoft.ActiveDirectory.Management
     {
         public ADDomainController():base(){}
         public ADDomainController(System.String Identity):base(){}
+        public string Site;
+        public string Domain;
+        public bool IsGlobalCatalog;
     }
 
     public class ADDirectoryServer
@@ -97,7 +100,8 @@ namespace Microsoft.ActiveDirectory.Management
     public class ADPrincipal
     {
         public ADPrincipal():base(){}
-        public ADPrincipal(System.String Identity):base(){}
+        public ADPrincipal(System.String Identity):base(){ SamAccountName = Identity; }
+        public string SamAccountName { get; set; }
     }
 
     public class ADReplicationSite

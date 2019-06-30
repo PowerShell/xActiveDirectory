@@ -105,6 +105,8 @@ function Get-TargetResource
             $script:localizedData.AlreadyDomainController -f $domainControllerObject.Name, $domainControllerObject.Domain
         )
 
+        $allowedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject | ForEach-Object -MemberName sAMAccountName
+        $deniedPasswordReplicationAccountName = Get-ADDomainControllerPasswordReplicationPolicy -Denied -Identity $domainControllerObject | ForEach-Object -MemberName sAMAccountName
         $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
         $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
 
@@ -115,6 +117,8 @@ function Get-TargetResource
         $getTargetResourceResult.SiteName = $domainControllerObject.Site
         $getTargetResourceResult.IsGlobalCatalog = $domainControllerObject.IsGlobalCatalog
         $getTargetResourceResult.DomainName = $domainControllerObject.Domain
+        $getTargetResourceResult.AllowPasswordReplicationAccountName = $allowedPasswordReplicationAccountName
+        $getTargetResourceResult.DenyPasswordReplicationAccountName = $deniedPasswordReplicationAccountName
     }
     else
     {
@@ -159,6 +163,15 @@ function Get-TargetResource
 
     .PARAMETER IsGlobalCatalog
         Specifies if the domain controller will be a Global Catalog (GC).
+
+    .PARAMETER ReadOnlyReplica
+        Specifies if the domain controller should be provisioned as read-only domain controller
+
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication allowed list.
+
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication denied list.
 #>
 function Set-TargetResource
 {
@@ -173,6 +186,8 @@ function Set-TargetResource
         never used (by design of Desired State Configuration).
     #>
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Scope='Function', Target='DSCMachineStatus')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '',
+        Justification = 'Read-Only Domain Controller (RODC) Creation support(AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
     [CmdletBinding()]
     param
     (
@@ -210,12 +225,27 @@ function Set-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $IsGlobalCatalog
+        $IsGlobalCatalog,
+
+        [Parameter()]
+        [System.Boolean]
+        $ReadOnlyReplica,
+
+        [Parameter()]
+        [System.String[]]
+        $AllowPasswordReplicationAccountName,
+
+        [Parameter()]
+        [System.String[]]
+        $DenyPasswordReplicationAccountName
     )
 
     $getTargetResourceParameters = @{} + $PSBoundParameters
     $getTargetResourceParameters.Remove('InstallationMediaPath')
     $getTargetResourceParameters.Remove('IsGlobalCatalog')
+    $getTargetResourceParameters.Remove('ReadOnlyReplica')
+    $getTargetResourceParameters.Remove('AllowPasswordReplicationAccountName')
+    $getTargetResourceParameters.Remove('DenyPasswordReplicationAccountName')
     $targetResource = Get-TargetResource @getTargetResourceParameters
 
     if ($targetResource.Ensure -eq $false)
@@ -231,6 +261,26 @@ function Set-TargetResource
             Credential                    = $DomainAdministratorCredential
             NoRebootOnCompletion          = $true
             Force                         = $true
+        }
+
+        if ($PSBoundParameters.ContainsKey('ReadOnlyReplica') -and $ReadOnlyReplica -eq $true)
+        {
+            if (-not $PSBoundParameters.ContainsKey('SiteName'))
+            {
+                New-InvalidOperationException -Message $script:localizedData.RODCMissingSite
+            }
+
+            $installADDSDomainControllerParameters.Add('ReadOnlyReplica', $true)
+        }
+
+        if ($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName'))
+        {
+            $installADDSDomainControllerParameters.Add('AllowPasswordReplicationAccountName', $AllowPasswordReplicationAccountName)
+        }
+
+        if ($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName'))
+        {
+            $installADDSDomainControllerParameters.Add('DenyPasswordReplicationAccountName', $DenyPasswordReplicationAccountName)
         }
 
         if ($PSBoundParameters.ContainsKey('DatabasePath'))
@@ -283,6 +333,8 @@ function Set-TargetResource
             $script:localizedData.IsDomainController -f $env:COMPUTERNAME, $DomainName
         )
 
+        $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
+
         # Check if Node Global Catalog state is correct
         if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $targetResource.IsGlobalCatalog -ne $IsGlobalCatalog)
         {
@@ -300,7 +352,6 @@ function Set-TargetResource
                 Write-Verbose -Message $script:localizedData.RemoveGlobalCatalog
             }
 
-            $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
             if ($domainControllerObject)
             {
                 Set-ADObject -Identity $domainControllerObject.NTDSSettingsObjectDN -Replace @{
@@ -323,6 +374,108 @@ function Set-TargetResource
             # DC is not in correct site. Move it.
             Write-Verbose -Message ($script:localizedData.MovingDomainController -f $targetResource.SiteName, $SiteName)
             Move-ADDirectoryServer -Identity $env:COMPUTERNAME -Site $SiteName -Credential $DomainAdministratorCredential
+        }
+
+        if ($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName'))
+        {
+            $testMembersParameters = @{
+                ExistingMembers = $targetResource.AllowPasswordReplicationAccountName
+                Members         = $AllowPasswordReplicationAccountName;
+            }
+
+            if (-not (Test-Members @testMembersParameters))
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.AllowedSyncAccountsMismatch -f
+                    ($targetResource.AllowPasswordReplicationAccountName -join ';'),
+                    ($AllowPasswordReplicationAccountName -join ';')
+                )
+            }
+
+            $adPrincipalsToRemove = foreach ($accountName in $targetResource.AllowPasswordReplicationAccountName)
+            {
+                if ($accountName -notin $AllowPasswordReplicationAccountName)
+                {
+                    New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $accountName
+                }
+            }
+
+            if ($null -ne $adPrincipalsToRemove)
+            {
+                $removeADPasswordPolicy = @{
+                    Identity    = $domainControllerObject
+                    AllowedList = $adPrincipalsToRemove
+                }
+                Remove-ADDomainControllerPasswordReplicationPolicy @removeADPasswordPolicy
+            }
+
+            $adPrincipalsToAdd = foreach ($accountName in $AllowPasswordReplicationAccountName)
+            {
+                if ($accountName -notin $targetResource.AllowPasswordReplicationAccountName)
+                {
+                    New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $accountName
+                }
+            }
+
+            if ($null -ne $adPrincipalsToAdd)
+            {
+                $addADPasswordPolicy = @{
+                    Identity    = $domainControllerObject
+                    AllowedList = $adPrincipalsToAdd
+                }
+                Add-ADDomainControllerPasswordReplicationPolicy @addADPasswordPolicy
+            }
+        }
+
+        if ($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName'))
+        {
+            $testMembersParameters = @{
+                ExistingMembers = $targetResource.DenyPasswordReplicationAccountName
+                Members         = $DenyPasswordReplicationAccountName;
+            }
+
+            if (-not (Test-Members @testMembersParameters))
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.DenySyncAccountsMismatch -f
+                    ($targetResource.DenyPasswordReplicationAccountName -join ';'),
+                    ($DenyPasswordReplicationAccountName -join ';')
+                )
+            }
+
+            $adPrincipalsToRemove = foreach ($accountName in $targetResource.DenyPasswordReplicationAccountName)
+            {
+                if ($accountName -notin $DenyPasswordReplicationAccountName)
+                {
+                    New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $accountName
+                }
+            }
+
+            if ($null -ne $adPrincipalsToRemove)
+            {
+                $removeADPasswordPolicy = @{
+                    Identity    = $domainControllerObject
+                    DeniedList  = $adPrincipalsToRemove
+                }
+            Remove-ADDomainControllerPasswordReplicationPolicy @removeADPasswordPolicy
+            }
+
+            $adPrincipalsToAdd = foreach ($accountName in $DenyPasswordReplicationAccountName)
+            {
+                if ($accountName -notin $targetResource.DenyPasswordReplicationAccountName)
+                {
+                    New-Object -TypeName Microsoft.ActiveDirectory.Management.ADPrincipal -ArgumentList $accountName
+                }
+            }
+
+            if ($null -ne $adPrincipalsToAdd)
+            {
+                $addADPasswordPolicy = @{
+                    Identity    = $domainControllerObject
+                    DeniedList  = $adPrincipalsToAdd
+                }
+            Add-ADDomainControllerPasswordReplicationPolicy @addADPasswordPolicy
+            }
         }
     }
 }
@@ -360,9 +513,20 @@ function Set-TargetResource
 
     .PARAMETER IsGlobalCatalog
         Specifies if the domain controller will be a Global Catalog (GC).
+
+    .PARAMETER ReadOnlyReplica
+        Specifies if the domain controller should be provisioned as read-only domain controller
+
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication allowed list.
+
+    .PARAMETER AllowPasswordReplicationAccountName
+        Provides a list of the users, computers, and groups to add to the password replication denied list.
 #>
 function Test-TargetResource
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "",
+        Justification = 'Read-Only Domain Controller (RODC) Creation support($AllowPasswordReplicationAccountName and DenyPasswordReplicationAccountName)')]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -401,12 +565,33 @@ function Test-TargetResource
 
         [Parameter()]
         [System.Boolean]
-        $IsGlobalCatalog
+        $IsGlobalCatalog,
+
+        [Parameter()]
+        [System.Boolean]
+        $ReadOnlyReplica,
+
+        [Parameter()]
+        [System.String[]]
+        $AllowPasswordReplicationAccountName,
+
+        [Parameter()]
+        [System.String[]]
+        $DenyPasswordReplicationAccountName
     )
 
     Write-Verbose -Message (
         $script:localizedData.TestingConfiguration -f $env:COMPUTERNAME, $DomainName
     )
+
+    if ($PSBoundParameters.ContainsKey('ReadOnlyReplica') -and $ReadOnlyReplica -eq $true)
+    {
+        if (-not $PSBoundParameters.ContainsKey('SiteName'))
+        {
+            New-InvalidOperationException -Message $script:localizedData.RODCMissingSite
+        }
+    }
+
 
     if ($PSBoundParameters.SiteName)
     {
@@ -420,6 +605,9 @@ function Test-TargetResource
     $getTargetResourceParameters = @{} + $PSBoundParameters
     $getTargetResourceParameters.Remove('InstallationMediaPath')
     $getTargetResourceParameters.Remove('IsGlobalCatalog')
+    $getTargetResourceParameters.Remove('ReadOnlyReplica')
+    $getTargetResourceParameters.Remove('AllowPasswordReplicationAccountName')
+    $getTargetResourceParameters.Remove('DenyPasswordReplicationAccountName')
     $existingResource = Get-TargetResource @getTargetResourceParameters
 
     $testTargetResourceReturnValue = $existingResource.Ensure
@@ -450,6 +638,43 @@ function Test-TargetResource
         }
 
         $testTargetResourceReturnValue = $false
+    }
+
+    if ($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName') -and $null -ne $existingResource.AllowPasswordReplicationAccountName)
+    {
+        $testMembersParameters = @{
+            ExistingMembers = $existingResource.AllowPasswordReplicationAccountName
+            Members         = $AllowPasswordReplicationAccountName
+        }
+
+        if (-not (Test-Members @testMembersParameters))
+        {
+            Write-Verbose -Message (
+                $script:localizedData.AllowedSyncAccountsMismatch -f
+                ($existingResource.AllowPasswordReplicationAccountName -join ';'),
+                ($AllowPasswordReplicationAccountName -join ';')
+            )
+
+            $testTargetResourceReturnValue = $false
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('DenyPasswordReplicationAccountName') -and $null -ne $existingResource.DenyPasswordReplicationAccountName)
+    {
+        $testMembersParameters = @{
+            ExistingMembers = $existingResource.DenyPasswordReplicationAccountName
+            Members         = $DenyPasswordReplicationAccountName;
+        }
+
+        if (-not (Test-Members @testMembersParameters))
+        {
+            Write-Verbose -Message (
+                $script:localizedData.DenySyncAccountsMismatch -f
+                ($existingResource.DenyPasswordReplicationAccountName -join ';'),
+                ($DenyPasswordReplicationAccountName -join ';')
+            )
+            $testTargetResourceReturnValue = $false
+        }
     }
 
     return $testTargetResourceReturnValue
