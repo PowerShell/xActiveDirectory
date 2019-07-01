@@ -1,7 +1,8 @@
 # Description
 
 The xADDomainController DSC resource will install and configure domain
-controllers in Active Directory.
+controllers in Active Directory.Installation of Read Only domain controllers
+is also supported.
 
 >**Note:** If the account used for the parameter `DomainAdministratorCredential`
 >cannot connect to another domain controller, for example using a credential
