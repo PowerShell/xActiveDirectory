@@ -488,7 +488,7 @@ function Assert-Module
 
     if (-not (Get-Module -Name $ModuleName -ListAvailable))
     {
-        $errorMessage = $script:localizedData.RoleNotFoundError -f $moduleName
+        $errorMessage = $script:localizedData.ModuleNotFoundError -f $moduleName
         New-ObjectNotFoundException -Message $errorMessage
     }
 
@@ -1500,10 +1500,9 @@ function Convert-PropertyMapToObjectProperties
         values. Normally set to $PSBoundParameters.
 
     .PARAMETER Properties
-        An array of property names to filter out from the keys provided in
-        DesiredValues. If left out, only those keys in the DesiredValues will
-        be compared. This parameter can be used to remove certain keys from
-        the comparison.
+        An array of property names, from the keys provided in DesiredValues, that
+        will be compared. If this parameter is left out, all the keys in the
+        DesiredValues will be compared.
 #>
 function Compare-ResourcePropertyState
 {
@@ -1730,7 +1729,8 @@ function Assert-ADPSDrive
 
     if ($null -eq $activeDirectoryPSDrive)
     {
-        Write-Verbose -Message $script:localizedData.CreatingNewADPSDrive
+        Write-Verbose -Message $script:localizedData.CreatingNewADPSDrive -Verbose
+
         try
         {
             New-PSDrive -Name AD -PSProvider 'ActiveDirectory' -Root $Root -Scope Script -ErrorAction 'Stop' |
@@ -1768,6 +1768,180 @@ function Set-DscADComputer
     Set-ADComputer @Parameters | Out-Null
 }
 
+<#
+    .SYNOPSIS
+        This returns a new MSFT_Credential CIM instance credential object to be
+        used when returning credential objects from Get-TargetResource.
+        This returns a credential object without the password.
+
+    .PARAMETER Credential
+        The PSCredential object to return as a MSFT_Credential CIM instance
+        credential object.
+
+    .NOTES
+        When returning a PSCredential object from Get-TargetResource, the
+        credential object does not contain the username. The object is empty.
+
+        Password UserName PSComputerName
+        -------- -------- --------------
+                          localhost
+
+        When the MSFT_Credential CIM instance credential object is returned by
+        the Get-TargetResource then the credential object contains the values
+        provided in the object.
+
+        Password UserName             PSComputerName
+        -------- --------             --------------
+                 COMPANY\TestAccount  localhost
+#>
+function New-CimCredentialInstance
+{
+    [CmdletBinding()]
+    [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+
+    $newCimInstanceParameters = @{
+        ClassName = 'MSFT_Credential'
+        ClientOnly = $true
+        Namespace = 'root/microsoft/windows/desiredstateconfiguration'
+        Property = @{
+            UserName = [System.String] $Credential.UserName
+            Password = [System.String] $null
+        }
+    }
+
+    return New-CimInstance @newCimInstanceParameters
+}
+
+<#
+    .SYNOPSIS
+        This loads the assembly type, optionally after a check
+        if the type is missing in the PowerShell session.
+
+    .PARAMETER AssemblyName
+        The assembly to load into the PowerShell session.
+
+    .PARAMETER TypeName
+        An optional parameter to check if the type exist, if it exist then the
+        assembly is not loaded again.
+#>
+function Add-TypeAssembly
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $AssemblyName,
+
+        [Parameter()]
+        [System.String]
+        $TypeName
+    )
+
+    if ($PSBoundParameters.ContainsKey('TypeName'))
+    {
+        if ($TypeName -as [Type])
+        {
+            Write-Verbose -Message ($script:localizedData.TypeAlreadyExistInSession -f $TypeName) -Verbose
+
+            # The type already exist so no need to load the type again.
+            return
+        }
+        else
+        {
+            Write-Verbose -Message ($script:localizedData.TypeDoesNotExistInSession -f $TypeName) -Verbose
+        }
+    }
+
+    try
+    {
+        Write-Verbose -Message ($script:localizedData.AddingAssemblyToSession -f $AssemblyName) -Verbose
+
+        Add-Type -AssemblyName $AssemblyName
+    }
+    catch
+    {
+        $missingRoleMessage = $script:localizedData.CouldNotLoadAssembly -f $AssemblyName
+        New-ObjectNotFoundException -Message $missingRoleMessage -ErrorRecord $_
+    }
+}
+
+<#
+    .SYNOPSIS
+        This returns a new object of the type System.DirectoryServices.ActiveDirectory.DirectoryContext.
+
+    .PARAMETER DirectoryContextType
+        The context type of the object to return. Valid values are 'Domain', 'Forest',
+        'ApplicationPartition', 'ConfigurationSet' or 'DirectoryServer'.
+
+    .PARAMETER Name
+        An optional parameter for the  target of the directory context.
+        For the correct format for this parameter depending on context type, see
+        the article https://docs.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectory.directorycontext?view=netframework-4.8
+#>
+function Get-ADDirectoryContext
+{
+    [CmdletBinding()]
+    [OutputType([System.DirectoryServices.ActiveDirectory.DirectoryContext])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Domain', 'Forest', 'ApplicationPartition', 'ConfigurationSet', 'DirectoryServer')]
+        [System.String]
+        $DirectoryContextType,
+
+        [Parameter()]
+        [System.String]
+        $Name,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+
+    $typeName = 'System.DirectoryServices.ActiveDirectory.DirectoryContext'
+
+    Add-TypeAssembly -AssemblyName 'System.DirectoryServices' -TypeName $typeName
+
+    Write-Verbose -Message ($script:localizedData.NewDirectoryContext -f $DirectoryContextType) -Verbose
+
+    $newObjectArgumentList = @(
+        $DirectoryContextType
+    )
+
+    if ($PSBoundParameters.ContainsKey('Name'))
+    {
+        Write-Verbose -Message ($script:localizedData.NewDirectoryContextTarget -f $Name) -Verbose
+
+        $newObjectArgumentList += @(
+            $Name
+        )
+    }
+
+    if ($PSBoundParameters.ContainsKey('Credential'))
+    {
+        Write-Verbose -Message ($script:localizedData.NewDirectoryContextCredential -f $Credential.UserName) -Verbose
+
+        $newObjectArgumentList += @(
+            $Credential.UserName
+            $Credential.GetNetworkCredential().Password
+        )
+    }
+
+    $newObjectParameters = @{
+        TypeName = $typeName
+        ArgumentList = $newObjectArgumentList
+    }
+
+    return New-Object @newObjectParameters
+}
+
 $script:localizedData = Get-LocalizedData -ResourceName 'xActiveDirectory.Common' -ScriptRoot $PSScriptRoot
 
 Export-ModuleMember -Function @(
@@ -1802,4 +1976,7 @@ Export-ModuleMember -Function @(
     'Test-DscPropertyState'
     'Assert-ADPSDrive'
     'Set-DscADComputer'
+    'New-CimCredentialInstance'
+    'Add-TypeAssembly'
+    'Get-ADDirectoryContext'
 )

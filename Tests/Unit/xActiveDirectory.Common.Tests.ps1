@@ -2133,4 +2133,135 @@ InModuleScope 'xActiveDirectory.Common' {
             }
         }
     }
+
+    Describe 'xActiveDirectory.CommonNew-CimCredentialInstance' {
+        Context 'When creating a new MSFT_Credential CIM instance credential object' {
+            BeforeAll {
+                $mockAdministratorUser = 'admin@contoso.com'
+                $mockAdministratorPassword = 'P@ssw0rd-12P@ssw0rd-12'
+                $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                    $mockAdministratorUser,
+                    ($mockAdministratorPassword | ConvertTo-SecureString -AsPlainText -Force)
+                )
+            }
+
+            It 'Should return the correct values' {
+                $newCimCredentialInstanceResult = New-CimCredentialInstance -Credential $mockAdministratorCredential
+                $newCimCredentialInstanceResult | Should -BeOfType 'Microsoft.Management.Infrastructure.CimInstance'
+                $newCimCredentialInstanceResult.CimClass.CimClassName | Should -Be 'MSFT_Credential'
+                $newCimCredentialInstanceResult.UserName | Should -Be $mockAdministratorUser
+                $newCimCredentialInstanceResult.Password | Should -BeNullOrEmpty
+            }
+        }
+    }
+
+    Describe 'xActiveDirectory.Common\Add-TypeAssembly' {
+        Context 'When assembly fails to load' {
+            BeforeAll {
+                Mock -CommandName Add-Type -MockWith {
+                    throw
+                }
+
+                $mockAssembly = 'MyAssembly'
+            }
+
+            It 'Should throw the correct error' {
+                { Add-TypeAssembly -AssemblyName $mockAssembly } | Should -Throw ($script:localizedData.CouldNotLoadAssembly -f $mockAssembly)
+            }
+        }
+
+        Context 'When loading an assembly into the session' {
+            BeforeAll {
+                Mock -CommandName Add-Type
+
+                $mockAssembly = 'MyAssembly'
+            }
+
+            It 'Should not throw and call the correct mocks' {
+                { Add-TypeAssembly -AssemblyName $mockAssembly } | Should -Not -Throw
+
+                Assert-MockCalled -CommandName Add-Type -ParameterFilter {
+                    $AssemblyName -eq $mockAssembly
+                } -Exactly -Times 1 -Scope It
+            }
+
+            Context 'When the type is already loaded into the session' {
+                It 'Should not throw and not call any mocks' {
+                    { Add-TypeAssembly -AssemblyName $mockAssembly -TypeName 'System.String' } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName Add-Type -Exactly -Times 0 -Scope It
+                }
+            }
+
+            Context 'When the type is missing from the session' {
+                It 'Should not throw and call the correct mocks' {
+                    { Add-TypeAssembly -AssemblyName $mockAssembly -TypeName 'My.Type' } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName Add-Type -ParameterFilter {
+                        $AssemblyName -eq $mockAssembly
+                    } -Exactly -Times 1 -Scope It
+                }
+            }
+        }
+    }
+
+    Describe 'xActiveDirectory.Common\New-ADDirectoryContext' {
+        Context 'When creating a new Active Directory context' {
+            BeforeAll {
+                # This credential object must be created before we mock New-Object.
+                $mockAdministratorUser = 'admin@contoso.com'
+                $mockAdministratorPassword = 'P@ssw0rd-12P@ssw0rd-12'
+                $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                    $mockAdministratorUser,
+                    ($mockAdministratorPassword | ConvertTo-SecureString -AsPlainText -Force)
+                )
+
+                Mock -CommandName Add-TypeAssembly -Verifiable
+                Mock -CommandName New-Object
+            }
+
+            Context 'When the calling with only parameter DirectoryContextType' {
+                It 'Should not throw and call the correct mocks' {
+                    { Get-ADDirectoryContext -DirectoryContextType 'Domain' } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter {
+                        $ArgumentList.Count -eq 1 `
+                        -and $ArgumentList[0] -eq 'Domain'
+                    } -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When the calling with parameters DirectoryContextType and Name' {
+                It 'Should not throw and call the correct mocks' {
+                    {
+                        Get-ADDirectoryContext -DirectoryContextType 'Domain' -Name 'my.domain'
+                    } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter {
+                        $ArgumentList.Count -eq 2 `
+                        -and $ArgumentList[0] -eq 'Domain' `
+                        -and $ArgumentList[1] -eq 'my.domain'
+                    } -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Context 'When the calling with parameters DirectoryContextType, Name and Credential' {
+                It 'Should not throw and call the correct mocks' {
+                    {
+                        Get-ADDirectoryContext -DirectoryContextType 'Domain' -Name 'my.domain' -Credential $mockAdministratorCredential
+                    } | Should -Not -Throw
+
+                    Assert-MockCalled -CommandName New-Object -ParameterFilter {
+                        $ArgumentList.Count -eq 4 `
+                        -and $ArgumentList[0] -eq 'Domain' `
+                        -and $ArgumentList[1] -eq 'my.domain' `
+                        -and $ArgumentList[2] -eq $mockAdministratorUser `
+                        -and $ArgumentList[3] -eq $mockAdministratorPassword
+                    } -Exactly -Times 1 -Scope It
+                }
+            }
+
+            Assert-VerifiableMock
+        }
+    }
 }
