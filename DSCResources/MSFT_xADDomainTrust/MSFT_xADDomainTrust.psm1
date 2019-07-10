@@ -6,6 +6,29 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_xADDomainTrust'
 
+<#
+    .SYNOPSIS
+        Returns the current state of the Active Directory trust.
+
+    .PARAMETER SourceDomainName
+        Specifies the name of the Active Directory domain that is requesting the
+        trust.
+
+    .PARAMETER TargetDomainName
+        Specifies the name of the Active Directory domain that is being trusted.
+
+    .PARAMETER TargetDomainAdministratorCredential
+        Specifies the credentials to authenticate to the target domain..
+
+    .PARAMETER TrustType
+        Specifies the type of trust. Valid values are 'External' or 'Forest'.
+        'External' means the context Domain, while 'Forest' means the context
+        'Forest'.
+
+    .PARAMETER TrustDirection
+        Specifies the direction of the trust. Valid values are 'Bidirectional',
+        'Inbound', and 'Outbound'.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -32,184 +55,297 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
         [System.String]
-        $TrustDirection,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present'
+        $TrustDirection
     )
 
-    # Load the .NET assembly
-    try
-    {
-        Add-type -AssemblyName System.DirectoryServices
-    }
-    # If not found, means ADDS role is not installed
-    catch
-    {
-        $missingRoleMessage = $($script:localizedData.MissingRoleMessage) -f 'AD-Domain-Services'
-        New-ObjectNotFoundException -Message $missingRoleMessage -ErrorRecord $_
-    }
+    # Return a credential object without the password.
+    $cimCredentialInstance = New-CimCredentialInstance -Credential $TargetDomainAdministratorCredential
 
-    try
-    {
-        switch ($TrustType)
-        {
-            'External'
-            {
-                $DomainOrForest = 'Domain'
-            }
-
-            'Forest'
-            {
-                $DomainOrForest = 'Forest'
-            }
-        }
-
-        # Create the target object
-        $trgDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
-        $trgDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($trgDirectoryContext)
-
-        # Create the source object
-        $srcDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $SourceDomainName)
-        $srcDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($srcDirectoryContext)
-
-        # Find trust between source & destination.
-        Write-Verbose -Message ($script:localizedData.CheckingTrustMessage -f $SourceDomainName, $TargetDomainName)
-        $trust = $srcDomain.GetTrustRelationship($trgDomain)
-
-        Write-Verbose -Message ($script:localizedData.TrustPresentMessage -f $SourceDomainName, $TargetDomainName)
-        $Ensure = 'Present'
-    }
-    catch
-    {
-        Write-Verbose -Message ($script:localizedData.TrustAbsentMessage -f $SourceDomainName, $TargetDomainName)
-        $Ensure = 'Absent'
-    }
-
-    # return a credential object without password
-    $CIMCredential = New-CimInstance -ClassName MSFT_Credential -ClientOnly `
-        -Namespace 'root/microsoft/windows/desiredstateconfiguration' `
-        -Property @{
-        UserName = [System.String] $TargetDomainAdministratorCredential.UserName
-        Password = [System.String] $null
-    }
-
-    return @{
+    $returnValue = @{
         SourceDomainName                    = $SourceDomainName
         TargetDomainName                    = $TargetDomainName
-        Ensure                              = $Ensure
-        TrustType                           = $trust.TrustType
-        TrustDirection                      = $trust.TrustDirection
-        TargetDomainAdministratorCredential = $CIMCredential
+        TargetDomainAdministratorCredential = $cimCredentialInstance
     }
-}
 
-function Set-TargetResource
-{
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCUseVerboseMessageInDSCResource", "",
-        Justification = 'Verbose messaging in helper function')]
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $SourceDomainName,
+    $directoryContextType = ConvertTo-DirectoryContextType -TrustType $TrustType
 
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $TargetDomainName,
+    # Create the target object.
+    $newADDirectoryContextParameters = @{
+        DirectoryContextType = $directoryContextType
+        Name                 = $TargetDomainName
+        Credential           = $TargetDomainAdministratorCredential
+    }
 
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+    $targetDirectoryContext = Get-ADDirectoryContext @newADDirectoryContextParameters
 
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('External', 'Forest')]
-        [System.String]
-        $TrustType,
+    # Create the source object.
+    $newADDirectoryContextParameters = @{
+        DirectoryContextType = $directoryContextType
+        Name                 = $SourceDomainName
+    }
 
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
-        [System.String]
-        $TrustDirection,
+    $sourceDirectoryContext = Get-ADDirectoryContext @newADDirectoryContextParameters
 
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present'
-    )
-
-    if ($PSBoundParameters.ContainsKey('Debug'))
+    if ($directoryContextType -eq 'Domain')
     {
-        $null = $PSBoundParameters.Remove('Debug')
+        $trustSource = Get-ActiveDirectoryDomain -DirectoryContext $sourceDirectoryContext
+        $trustTarget = Get-ActiveDirectoryDomain -DirectoryContext $targetDirectoryContext
+    }
+    else
+    {
+        $trustSource = Get-ActiveDirectoryForest -DirectoryContext $sourceDirectoryContext
+        $trustTarget = Get-ActiveDirectoryForest -DirectoryContext $targetDirectoryContext
     }
 
-    Confirm-ResourceProperties @PSBoundParameters -Apply
-}
-
-function Test-TargetResource
-{
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSDSCUseVerboseMessageInDSCResource", "",
-        Justification = 'Verbose messaging in helper function')]
-    [CmdletBinding()]
-    [OutputType([System.Boolean])]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $SourceDomainName,
-
-        [Parameter(Mandatory = $true)]
-        [System.String]
-        $TargetDomainName,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('External', 'Forest')]
-        [System.String]
-        $TrustType,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
-        [System.String]
-        $TrustDirection,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present'
-    )
-
-    #region Input Validation
-
-    # Load the .NET assembly
     try
     {
-        Add-type -AssemblyName System.DirectoryServices
+        # Find trust between source & destination.
+        Write-Verbose -Message (
+            $script:localizedData.CheckingTrustMessage -f $SourceDomainName, $TargetDomainName, $directoryContextTyp
+        )
+
+        $trust = $trustSource.GetTrustRelationship($trustTarget)
+
+        $returnValue['TrustDirection'] = $trust.TrustDirection
+        $returnValue['TrustType'] = ConvertFrom-DirectoryContextType -DirectoryContextType $trust.TrustType
+
+        Write-Verbose -Message ($script:localizedData.TrustPresentMessage -f $SourceDomainName, $TargetDomainName, $directoryContextType)
+
+        $returnValue['Ensure'] = 'Present'
     }
-    # If not found, means ADDS role is not installed
     catch
     {
-        $missingRoleMessage = $($script:localizedData.MissingRoleMessage) -f 'AD-Domain-Services'
-        New-ObjectNotFoundException -Message $missingRoleMessage -ErrorRecord $_
+        Write-Verbose -Message ($script:localizedData.TrustAbsentMessage -f $SourceDomainName, $TargetDomainName, $directoryContextType)
+
+        $returnValue['Ensure'] = 'Absent'
+        $returnValue['TrustDirection'] = $null
+        $returnValue['TrustType'] = $null
     }
 
-    #endregion
-
-    if ($PSBoundParameters.ContainsKey('Debug'))
-    {
-        $null = $PSBoundParameters.Remove('Debug')
-    }
-
-    Confirm-ResourceProperties @PSBoundParameters
+    return $returnValue
 }
 
-function Confirm-ResourceProperties
+<#
+    .SYNOPSIS
+        Creates, removes, or updates the Active Directory trust so it is in the
+        desired state.
+
+    .PARAMETER SourceDomainName
+        Specifies the name of the Active Directory domain that is requesting the
+        trust.
+
+    .PARAMETER TargetDomainName
+        Specifies the name of the Active Directory domain that is being trusted.
+
+    .PARAMETER TargetDomainAdministratorCredential
+        Specifies the credentials to authenticate to the target domain..
+
+    .PARAMETER TrustType
+        Specifies the type of trust. Valid values are 'External' or 'Forest'.
+        'External' means the context Domain, while 'Forest' means the context
+        'Forest'.
+
+    .PARAMETER TrustDirection
+        Specifies the direction of the trust. Valid values are 'Bidirectional',
+        'Inbound', and 'Outbound'.
+
+    .PARAMETER Ensure
+        Specifies whether the computer account is present or absent. Valid values
+        are 'Present' and 'Absent'. The default is 'Present'.
+#>
+function Set-TargetResource
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceDomainName,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $TargetDomainName,
+
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $TargetDomainAdministratorCredential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('External', 'Forest')]
+        [System.String]
+        $TrustType,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
+        [System.String]
+        $TrustDirection,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present'
+    )
+
+    $directoryContextType = ConvertTo-DirectoryContextType -TrustType $TrustType
+
+    # Create the target object.
+    $newADDirectoryContextParameters = @{
+        DirectoryContextType = $directoryContextType
+        Name                 = $TargetDomainName
+        Credential           = $TargetDomainAdministratorCredential
+    }
+
+    $targetDirectoryContext = Get-ADDirectoryContext @newADDirectoryContextParameters
+
+    # Create the source object.
+    $newADDirectoryContextParameters = @{
+        DirectoryContextType = $directoryContextType
+        Name                 = $SourceDomainName
+    }
+
+    $sourceDirectoryContext = Get-ADDirectoryContext @newADDirectoryContextParameters
+
+    if ($directoryContextType -eq 'Domain')
+    {
+        $trustSource = Get-ActiveDirectoryDomain -DirectoryContext $sourceDirectoryContext
+        $trustTarget = Get-ActiveDirectoryDomain -DirectoryContext $targetDirectoryContext
+    }
+    else
+    {
+        $trustSource = Get-ActiveDirectoryForest -DirectoryContext $sourceDirectoryContext
+        $trustTarget = Get-ActiveDirectoryForest -DirectoryContext $targetDirectoryContext
+    }
+
+    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
+
+    # Get all properties that are not in desired state.
+    $propertiesNotInDesiredState = $compareTargetResourceStateResult |
+    Where-Object -FilterScript {
+        -not $_.InDesiredState
+    }
+
+    if ($propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'Ensure' }))
+    {
+        if ($Ensure -eq 'Present')
+        {
+            # Create trust.
+            $trustSource.CreateTrustRelationship($trustTarget, $TrustDirection)
+
+            Write-Verbose -Message (
+                $script:localizedData.AddedTrust -f @(
+                    $SourceDomainName,
+                    $TargetDomainName,
+                    $TrustType,
+                    $TrustDirection
+                )
+            )
+
+        }
+        else
+        {
+            # Remove trust.
+            $trustSource.DeleteTrustRelationship($trustTarget)
+
+            Write-Verbose -Message (
+                $script:localizedData.RemovedTrust -f @(
+                    $SourceDomainName,
+                    $TargetDomainName,
+                    $TrustType,
+                    $TrustDirection
+                )
+            )
+        }
+    }
+    else
+    {
+        if ($Ensure -eq 'Present')
+        {
+            $trustRecreated = $false
+
+            # Check properties.
+            $trustTypeProperty = $propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'TrustType' })
+            if ($trustTypeProperty)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.NeedToRecreateTrust -f @(
+                        $SourceDomainName,
+                        $TargetDomainName,
+                        (ConvertFrom-DirectoryContextType -DirectoryContextType $trustTypeProperty.Actual),
+                        $TrustType
+                    )
+                )
+
+                $trustSource.DeleteTrustRelationship($trustTarget)
+                $trustSource.CreateTrustRelationship($trustTarget, $TrustDirection)
+
+                Write-Verbose -Message (
+                    $script:localizedData.RecreatedTrustType -f @(
+                        $SourceDomainName,
+                        $TargetDomainName,
+                        $TrustType,
+                        $TrustDirection
+                    )
+                )
+
+                $trustRecreated = $true
+            }
+
+            <#
+                In case the trust direction property should be wrong, there
+                are no need to update that property twice since it was set
+                to the correct value when the trust was recreated.
+            #>
+            if (-not $trustRecreated)
+            {
+                if ($propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'TrustDirection' }))
+                {
+                    $trustSource.UpdateTrustRelationship($trustTarget, $TrustDirection)
+
+                    Write-Verbose -Message (
+                        $script:localizedData.SetTrustDirection -f $TrustDirection
+                    )
+                }
+            }
+
+            Write-Verbose -Message $script:localizedData.InDesiredState
+        }
+        else
+        {
+            # The trust is already absent, so in desired state.
+            Write-Verbose -Message $script:localizedData.InDesiredState
+        }
+    }
+}
+
+<#
+    .SYNOPSIS
+        Determines if the properties of the Active Directory trust is in
+        the desired state.
+
+    .PARAMETER SourceDomainName
+        Specifies the name of the Active Directory domain that is requesting the
+        trust.
+
+    .PARAMETER TargetDomainName
+        Specifies the name of the Active Directory domain that is being trusted.
+
+    .PARAMETER TargetDomainAdministratorCredential
+        Specifies the credentials to authenticate to the target domain..
+
+    .PARAMETER TrustType
+        Specifies the type of trust. Valid values are 'External' or 'Forest'.
+        'External' means the context Domain, while 'Forest' means the context
+        'Forest'.
+
+    .PARAMETER TrustDirection
+        Specifies the direction of the trust. Valid values are 'Bidirectional',
+        'Inbound', and 'Outbound'.
+
+    .PARAMETER Ensure
+        Specifies whether the computer account is present or absent. Valid values
+        are 'Present' and 'Absent'. The default is 'Present'.
+#>
+function Test-TargetResource
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
@@ -240,180 +376,266 @@ function Confirm-ResourceProperties
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present',
-
-        [Parameter()]
-        [System.Management.Automation.SwitchParameter]
-        $Apply
+        $Ensure = 'Present'
     )
 
-    try
+    Write-Verbose -Message (
+        $script:localizedData.TestConfiguration -f $SourceDomainName, $TargetDomainName, $TrustType
+    )
+
+    <#
+        This returns array of hashtables which contain the properties ParameterName,
+        Expected, Actual, and InDesiredState.
+    #>
+    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
+
+    if ($false -in $compareTargetResourceStateResult.InDesiredState)
     {
-        $checkingTrustMessage = $script:localizedData.CheckingTrustMessage -f $SourceDomainName, $TargetDomainName
-        Write-Verbose -Message $checkingTrustMessage
+        $testTargetResourceReturnValue = $false
 
-        switch ($TrustType)
+        Write-Verbose -Message $script:localizedData.NotInDesiredState
+    }
+    else
+    {
+        $testTargetResourceReturnValue = $true
+
+        Write-Verbose -Message $script:localizedData.InDesiredState
+    }
+
+    return $testTargetResourceReturnValue
+}
+
+<#
+    .SYNOPSIS
+        Compares the properties in the current state with the properties of the
+        desired state and returns a hashtable with the comaprison result.
+
+    .PARAMETER SourceDomainName
+        Specifies the name of the Active Directory domain that is requesting the
+        trust.
+
+    .PARAMETER TargetDomainName
+        Specifies the name of the Active Directory domain that is being trusted.
+
+    .PARAMETER TargetDomainAdministratorCredential
+        Specifies the credentials to authenticate to the target domain..
+
+    .PARAMETER TrustType
+        Specifies the type of trust. Valid values are 'External' or 'Forest'.
+        'External' means the context Domain, while 'Forest' means the context
+        'Forest'.
+
+    .PARAMETER TrustDirection
+        Specifies the direction of the trust. Valid values are 'Bidirectional',
+        'Inbound', and 'Outbound'.
+
+    .PARAMETER Ensure
+        Specifies whether the computer account is present or absent. Valid values
+        are 'Present' and 'Absent'. The default is 'Present'.
+#>
+function Compare-TargetResourceState
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceDomainName,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $TargetDomainName,
+
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $TargetDomainAdministratorCredential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('External', 'Forest')]
+        [System.String]
+        $TrustType,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
+        [System.String]
+        $TrustDirection,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present'
+    )
+
+    $getTargetResourceParameters = @{
+        SourceDomainName                    = $SourceDomainName
+        TargetDomainName                    = $TargetDomainName
+        TargetDomainAdministratorCredential = $TargetDomainAdministratorCredential
+        TrustType                           = $TrustType
+        TrustDirection                      = $TrustDirection
+    }
+
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    <#
+        If the desired state should be Absent, then there is no need to
+        compare properties other than 'Ensure'. If the other properties
+        would be compared, they would return a false negative during test.
+    #>
+    if ($Ensure -eq 'Present')
+    {
+        $propertiesToEvaluate = @(
+            'Ensure'
+            'TrustType'
+            'TrustDirection'
+        )
+    }
+    else
+    {
+        $propertiesToEvaluate = @(
+            'Ensure'
+        )
+    }
+
+    <#
+        If the user did not specify Ensure property, then it is not part of
+        the $PSBoundParameters, but it still need to be compared.
+        Copy the hashtable $PSBoundParameters and add 'Ensure' property to make
+        sure it is part of the DesiredValues.
+    #>
+    $desiredValues = @{ } + $PSBoundParameters
+    $desiredValues['Ensure'] = $Ensure
+
+    $compareTargetResourceStateParameters = @{
+        CurrentValues = $getTargetResourceResult
+        DesiredValues = $desiredValues
+        Properties    = $propertiesToEvaluate
+    }
+
+    return Compare-ResourcePropertyState @compareTargetResourceStateParameters
+}
+
+<#
+    .SYNOPSIS
+        This returns a new object of the type System.DirectoryServices.ActiveDirectory.Domain
+        which is a class that represents an Active Directory Domain Services domain.
+
+    .PARAMETER DirectoryContext
+        The Active Directory context from which the domain object is returned.
+        Calling the Get-ADDirectoryContext gets a value that can be provided in
+        this parameter.
+
+    .NOTES
+        This is a wrapper for enable unit testing of this resource.
+        see issue https://github.com/PowerShell/xActiveDirectory/issues/324
+        for more information.
+#>
+function Get-ActiveDirectoryDomain
+{
+    [CmdletBinding()]
+    [OutputType([System.DirectoryServices.ActiveDirectory.Domain])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.DirectoryServices.ActiveDirectory.DirectoryContext]
+        $DirectoryContext
+    )
+
+    return [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($DirectoryContext)
+}
+
+<#
+    .SYNOPSIS
+        This returns a new object of the type System.DirectoryServices.ActiveDirectory.Forest
+        which is a class that represents an Active Directory Domain Services forest.
+
+    .PARAMETER DirectoryContext
+        The Active Directory context from which the forest object is returned.
+        Calling the Get-ADDirectoryContext gets a value that can be provided in
+        this parameter.
+
+    .NOTES
+        This is a wrapper for enable unit testing of this resource.
+        see issue https://github.com/PowerShell/xActiveDirectory/issues/324
+        for more information.
+#>
+function Get-ActiveDirectoryForest
+{
+    [CmdletBinding()]
+    [OutputType([System.DirectoryServices.ActiveDirectory.Forest])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.DirectoryServices.ActiveDirectory.DirectoryContext]
+        $DirectoryContext
+    )
+
+    return [System.DirectoryServices.ActiveDirectory.Forest]::GetForest($DirectoryContext)
+}
+
+<#
+    .SYNOPSIS
+        This returns the converted value from a Trust Type value to the correct
+        Directory Context Type value.
+
+    .PARAMETER TrustType
+        The trust type value to convert.
+#>
+function ConvertTo-DirectoryContextType
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $TrustType
+    )
+
+    switch ($TrustType)
+    {
+        'External'
         {
-            'External'
-            {
-                $DomainOrForest = 'Domain'
-            }
-
-            'Forest'
-            {
-                $DomainOrForest = 'Forest'
-            }
+            $directoryContextType = 'Domain'
         }
 
-        # Create the target object
-        $trgDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $TargetDomainName, $TargetDomainAdministratorCredential.UserName, $TargetDomainAdministratorCredential.GetNetworkCredential().Password)
-        $trgDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($trgDirectoryContext)
-
-        # Create the source object
-        $srcDirectoryContext = New-Object -TypeName 'System.DirectoryServices.ActiveDirectory.DirectoryContext' -ArgumentList @($DomainOrForest, $SourceDomainName)
-        $srcDomain = ([type]"System.DirectoryServices.ActiveDirectory.$DomainOrForest")::"Get$DomainOrForest"($srcDirectoryContext)
-
-        # Find trust
-        try
+        'Forest'
         {
-            # Find trust between source & destination.
-            $trust = $srcDomain.GetTrustRelationship($TargetDomainName)
-
-            $TestTrustMessage = $script:localizedData.TestTrustMessage -f 'present', $Ensure
-            Write-Verbose -Message $TestTrustMessage
-
-            if ($Ensure -eq 'Present')
-            {
-                #region Test for trust direction
-                $CheckPropertyMessage = $script:localizedData.CheckPropertyMessage -f 'trust direction'
-                Write-Verbose -Message $CheckPropertyMessage
-
-                if ($trust.TrustDirection -ne $TrustDirection)
-                {
-                    # Set the trust direction if not correct
-
-                    $notDesiredPropertyMessage = $script:localizedData.NotDesiredPropertyMessage -f 'Trust direction', $TrustDirection, $trust.TrustDirection
-                    Write-Verbose -Message $notDesiredPropertyMessage
-
-                    if ($Apply)
-                    {
-                        $srcDomain.UpdateTrustRelationship($trgDomain, $TrustDirection)
-
-                        $setPropertyMessage = $script:localizedData.SetPropertyMessage -f 'Trust direction'
-                        Write-Verbose -Message $setPropertyMessage
-                    }
-                    else
-                    {
-                        return $false
-                    }
-                } # end trust direction is not correct
-                else
-                {
-                    # Trust direction is correct
-
-                    $desiredPropertyMessage = $script:localizedData.DesiredPropertyMessage -f 'Trust direction'
-                    Write-Verbose -Message $desiredPropertyMessage
-                }
-                #endregion trust direction
-
-                #region Test for trust type
-                $CheckPropertyMessage = $script:localizedData.CheckPropertyMessage -f 'trust type'
-                Write-Verbose -Message $CheckPropertyMessage
-
-                if ($trust.TrustType -ne $TrustType)
-                {
-                    # Set the trust type if not correct
-
-                    $notDesiredPropertyMessage = $script:localizedData.NotDesiredPropertyMessage -f 'Trust type', $TrustType, $trust.TrustType
-                    Write-Verbose -Message $notDesiredPropertyMessage
-
-                    if ($Apply)
-                    {
-                        # Only way to fix the trust direction is to delete it and create again
-                        # TODO: Add a property to ask user permission to delete an existing trust
-                        $srcDomain.DeleteTrustRelationship($trgDomain)
-                        $srcDomain.CreateTrustRelationship($trgDomain, $TrustDirection)
-
-                        $setPropertyMessage = $script:localizedData.SetPropertyMessage -f 'Trust type'
-                        Write-Verbose -Message $setPropertyMessage
-                    }
-                    else
-                    {
-                        return $false
-                    }
-                } # end trust type is not correct
-                else
-                {
-                    # Trust type is correct
-
-                    $desiredPropertyMessage = $script:localizedData.DesiredPropertyMessage -f 'Trust type'
-                    Write-Verbose -Message $desiredPropertyMessage
-                }
-                #endregion Test for trust type
-
-                # If both trust type and trust direction are correct, return true
-                if (-not $Apply)
-                {
-                    return $true
-                }
-            } # end Ensure -eq present
-            else
-            {
-                # If the trust should be absent, remove the trust
-
-                if ($Apply)
-                {
-                    $removingTrustMessage = $script:localizedData.RemovingTrustMessage -f $SourceDomainName, $TargetDomainName
-                    Write-Verbose -Message $removingTrustMessage
-
-                    $srcDomain.DeleteTrustRelationship($trgDomain)
-
-                    $deleteTrustMessage = $script:localizedData.DeleteTrustMessage
-                    Write-Verbose -Message $deleteTrustMessage
-                }
-                else
-                {
-                    return $false
-                }
-            } # end Ensure -eq absent
-        } # end find trust
-        catch [System.DirectoryServices.ActiveDirectory.ActiveDirectoryObjectNotFoundException]
-        {
-            # Trust does not exist between source and destination
-
-            $TestTrustMessage = $script:localizedData.TestTrustMessage -f 'absent', $Ensure
-            Write-Verbose -Message $TestTrustMessage
-
-            if ($Ensure -eq 'Present')
-            {
-                if ($Apply)
-                {
-                    $addingTrustMessage = $script:localizedData.AddingTrustMessage -f $SourceDomainName, $TargetDomainName
-                    Write-Verbose -Message $addingTrustMessage
-
-                    $srcDomain.CreateTrustRelationship($trgDomain, $TrustDirection)
-
-                    $setTrustMessage = $script:localizedData.SetTrustMessage
-                    Write-Verbose -Message $setTrustMessage
-                }
-                else
-                {
-                    return $false
-                }
-            } # end Ensure -eq Present
-            else
-            {
-                if (-not $Apply)
-                {
-                    return $true
-                }
-            }
-        } # end no trust
-    } # end getting directory object
-    catch [System.DirectoryServices.ActiveDirectory.ActiveDirectoryObjectNotFoundException]
-    {
-        throw
+            $directoryContextType = 'Forest'
+        }
     }
+
+    return $directoryContextType
+}
+
+<#
+    .SYNOPSIS
+        This returns the converted value from a Directory Context Type value to
+        the correct Trust Type value.
+
+    .PARAMETER DirectoryContextType
+        The Directory Context Type value to convert.
+#>
+function ConvertFrom-DirectoryContextType
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DirectoryContextType
+    )
+
+    switch ($DirectoryContextType)
+    {
+        'Domain'
+        {
+            $trustType = 'External'
+        }
+
+        'Forest'
+        {
+            $trustType = 'Forest'
+        }
+    }
+
+    return $trustType
 }
 
 Export-ModuleMember -Function *-TargetResource

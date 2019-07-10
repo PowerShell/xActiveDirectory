@@ -17,6 +17,10 @@
   - Fixed an issue that the helper function `Add-ADCommonGroupMember` was
     not outputting the correct group name in a verbose message and in an
     error message.
+  - Added new helper functions in xActiveDirectory.Common.
+    - New-CimCredentialInstance
+    - Add-TypeAssembly
+    - New-ADDirectoryContext
 - Changes to xADManagedServiceAccount
   - Added a requirement to README stating "Group Managed Service Accounts
     need at least one Windows Server 2012 Domain Controller"
@@ -39,6 +43,11 @@
     ([issue #332](https://github.com/PowerShell/xActiveDirectory/pull/332)).
 - Changes to xADRecycleBin
   - Updated tests and remove unnecessary mocks of `Write-Error`.
+- Changes to xADDomainTrust
+  - Refactored the resource to enable unit tests, and at the same time changed
+    it to use the same code pattern as the resource xADObjectEnabledState.
+  - Added unit tests ([issue #324](https://github.com/PowerShell/xActiveDirectory/issues/324)).
+  - Added comment-based help ([issue #337](https://github.com/PowerShell/xActiveDirectory/issues/337)).
 
 ## 3.0.0.0
 

@@ -11,29 +11,29 @@
 .PARAMETER Ensure
     Write - String
     Allowed values: Present, Absent
-    Should this resource be present or absent
+    Specifies whether the computer account is present or absent. Valid values are 'Present' and 'Absent'. The default is 'Present'.
 
 .PARAMETER TargetDomainAdministratorCredential
     Required - String
-    Credentials to authenticate to the target domain
+    Specifies the credentials to authenticate to the target domain.
 
 .PARAMETER TargetDomainName
     Key - String
-    Name of the AD domain that is being trusted
+    Specifies the name of the Active Directory domain that is being trusted.
 
 .PARAMETER TrustType
     Required - String
     Allowed values: External, Forest
-    Type of trust
+    Specifies the type of trust. Valid values are 'External' or 'Forest'. 'External' means the context Domain, while 'Forest' means the context 'Forest'.
 
 .PARAMETER TrustDirection
     Required - String
     Allowed values: Bidirectional, Inbound, Outbound
-    Direction of trust
+    Specifies the direction of the trust. Valid values are 'Bidirectional', 'Inbound', and 'Outbound'.
 
 .PARAMETER SourceDomainName
     Key - String
-    Name of the AD domain that is requesting the trust
+    Specifies the name of the Active Directory domain that is requesting the trust.
 
 .EXAMPLE 1
 
