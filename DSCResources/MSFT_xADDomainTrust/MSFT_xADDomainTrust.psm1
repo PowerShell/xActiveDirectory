@@ -101,7 +101,7 @@ function Get-TargetResource
     {
         # Find trust between source & destination.
         Write-Verbose -Message (
-            $script:localizedData.CheckingTrustMessage -f $SourceDomainName, $TargetDomainName, $directoryContextTyp
+            $script:localizedData.CheckingTrustMessage -f $SourceDomainName, $TargetDomainName, $directoryContextType
         )
 
         $trust = $trustSource.GetTrustRelationship($trustTarget)
