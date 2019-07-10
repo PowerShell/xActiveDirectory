@@ -48,6 +48,7 @@
     it to use the same code pattern as the resource xADObjectEnabledState.
   - Added unit tests ([issue #324](https://github.com/PowerShell/xActiveDirectory/issues/324)).
   - Added comment-based help ([issue #337](https://github.com/PowerShell/xActiveDirectory/issues/337)).
+  - Added integration tests ([issue #348](https://github.com/PowerShell/xActiveDirectory/issues/348)).
 
 ## 3.0.0.0
 
