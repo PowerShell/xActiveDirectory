@@ -2,7 +2,7 @@
     xADDomainTrust
 
 .DESCRIPTION
-    The xADDomainTrust DSC resource will manage Domain Trusts within Active Directory. A trust is a relationship, which you establish between domains, that makes it possible for users in one domain to be authenticated by a domain controller in the other domain.
+    The xADDomainTrust DSC resource will manage Domain Trusts within Active Directory. A trust is a relationship, which you establish between domains or forests. That makes it possible for users in one domain to be authenticated by a domain controller in the other domain.
     
     ## Requirements
     
@@ -11,7 +11,7 @@
 .PARAMETER Ensure
     Write - String
     Allowed values: Present, Absent
-    Specifies whether the computer account is present or absent. Valid values are 'Present' and 'Absent'. The default is 'Present'.
+    Specifies whether the computer account is present or absent. Default value is 'Present'.
 
 .PARAMETER TargetDomainAdministratorCredential
     Required - String
@@ -24,12 +24,12 @@
 .PARAMETER TrustType
     Required - String
     Allowed values: External, Forest
-    Specifies the type of trust. Valid values are 'External' or 'Forest'. 'External' means the context Domain, while 'Forest' means the context 'Forest'.
+    Specifies the type of trust. The value 'External' means the context Domain, while the value 'Forest' means the context 'Forest'.
 
 .PARAMETER TrustDirection
     Required - String
     Allowed values: Bidirectional, Inbound, Outbound
-    Specifies the direction of the trust. Valid values are 'Bidirectional', 'Inbound', and 'Outbound'.
+    Specifies the direction of the trust.
 
 .PARAMETER SourceDomainName
     Key - String
