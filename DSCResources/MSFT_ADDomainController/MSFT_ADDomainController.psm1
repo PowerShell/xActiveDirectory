@@ -32,6 +32,9 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADDomainController
 
     .PARAMETER SiteName
         Provide the name of the site you want the Domain Controller to be added to.
+
+    .PARAMETER InstallDns
+        Specifies if the Dns service will be installed or not. Default value is true.
 #>
 function Get-TargetResource
 {
@@ -65,7 +68,11 @@ function Get-TargetResource
 
         [Parameter()]
         [System.String]
-        $SiteName
+        $SiteName,
+
+        [Parameter()]
+        [boolean]
+        $InstallDns
     )
 
     Assert-Module -ModuleName 'ActiveDirectory'
@@ -178,6 +185,9 @@ function Get-TargetResource
 
     .PARAMETER DenyPasswordReplicationAccountName
         Provides a list of the users, computers, and groups to add to the password replication denied list.
+
+    .PARAMETER InstallDns
+        Specifies if the Dns service will be installed or not. Default value is true.
 #>
 function Set-TargetResource
 {
@@ -243,7 +253,11 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String[]]
-        $DenyPasswordReplicationAccountName
+        $DenyPasswordReplicationAccountName,
+
+        [Parameter()]
+        [boolean]
+        $InstallDns
     )
 
     $getTargetResourceParameters = @{} + $PSBoundParameters
@@ -312,6 +326,11 @@ function Set-TargetResource
         if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $IsGlobalCatalog -eq $false)
         {
             $installADDSDomainControllerParameters.Add('NoGlobalCatalog', $true)
+        }
+
+        if ($PSBoundParameters.ContainsKey('InstallDns') -and $InstallDns -eq $false)
+        {
+            $installADDSDomainControllerParameters.Add('InstallDns', $false)
         }
 
         if (-not [System.String]::IsNullOrWhiteSpace($InstallationMediaPath))
@@ -513,6 +532,9 @@ function Set-TargetResource
 
     .PARAMETER DenyPasswordReplicationAccountName
         Provides a list of the users, computers, and groups to add to the password replication denied list.
+
+    .PARAMETER InstallDns
+        Specifies if the Dns service will be installed or not. Default value is true.
 #>
 function Test-TargetResource
 {
@@ -568,7 +590,11 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String[]]
-        $DenyPasswordReplicationAccountName
+        $DenyPasswordReplicationAccountName,
+
+        [Parameter()]
+        [boolean]
+        $InstallDns
     )
 
     Write-Verbose -Message (
