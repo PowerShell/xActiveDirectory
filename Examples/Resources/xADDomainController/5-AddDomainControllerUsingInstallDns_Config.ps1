@@ -22,7 +22,7 @@
     This configuration will add a domain controller to the domain contoso.com
     without installing the local DNS server service and using the one in the existing domain.
 #>
-Configuration AddDomainControllerToDomainUsingExistingDNSServer
+Configuration AddDomainControllerUsingInstallDns_Config
 {
     param
     (
