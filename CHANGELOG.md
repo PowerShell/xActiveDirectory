@@ -145,6 +145,8 @@
     ([issue #40](https://github.com/PowerShell/ActiveDirectoryDsc/issues/40)).
     [Svilen @SSvilen](https://github.com/SSvilen)
   - Refactored unit tests for Test-TargetResource.
+  - Add InstallDns parameter to enable promotion without installing local DNS Server Service.
+    ([issue #87](https://github.com/PowerShell/xActiveDirectory/issues/87)).
 - Changes to ADObjectPermissionEntry
   - Remove remnants of the `SupportsShouldProcess` ([issue #329](https://github.com/PowerShell/ActiveDirectoryDsc/issues/329)).
 - Changes to ADGroup

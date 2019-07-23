@@ -4,6 +4,12 @@ The ADDomainController DSC resource will install and configure domain
 controllers in Active Directory. Installation of Read-Only Domain Controllers
 (RODC) is also supported.
 
+Promotion of a Domain Controller using an existing DNS is available using the InstallDns
+parameter. The parameter specifies if the DNS Server service should be installed and configured
+on the domain controller. If this is not set, the default for the parameter InstallDns of the cmdlet
+[Install-ADDSDomainController](https://docs.microsoft.com/en-us/powershell/module/addsdeployment/install-addsdomaincontroller)
+is used.
+
 >**Note:** If the account used for the parameter `Credential`
 >cannot connect to another domain controller, for example using a credential
 >without the domain name, then the cmdlet `Install-ADDSDomainController` will

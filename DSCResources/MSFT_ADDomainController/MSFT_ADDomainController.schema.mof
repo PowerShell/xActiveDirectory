@@ -14,5 +14,5 @@ class MSFT_ADDomainController : OMI_BaseResource
     [Write, Description("Indicates that the cmdlet installs the domain controller as an Read-Only Domain Controller (RODC) for an existing domain.")] Boolean ReadOnlyReplica;
     [Write, Description("Specifies an array of names of user accounts, group accounts, and computer accounts whose passwords can be replicated to this Read-Only Domain Controller (RODC).")] String AllowPasswordReplicationAccountName[];
     [Write, Description("Specifies the names of user accounts, group accounts, and computer accounts whose passwords are not to be replicated to this Read-Only Domain Controller (RODC).")] String DenyPasswordReplicationAccountName[];
-    [Write, Description("Specifies if Dns service will be installed. Default value is true")] Boolean InstallDns;
+    [Write, Description("Specifies if the DNS Server service should be installed and configured on the Domain Controller. If this is not set the default for the parameter InstallDns of the cmdlet [Install-ADDSDomainController] is used.")] Boolean InstallDns;
 };
