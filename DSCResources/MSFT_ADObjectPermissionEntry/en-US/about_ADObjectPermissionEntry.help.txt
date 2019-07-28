@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADObjectPermissionEntry
 
 .DESCRIPTION
@@ -54,7 +54,7 @@ the virtual computer object (VCO) ROLE01 for a cluster name object (CNO)
 CONTOSO\CLUSTER01$. This is used so that the Windows Failover Cluster
 can control the roles AD objects.
 
-Configuration DelegateFullControl_Config
+Configuration ADObjectPermissionEntry_DelegateFullControl_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -80,7 +80,7 @@ This configuration will add a group permission to create and delete
 (CreateChild,DeleteChild) computer objects in an OU and any sub-OUs that
 may get created.
 
-Configuration CreateDeleteComputerObject_Config
+Configuration ADObjectPermissionEntry_CreateDeleteComputerObject_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -106,7 +106,7 @@ This configuration will add a group permission to allow read and write
 (ReadProperty, WriteProperty) of all properties of computer objects in
 an OU and any sub-OUs that may get created.
 
-Configuration ReadWriteComputerObjectProperties_Config
+Configuration ADObjectPermissionEntry_ReadWriteComputerObjectProperties_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

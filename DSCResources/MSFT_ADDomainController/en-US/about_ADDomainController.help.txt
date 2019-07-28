@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADDomainController
 
 .DESCRIPTION
@@ -75,7 +75,7 @@
 This configuration will add a domain controller to the domain
 contoso.com.
 
-Configuration AddDomainControllerToDomainMinimal_Config
+Configuration ADDomainController_AddDomainControllerToDomainMinimal_Config
 {
     param
     (
@@ -130,7 +130,7 @@ Configuration AddDomainControllerToDomainMinimal_Config
 This configuration will add a domain controller to the domain
 contoso.com, specifying all properties of the resource.
 
-Configuration AddDomainControllerToDomainAllProperties_Config
+Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
 {
     param
     (
@@ -190,7 +190,7 @@ Configuration AddDomainControllerToDomainAllProperties_Config
 This configuration will add a domain controller to the domain
 contoso.com using the information from media.
 
-Configuration AddDomainControllerToDomainUsingIFM_Config
+Configuration ADDomainController_AddDomainControllerToDomainUsingIFM_Config
 {
     param
     (
@@ -246,7 +246,7 @@ Configuration AddDomainControllerToDomainUsingIFM_Config
 This configuration will add a read-only domain controller to the domain contoso.com
 and specify a list of account, whose passwords are allowed/denied for synchronisation.
 
-Configuration AddReadOnlyDomainController_Config
+Configuration ADDomainController_AddReadOnlyDomainController_Config
 {
     param
     (

@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADReplicationSite
 
 .DESCRIPTION
@@ -26,7 +26,7 @@
 This configuration will create an Active Directory replication site
 called 'Seattle'.
 
-Configuration CreateADReplicationSite_Config
+Configuration ADReplicationSite_CreateADReplicationSite_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -46,7 +46,7 @@ This configuration will create an Active Directory replication site called
 'Seattle'. If the 'Default-First-Site-Name' site exists, it will rename
 this site instead of create a new one.
 
-Configuration CreateADReplicationSiteRenameDefault_Config
+Configuration ADReplicationSite_CreateADReplicationSiteRenameDefault_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -66,7 +66,7 @@ Configuration CreateADReplicationSiteRenameDefault_Config
 This configuration will remove the Active Directory replication site
 called 'Cupertino'.
 
-Configuration RemoveADReplicationSite_Config
+Configuration ADReplicationSite_RemoveADReplicationSite_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

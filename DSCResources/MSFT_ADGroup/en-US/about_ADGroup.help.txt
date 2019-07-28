@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADGroup
 
 .DESCRIPTION
@@ -80,7 +80,7 @@
 
 This configuration will create a new domain-local group
 
-Configuration NewGroup_Config
+Configuration ADGroup_NewGroup_Config
 {
     param
     (
@@ -120,7 +120,7 @@ Configuration NewGroup_Config
 
 This configuration will create a new domain-local group with three members.
 
-Configuration NewGroupWithMembers_Config
+Configuration ADGroup_NewGroupWithMembers_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
@@ -140,7 +140,7 @@ Configuration NewGroupWithMembers_Config
 This configuration will create a new domain-local group in contoso with
 three members in different domains.
 
-Configuration NewGroupMultiDomainMembers_Config
+Configuration ADGroup_NewGroupMultiDomainMembers_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 

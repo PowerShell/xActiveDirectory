@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADDomain
 
 .DESCRIPTION
@@ -59,7 +59,7 @@
 This configuration will create a new domain with a new forest and a forest
 functional level of Server 2016.
 
-Configuration NewForest_Config
+Configuration ADDomain_NewForest_Config
 {
     param
     (
@@ -111,7 +111,7 @@ $ConfigurationData = @{
 This configuration will create a new child domain in an existing forest with
 a Domain Functional Level of Windows Server 2012R2.
 
-Configuration NewChildDomain_Config
+Configuration ADDomain_NewChildDomain_Config
 {
     param
     (
@@ -165,7 +165,7 @@ $ConfigurationData = @{
 This configuration will create a domain, and then create a child domain on
 another node.
 
-Configuration NewForestWithParentAndChildDomain_Config
+Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 {
     param
     (
@@ -286,7 +286,7 @@ a second domain controller to the newly created domain.
 The WaitForDomain resource is used to ensure that the domain is
 present before the second domain controller is added.
 
-Configuration NewDomainWithTwoDCs_Config
+Configuration ADDomain_NewDomainWithTwoDCs_Config
 {
     param
     (

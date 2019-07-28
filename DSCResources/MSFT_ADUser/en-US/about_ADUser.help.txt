@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADUser
 
 .DESCRIPTION
@@ -255,7 +255,7 @@
 This configuration will create a user with a managed password.
 This might be used to manage the lifecycle of a service account.
 
-Configuration CreateUserAndManagePassword_Config
+Configuration ADUser_CreateUserAndManagePassword_Config
 {
     param
     (
@@ -286,7 +286,7 @@ This configuration will create a user with a password and then ignore
 when the password has changed. This might be used with a traditional
 user account where a managed password is not desired.
 
-Configuration CreateUserAndIgnorePasswordChanges_Config
+Configuration ADUser_CreateUserAndIgnorePasswordChanges_Config
 {
     param
     (

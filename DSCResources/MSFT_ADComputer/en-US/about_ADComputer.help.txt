@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADComputer
 
 .DESCRIPTION
@@ -99,7 +99,7 @@
 This configuration will create two Active Directory computer accounts
 enabled. The property Enabled will not be enforced in either case.
 
-Configuration AddComputerAccount_Config
+Configuration ADComputer_AddComputerAccount_Config
 {
     param
     (
@@ -131,7 +131,7 @@ Configuration AddComputerAccount_Config
 This configuration will create an Active Directory computer account
 disabled. The property Enabled will not be enforced.
 
-Configuration AddComputerAccountDisabled_Config
+Configuration ADComputer_AddComputerAccountDisabled_Config
 {
     param
     (
@@ -159,7 +159,7 @@ This configuration will create an Active Directory computer account
 on the specified domain controller and in the specific organizational
 unit.
 
-Configuration AddComputerAccountSpecificPath_Config
+Configuration ADComputer_AddComputerAccountSpecificPath_Config
 {
     param
     (
@@ -190,7 +190,7 @@ on the specified domain controller and in the specific organizational
 unit. After the account is create an Offline Domain Join Request file
 is created to the specified path.
 
-Configuration AddComputerAccountAndCreateODJRequest_Config
+Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
 {
     param
     (

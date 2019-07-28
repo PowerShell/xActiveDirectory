@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADForestProperties
 
 .DESCRIPTION
@@ -46,7 +46,7 @@ This configuration will manage the Service and User Principal name suffixes
 in the forest by replacing any existing suffixes with the ones specified
 in the configuration.
 
-Configuration ReplaceForestProperties_Config
+Configuration ADForestProperties_ReplaceForestProperties_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
@@ -79,7 +79,7 @@ This configuration will manage the Service and User Principal name suffixes in
 the forest by adding and removing the desired suffixes. This will not overwrite
 existing suffixes in the forest.
 
-Configuration AddRemoveForestProperties_Config
+Configuration ADForestProperties_AddRemoveForestProperties_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 

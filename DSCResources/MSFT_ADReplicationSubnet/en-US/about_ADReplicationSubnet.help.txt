@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADReplicationSubnet
 
 .DESCRIPTION
@@ -29,7 +29,7 @@
 
 This configuration will create an AD Replication Subnet.
 
-Configuration CreateReplicationSubnet_Config
+Configuration ADReplicationSubnet_CreateReplicationSubnet_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

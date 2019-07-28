@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADReplicationSiteLink
 
 .DESCRIPTION
@@ -41,7 +41,7 @@
 
 This configuration will create an AD Replication Site Link.
 
-Configuration CreateReplicationSiteLink_Config
+Configuration ADReplicationSiteLink_CreateReplicationSiteLink_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -62,7 +62,7 @@ Configuration CreateReplicationSiteLink_Config
 
 This configuration will modify an existing AD Replication Site Link.
 
-Configuration ModifyExistingReplicationSiteLink_Config
+Configuration ADReplicationSiteLink_ModifyExistingReplicationSiteLink_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

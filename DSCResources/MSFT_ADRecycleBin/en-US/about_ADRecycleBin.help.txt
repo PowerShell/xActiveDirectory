@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADRecycleBin
 
 .DESCRIPTION
@@ -32,7 +32,7 @@
 This configuration will enable the Active Directory Recycle Bin for a
 specified Domain
 
-Configuration EnableADRecycleBin_Config
+Configuration ADRecycleBin_EnableADRecycleBin_Config
 {
     param
     (

@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADKDSKey
 
 .DESCRIPTION
@@ -43,7 +43,7 @@ This configuration will create a KDS root key. If the date is set to a time
 slightly ahead in the future, the key won't be usable for at least 10 hours
 from the creation time.
 
-Configuration CreateKDSRootKey_Config
+Configuration ADKDSKey_CreateKDSRootKey_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -65,7 +65,7 @@ the key to be used right away, but if all the domain controllers haven't
 replicated yet, there may be issues when retrieving the gMSA password.
 Use with caution
 
-Configuration CreateKDSRootKeyInPast_Config
+Configuration ADKDSKey_CreateKDSRootKeyInPast_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
@@ -86,7 +86,7 @@ This configuration will remove the last KDS root key. Use with caution.
 If gMSAs are installed on the network, they will not be able to reset
 their passwords and it may cause services to fail.
 
-Configuration CreateKDSRootKeyRemoveLastKey_Config
+Configuration ADKDSKey_CreateKDSRootKeyRemoveLastKey_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

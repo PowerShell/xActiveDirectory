@@ -1,4 +1,4 @@
-.NAME
+﻿.NAME
     ADObjectEnabledState
 
 .DESCRIPTION
@@ -42,7 +42,7 @@
 This configuration will create a computer account disabled, and
 enforcing the account to be enabled.
 
-Configuration EnabledComputerAccount_Config
+Configuration ADObjectEnabledState_EnabledComputerAccount_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
@@ -71,7 +71,7 @@ This configuration will create a computer account disabled, configure
 a cluster using the disabled computer account, and enforcing the
 computer account to be enabled.
 
-Configuration CreateClusterComputerAccount_Config
+Configuration ADObjectEnabledState_CreateClusterComputerAccount_Config
 {
     param
     (
@@ -117,7 +117,7 @@ Configuration CreateClusterComputerAccount_Config
 This configuration will configure a cluster using a pre-staged computer
 account, and enforcing the pre-staged computer account to be enabled.
 
-Configuration EnabledPrestagedClusterComputerAccount_Config
+Configuration ADObjectEnabledState_EnabledPrestagedClusterComputerAccount_Config
 {
     param
     (
