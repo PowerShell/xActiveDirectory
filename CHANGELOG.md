@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Changes to ActiveDirectoryDsc
-  - BREAKING CHANGE: Renamed the xActiveDirectory to ActiveDirectoryDsc and removed the 'x' from all resource names.
+  - BREAKING CHANGE: Renamed the xActiveDirectory to ActiveDirectoryDsc
+    and removed the 'x' from all resource names ([issue #312](https://github.com/PowerShell/ActiveDirectoryDsc/issues/312)).
   - Added a Requirements section to every DSC resource README with the
     bullet point stating "Target machine must be running Windows Server
     2008 R2 or later" ([issue #399](https://github.com/PowerShell/ActiveDirectoryDsc/issues/399)).
@@ -40,6 +41,9 @@
       [new helper functions for localization](https://github.com/PowerShell/DscResources/blob/master/StyleGuidelines.md#helper-functions-for-localization)
       ([issue #316](https://github.com/PowerShell/ActiveDirectoryDsc/issues/316),
       [issue #317](https://github.com/PowerShell/ActiveDirectoryDsc/issues/317)).
+  - Updated all the examples files to be prefixed with the resource
+    name so they are more easily discovered in PowerShell Gallery and
+    Azure Automation ([issue #416](https://github.com/PowerShell/ActiveDirectoryDsc/issues/416)).
 - Changes to ADManagedServiceAccount
   - Added a requirement to README stating "Group Managed Service Accounts
     need at least one Windows Server 2012 Domain Controller"
