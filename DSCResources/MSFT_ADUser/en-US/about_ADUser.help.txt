@@ -197,7 +197,7 @@
     Write - String
     Specifies the Active Directory Domain Services instance to use to perform the task.
 
-.PARAMETER DomainAdministratorCredential
+.PARAMETER Credential
     Write - String
     Specifies the user account credentials to use to perform this task.
 
