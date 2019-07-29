@@ -29,7 +29,12 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -54,7 +59,7 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -64,8 +69,8 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         ADDomainController 'Read-OnlyDomainController(RODC)'
         {
             DomainName                          = 'contoso.com'
-            DomainAdministratorCredential       = $DomainAdministratorCredential
-            SafemodeAdministratorPassword       = $DomainAdministratorCredential
+            Credential                          = $Credential
+            SafeModeAdministratorPassword       = $SafeModePassword
             ReadOnlyReplica                     = $true
             SiteName                            = 'Default-First-Site-Name'
             AllowPasswordReplicationAccountName = @('pvdi.test1', 'pvdi.test')

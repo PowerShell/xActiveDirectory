@@ -29,7 +29,7 @@ Configuration ADComputer_AddComputerAccount_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -40,7 +40,7 @@ Configuration ADComputer_AddComputerAccount_Config
         {
             ComputerName = 'SQL01'
 
-            PsDscRunAsCredential = $UserCredential
+            PsDscRunAsCredential = $Credential
         }
 
         ADComputer 'CreateEnabled_SQL02'
@@ -48,7 +48,7 @@ Configuration ADComputer_AddComputerAccount_Config
             ComputerName      = 'SQL02'
             EnabledOnCreation = $true
 
-            PsDscRunAsCredential = $UserCredential
+            PsDscRunAsCredential = $Credential
         }
     }
 }

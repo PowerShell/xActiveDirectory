@@ -31,7 +31,7 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -44,7 +44,7 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
             ComputerName     = 'NANO-200'
             Path             = 'OU=Servers,DC=contoso,DC=com'
             RequestFile      = 'D:\ODJFiles\NANO-200.txt'
-            Credential       = $UserCredential
+            Credential       = $Credential
         }
     }
 }

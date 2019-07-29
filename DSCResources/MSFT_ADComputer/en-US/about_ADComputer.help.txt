@@ -106,7 +106,7 @@ Configuration ADComputer_AddComputerAccount_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -117,7 +117,7 @@ Configuration ADComputer_AddComputerAccount_Config
         {
             ComputerName = 'SQL01'
 
-            PsDscRunAsCredential = $UserCredential
+            PsDscRunAsCredential = $Credential
         }
 
         ADComputer 'CreateEnabled_SQL02'
@@ -125,7 +125,7 @@ Configuration ADComputer_AddComputerAccount_Config
             ComputerName      = 'SQL02'
             EnabledOnCreation = $true
 
-            PsDscRunAsCredential = $UserCredential
+            PsDscRunAsCredential = $Credential
         }
     }
 }
@@ -142,7 +142,7 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -154,7 +154,7 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
             ComputerName      = 'CLU_CNO01'
             EnabledOnCreation = $false
 
-            PsDscRunAsCredential = $UserCredential
+            PsDscRunAsCredential = $Credential
         }
     }
 }
@@ -172,7 +172,7 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -184,7 +184,7 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
             DomainController = 'DC01'
             ComputerName     = 'SQL01'
             Path             = 'OU=Servers,DC=contoso,DC=com'
-            Credential       = $UserCredential
+            Credential       = $Credential
         }
     }
 }
@@ -203,7 +203,7 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -216,7 +216,7 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
             ComputerName     = 'NANO-200'
             Path             = 'OU=Servers,DC=contoso,DC=com'
             RequestFile      = 'D:\ODJFiles\NANO-200.txt'
-            Credential       = $UserCredential
+            Credential       = $Credential
         }
     }
 }

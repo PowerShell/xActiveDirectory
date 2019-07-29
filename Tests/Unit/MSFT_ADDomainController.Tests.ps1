@@ -62,14 +62,14 @@ try
         $deniedAccount = 'deniedAccount'
 
         $testDefaultParams = @{
-            DomainAdministratorCredential = $testAdminCredential
-            SafemodeAdministratorPassword = $testAdminCredential
+            Credential = $testAdminCredential
+            SafeModeAdministratorPassword = $testAdminCredential
             Verbose                       = $true
         }
 
         $testDefaultParamsRODC = @{
-            DomainAdministratorCredential = $testAdminCredential
-            SafemodeAdministratorPassword = $testAdminCredential
+            Credential = $testAdminCredential
+            SafeModeAdministratorPassword = $testAdminCredential
             Verbose                       = $true
             ReadOnlyReplica               = $true
             SiteName                      = $correctSiteName

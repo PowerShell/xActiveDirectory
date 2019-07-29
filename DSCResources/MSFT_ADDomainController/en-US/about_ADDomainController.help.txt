@@ -22,7 +22,7 @@
     Key - String
     The fully qualified domain name (FQDN) of the domain the Domain Controller will be joining.
 
-.PARAMETER DomainAdministratorCredential
+.PARAMETER Credential
     Required - String
     The credentials (as a 'PSCredential' object) of a user that has Domain Administrator rights to add the Domain Controller to the domain.
 
@@ -82,7 +82,12 @@ Configuration ADDomainController_AddDomainControllerToDomainMinimal_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -107,7 +112,7 @@ Configuration ADDomainController_AddDomainControllerToDomainMinimal_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -117,8 +122,8 @@ Configuration ADDomainController_AddDomainControllerToDomainMinimal_Config
         ADDomainController 'DomainControllerMinimal'
         {
             DomainName                    = 'contoso.com'
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
 
             DependsOn                     = '[WaitForADDomain]WaitForestAvailability'
         }
@@ -137,7 +142,12 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -162,7 +172,7 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -172,8 +182,8 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         ADDomainController 'DomainControllerAllProperties'
         {
             DomainName                    = 'contoso.com'
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
             DatabasePath                  = 'C:\Windows\NTDS'
             LogPath                       = 'C:\Windows\Logs'
             SysvolPath                    = 'C:\Windows\SYSVOL'
@@ -197,7 +207,12 @@ Configuration ADDomainController_AddDomainControllerToDomainUsingIFM_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -222,7 +237,7 @@ Configuration ADDomainController_AddDomainControllerToDomainUsingIFM_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -232,8 +247,8 @@ Configuration ADDomainController_AddDomainControllerToDomainUsingIFM_Config
         ADDomainController 'DomainControllerWithIFM'
         {
             DomainName                    = 'contoso.com'
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
             InstallationMediaPath         = 'F:\IFM'
 
             DependsOn                     = '[WaitForADDomain]WaitForestAvailability'
@@ -253,7 +268,12 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -278,7 +298,7 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -288,8 +308,8 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
         ADDomainController 'Read-OnlyDomainController(RODC)'
         {
             DomainName                          = 'contoso.com'
-            DomainAdministratorCredential       = $DomainAdministratorCredential
-            SafemodeAdministratorPassword       = $DomainAdministratorCredential
+            Credential                          = $Credential
+            SafeModeAdministratorPassword       = $SafeModePassword
             ReadOnlyReplica                     = $true
             SiteName                            = 'Default-First-Site-Name'
             AllowPasswordReplicationAccountName = @('pvdi.test1', 'pvdi.test')

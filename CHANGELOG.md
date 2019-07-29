@@ -97,6 +97,9 @@
 - Changes to WaitForADDomain
   - Added comment-based help ([issue #341](https://github.com/PowerShell/ActiveDirectoryDsc/issues/341))
 - Changes to ADDomainController
+  - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
+    to `Credential` to better indicate that it is possible to impersonate
+    any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
   - Add support for creating Read-Only Domain Controller (RODC)
     ([issue #40](https://github.com/PowerShell/ActiveDirectoryDsc/issues/40)).
     [Svilen @SSvilen](https://github.com/SSvilen)

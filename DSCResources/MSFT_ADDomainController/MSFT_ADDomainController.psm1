@@ -13,7 +13,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADDomainController
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
 
-    .PARAMETER DomainAdministrationCredential
+    .PARAMETER Credential
         Specifies the credential for the account used to install the domain controller.
         This account must have permission to access the other domain controllers
         in the domain to be able replicate domain information.
@@ -45,7 +45,7 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -72,7 +72,7 @@ function Get-TargetResource
 
     $getTargetResourceResult = @{
         DomainName                          = $DomainName
-        DomainAdministratorCredential       = $DomainAdministratorCredential
+        Credential                          = $Credential
         SafemodeAdministratorPassword       = $SafemodeAdministratorPassword
         Ensure                              = $false
         IsGlobalCatalog                     = $false
@@ -87,7 +87,7 @@ function Get-TargetResource
 
     try
     {
-        $domain = Get-ADDomain -Identity $DomainName -Credential $DomainAdministratorCredential
+        $domain = Get-ADDomain -Identity $DomainName -Credential $Credential
     }
     catch
     {
@@ -99,7 +99,7 @@ function Get-TargetResource
         $script:localizedData.DomainPresent -f $DomainName
     )
 
-    $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
+    $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $Credential
     if ($domainControllerObject)
     {
         Write-Verbose -Message (
@@ -143,7 +143,7 @@ function Get-TargetResource
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
 
-    .PARAMETER DomainAdministrationCredential
+    .PARAMETER Credential
         Specifies the credential for the account used to install the domain controller.
         This account must have permission to access the other domain controllers
         in the domain to be able replicate domain information.
@@ -203,7 +203,7 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -264,7 +264,7 @@ function Set-TargetResource
         $installADDSDomainControllerParameters = @{
             DomainName                    = $DomainName
             SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
-            Credential                    = $DomainAdministratorCredential
+            Credential                    = $Credential
             NoRebootOnCompletion          = $true
             Force                         = $true
         }
@@ -339,7 +339,7 @@ function Set-TargetResource
             $script:localizedData.IsDomainController -f $env:COMPUTERNAME, $DomainName
         )
 
-        $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $DomainAdministratorCredential
+        $domainControllerObject = Get-DomainControllerObject -DomainName $DomainName -ComputerName $env:COMPUTERNAME -Credential $Credential
 
         # Check if Node Global Catalog state is correct
         if ($PSBoundParameters.ContainsKey('IsGlobalCatalog') -and $targetResource.IsGlobalCatalog -ne $IsGlobalCatalog)
@@ -371,7 +371,7 @@ function Set-TargetResource
 
             # DC is not in correct site. Move it.
             Write-Verbose -Message ($script:localizedData.MovingDomainController -f $targetResource.SiteName, $SiteName)
-            Move-ADDirectoryServer -Identity $env:COMPUTERNAME -Site $SiteName -Credential $DomainAdministratorCredential
+            Move-ADDirectoryServer -Identity $env:COMPUTERNAME -Site $SiteName -Credential $Credential
         }
 
         if ($PSBoundParameters.ContainsKey('AllowPasswordReplicationAccountName'))
@@ -478,7 +478,7 @@ function Set-TargetResource
     .PARAMETER DomainName
         Provide the FQDN of the domain the Domain Controller is being added to.
 
-    .PARAMETER DomainAdministrationCredential
+    .PARAMETER Credential
         Specifies the credential for the account used to install the domain controller.
         This account must have permission to access the other domain controllers
         in the domain to be able replicate domain information.
@@ -528,7 +528,7 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -585,7 +585,7 @@ function Test-TargetResource
 
     if ($PSBoundParameters.ContainsKey('SiteName'))
     {
-        if (-not (Test-ADReplicationSite -SiteName $SiteName -DomainName $DomainName -Credential $DomainAdministratorCredential))
+        if (-not (Test-ADReplicationSite -SiteName $SiteName -DomainName $DomainName -Credential $Credential))
         {
             $errorMessage = $script:localizedData.FailedToFindSite -f $SiteName, $DomainName
             New-ObjectNotFoundException -Message $errorMessage

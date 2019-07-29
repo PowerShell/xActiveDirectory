@@ -2,7 +2,7 @@
 class MSFT_ADDomainController : OMI_BaseResource
 {
     [Key, Description("The fully qualified domain name (FQDN) of the domain the Domain Controller will be joining.")] String DomainName;
-    [Required, Description("The credentials (as a 'PSCredential' object) of a user that has Domain Administrator rights to add the Domain Controller to the domain."), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
+    [Required, Description("The credentials (as a 'PSCredential' object) of a user that has Domain Administrator rights to add the Domain Controller to the domain."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Required, Description("The 'PSCredential' object containing the password to use for Directory Services Restore Mode (DSRM)."), EmbeddedInstance("MSFT_Credential")] String SafemodeAdministratorPassword;
     [Write, Description("The path where the database will be stored.")] String DatabasePath;
     [Write, Description("The path where the logs will be stored.")] String LogPath;

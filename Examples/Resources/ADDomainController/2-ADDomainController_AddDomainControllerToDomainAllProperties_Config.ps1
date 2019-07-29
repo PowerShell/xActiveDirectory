@@ -29,7 +29,12 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -54,7 +59,7 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         WaitForADDomain 'WaitForestAvailability'
         {
             DomainName           = 'contoso.com'
-            DomainUserCredential = $DomainAdministratorCredential
+            DomainUserCredential = $Credential
             RetryCount           = 10
             RetryIntervalSec     = 120
 
@@ -64,8 +69,8 @@ Configuration ADDomainController_AddDomainControllerToDomainAllProperties_Config
         ADDomainController 'DomainControllerAllProperties'
         {
             DomainName                    = 'contoso.com'
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
             DatabasePath                  = 'C:\Windows\NTDS'
             LogPath                       = 'C:\Windows\Logs'
             SysvolPath                    = 'C:\Windows\SYSVOL'

@@ -30,7 +30,7 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $UserCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -42,7 +42,7 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
             DomainController = 'DC01'
             ComputerName     = 'SQL01'
             Path             = 'OU=Servers,DC=contoso,DC=com'
-            Credential       = $UserCredential
+            Credential       = $Credential
         }
     }
 }
