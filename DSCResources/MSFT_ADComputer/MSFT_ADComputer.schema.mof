@@ -12,7 +12,7 @@ class MSFT_ADComputer : OMI_BaseResource
     [Write, Description("DEPRECATED - DO NOT USE. Please see the parameter EnabledOnCreation in this resource, and the resource ADObjectEnabledState on how to enforce the Enabled property. This parameter no longer sets or enforces the Enabled property. If this parameter is used then a warning message will be outputted saying that the Enabled parameter has been deprecated.")] Boolean Enabled;
     [Write, Description("Specifies the user or group Distinguished Name that manages the computer account. Valid values are the user's or group's DistinguishedName, ObjectGUID, SID or SamAccountName.")] String Manager;
     [Write, Description("Specifies the Active Directory Domain Services instance to connect to perform the task.")] String DomainController;
-    [Write, Description("Specifies the user account credentials to use to perform the task."), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
+    [Write, Description("Specifies the user account credentials to use to perform the task."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Write, Description("Specifies the full path to the Offline Domain Join Request file to create.")] String RequestFile;
     [Write, Description("Specifies whether the computer account is present or absent. Default value is 'Present'."), ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] String Ensure;
     [Write, Description("Try to restore the computer account from the recycle bin before creating a new one.")] Boolean RestoreFromRecycleBin;

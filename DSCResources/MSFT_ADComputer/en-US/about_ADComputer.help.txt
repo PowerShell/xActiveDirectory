@@ -61,7 +61,7 @@
     Write - String
     Specifies the Active Directory Domain Services instance to connect to perform the task.
 
-.PARAMETER DomainAdministratorCredential
+.PARAMETER Credential
     Write - String
     Specifies the user account credentials to use to perform the task.
 
@@ -106,7 +106,7 @@ Configuration ADComputer_AddComputerAccount_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $UserCredential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -116,12 +116,16 @@ Configuration ADComputer_AddComputerAccount_Config
         ADComputer 'CreateEnabled_SQL01'
         {
             ComputerName = 'SQL01'
+
+            PsDscRunAsCredential = $UserCredential
         }
 
         ADComputer 'CreateEnabled_SQL02'
         {
             ComputerName      = 'SQL02'
             EnabledOnCreation = $true
+
+            PsDscRunAsCredential = $UserCredential
         }
     }
 }
@@ -138,7 +142,7 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $UserCredential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -149,6 +153,8 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
         {
             ComputerName      = 'CLU_CNO01'
             EnabledOnCreation = $false
+
+            PsDscRunAsCredential = $UserCredential
         }
     }
 }
@@ -166,7 +172,7 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $UserCredential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -175,10 +181,10 @@ Configuration ADComputer_AddComputerAccountSpecificPath_Config
     {
         ADComputer 'CreateComputerAccount'
         {
-            DomainController              = 'DC01'
-            ComputerName                  = 'SQL01'
-            Path                          = 'OU=Servers,DC=contoso,DC=com'
-            DomainAdministratorCredential = $DomainAdministratorCredential
+            DomainController = 'DC01'
+            ComputerName     = 'SQL01'
+            Path             = 'OU=Servers,DC=contoso,DC=com'
+            Credential       = $UserCredential
         }
     }
 }
@@ -197,7 +203,7 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $UserCredential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -206,11 +212,11 @@ Configuration ADComputer_AddComputerAccountAndCreateODJRequest_Config
     {
         ADComputer 'CreateComputerAccount'
         {
-            DomainController              = 'DC01'
-            ComputerName                  = 'NANO-200'
-            Path                          = 'OU=Servers,DC=contoso,DC=com'
-            RequestFile                   = 'D:\ODJFiles\NANO-200.txt'
-            DomainAdministratorCredential = $DomainAdministratorCredential
+            DomainController = 'DC01'
+            ComputerName     = 'NANO-200'
+            Path             = 'OU=Servers,DC=contoso,DC=com'
+            RequestFile      = 'D:\ODJFiles\NANO-200.txt'
+            Credential       = $UserCredential
         }
     }
 }

@@ -29,7 +29,7 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $UserCredential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -40,6 +40,8 @@ Configuration ADComputer_AddComputerAccountDisabled_Config
         {
             ComputerName      = 'CLU_CNO01'
             EnabledOnCreation = $false
+
+            PsDscRunAsCredential = $UserCredential
         }
     }
 }

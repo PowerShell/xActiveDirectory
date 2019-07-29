@@ -49,6 +49,9 @@
     need at least one Windows Server 2012 Domain Controller"
     ([issue #399](https://github.com/PowerShell/ActiveDirectoryDsc/issues/399)).
 - Changes to ADComputer
+  - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
+    to `Credential` to better indicate that it is possible to impersonate
+    any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
   - Fixed the GUID in Example 3-AddComputerAccountSpecificPath_Config
     ([issue #410](https://github.com/PowerShell/ActiveDirectoryDsc/issues/410)).
 - Changes to ADOrganizationalUnit

@@ -143,13 +143,13 @@ try
                         }
 
                         $getTargetResourceParameters = @{
-                            ComputerName                  = $mockComputerNamePresent
-                            DomainController              = 'DC01'
-                            DomainAdministratorCredential = $mockCredential
-                            RequestFile                   = 'TestDrive:\ODJ.txt'
-                            RestoreFromRecycleBin         = $false
-                            EnabledOnCreation             = $false
-                            Verbose                       = $true
+                            ComputerName          = $mockComputerNamePresent
+                            DomainController      = 'DC01'
+                            Credential            = $mockCredential
+                            RequestFile           = 'TestDrive:\ODJ.txt'
+                            RestoreFromRecycleBin = $false
+                            EnabledOnCreation     = $false
+                            Verbose               = $true
                         }
                     }
 
@@ -163,7 +163,7 @@ try
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @getTargetResourceParameters
                         $result.DomainController | Should -Be $getTargetResourceParameters.DomainController
-                        $result.DomainAdministratorCredential.UserName | Should -Be $getTargetResourceParameters.DomainAdministratorCredential.UserName
+                        $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
                         $result.RequestFile | Should -Be $getTargetResourceParameters.RequestFile
                         $result.RestoreFromRecycleBin | Should -Be $getTargetResourceParameters.RestoreFromRecycleBin
                         $result.EnabledOnCreation | Should -Be $getTargetResourceParameters.EnabledOnCreation
@@ -192,13 +192,13 @@ try
                         Mock -CommandName Get-ADComputer -MockWith $mockGetADComputer
 
                         $getTargetResourceParameters = @{
-                            ComputerName                  = $mockComputerNamePresent
-                            DomainController              = 'DC01'
-                            DomainAdministratorCredential = $mockCredential
-                            RequestFile                   = 'TestDrive:\ODJ.txt'
-                            RestoreFromRecycleBin         = $false
-                            EnabledOnCreation             = $false
-                            Verbose                       = $true
+                            ComputerName          = $mockComputerNamePresent
+                            DomainController      = 'DC01'
+                            Credential            = $mockCredential
+                            RequestFile           = 'TestDrive:\ODJ.txt'
+                            RestoreFromRecycleBin = $false
+                            EnabledOnCreation     = $false
+                            Verbose               = $true
                         }
                     }
 
@@ -212,7 +212,7 @@ try
                     It 'Should return the same values as passed as parameters' {
                         $result = Get-TargetResource @getTargetResourceParameters
                         $result.DomainController | Should -Be $getTargetResourceParameters.DomainController
-                        $result.DomainAdministratorCredential.UserName | Should -Be $getTargetResourceParameters.DomainAdministratorCredential.UserName
+                        $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
                         $result.RequestFile | Should -Be $getTargetResourceParameters.RequestFile
                         $result.RestoreFromRecycleBin | Should -Be $getTargetResourceParameters.RestoreFromRecycleBin
                         $result.EnabledOnCreation | Should -Be $getTargetResourceParameters.EnabledOnCreation
@@ -281,14 +281,14 @@ try
                     }
                 }
 
-                Context 'When Get-TargetResource is called with DomainAdministratorCredential parameter' {
+                Context 'When Get-TargetResource is called with Credential parameter' {
                     BeforeAll {
                         Mock -CommandName Get-ADComputer -MockWith $mockGetADComputer
 
                         $getTargetResourceParameters = @{
-                            ComputerName                  = $mockComputerNamePresent
-                            DomainAdministratorCredential = $mockCredential
-                            Verbose                       = $true
+                            ComputerName = $mockComputerNamePresent
+                            Credential   = $mockCredential
+                            Verbose      = $true
                         }
                     }
 
@@ -312,49 +312,49 @@ try
 
                 $mockGetTargetResource_Absent = {
                     return @{
-                        Ensure                        = 'Absent'
-                        ComputerName                  = $null
-                        Location                      = $null
-                        DnsHostName                   = $null
-                        ServicePrincipalNames         = $null
-                        UserPrincipalName             = $null
-                        DisplayName                   = $null
-                        Path                          = $null
-                        Description                   = $null
-                        Enabled                       = $false
-                        Manager                       = $null
-                        DomainController              = $null
-                        DomainAdministratorCredential = $null
-                        RequestFile                   = $null
-                        RestoreFromRecycleBin         = $false
-                        EnabledOnCreation             = $false
-                        DistinguishedName             = $null
-                        SID                           = $null
-                        SamAccountName                = $null
+                        Ensure                = 'Absent'
+                        ComputerName          = $null
+                        Location              = $null
+                        DnsHostName           = $null
+                        ServicePrincipalNames = $null
+                        UserPrincipalName     = $null
+                        DisplayName           = $null
+                        Path                  = $null
+                        Description           = $null
+                        Enabled               = $false
+                        Manager               = $null
+                        DomainController      = $null
+                        Credential            = $null
+                        RequestFile           = $null
+                        RestoreFromRecycleBin = $false
+                        EnabledOnCreation     = $false
+                        DistinguishedName     = $null
+                        SID                   = $null
+                        SamAccountName        = $null
                     }
                 }
 
                 $mockGetTargetResource_Present = {
                     return @{
-                        Ensure                        = 'Present'
-                        ComputerName                  = $mockComputerNamePresent
-                        Location                      = $mockLocation
-                        DnsHostName                   = $mockDnsHostName
-                        ServicePrincipalNames         = $mockServicePrincipalNames
-                        UserPrincipalName             = $mockUserPrincipalName
-                        DisplayName                   = $mockDisplayName
-                        Path                          = $mockParentContainer
-                        Description                   = $mockDescription
-                        Enabled                       = $true
-                        Manager                       = $mockManagedBy
-                        DomainController              = 'DC01'
-                        DomainAdministratorCredential = $mockCredential
-                        RequestFile                   = 'TestDrive:\ODJ.txt'
-                        RestoreFromRecycleBin         = $false
-                        EnabledOnCreation             = $false
-                        DistinguishedName             = $mockDistinguishedName
-                        SID                           = $mockSID
-                        SamAccountName                = $mockSamAccountName
+                        Ensure                = 'Present'
+                        ComputerName          = $mockComputerNamePresent
+                        Location              = $mockLocation
+                        DnsHostName           = $mockDnsHostName
+                        ServicePrincipalNames = $mockServicePrincipalNames
+                        UserPrincipalName     = $mockUserPrincipalName
+                        DisplayName           = $mockDisplayName
+                        Path                  = $mockParentContainer
+                        Description           = $mockDescription
+                        Enabled               = $true
+                        Manager               = $mockManagedBy
+                        DomainController      = 'DC01'
+                        Credential            = $mockCredential
+                        RequestFile           = 'TestDrive:\ODJ.txt'
+                        RestoreFromRecycleBin = $false
+                        EnabledOnCreation     = $false
+                        DistinguishedName     = $mockDistinguishedName
+                        SID                   = $mockSID
+                        SamAccountName        = $mockSamAccountName
                     }
                 }
             }
@@ -384,13 +384,13 @@ try
                         Mock -CommandName Get-TargetResource -MockWith $mockGetTargetResource_Present
 
                         $testTargetResourceParameters = @{
-                            ComputerName                  = $mockComputerNamePresent
-                            DomainController              = 'DC01'
-                            DomainAdministratorCredential = $mockCredential
-                            RequestFile                   = 'TestDrive:\ODJ.txt'
-                            RestoreFromRecycleBin         = $false
-                            EnabledOnCreation             = $false
-                            Verbose                       = $true
+                            ComputerName          = $mockComputerNamePresent
+                            DomainController      = 'DC01'
+                            Credential            = $mockCredential
+                            RequestFile           = 'TestDrive:\ODJ.txt'
+                            RestoreFromRecycleBin = $false
+                            EnabledOnCreation     = $false
+                            Verbose               = $true
                         }
                     }
 
@@ -487,8 +487,8 @@ try
 
                 Context 'When a property is not in desired state' {
                     BeforeAll {
-                    # Mock a specific desired state.
-                            Mock -CommandName Get-TargetResource -MockWith $mockGetTargetResource_Present
+                        # Mock a specific desired state.
+                        Mock -CommandName Get-TargetResource -MockWith $mockGetTargetResource_Present
                     }
 
                     Context 'When a property should be set to a new non-empty value' {
@@ -627,49 +627,49 @@ try
 
                 $mockGetTargetResource_Absent = {
                     return @{
-                        Ensure                        = 'Absent'
-                        ComputerName                  = $null
-                        Location                      = $null
-                        DnsHostName                   = $null
-                        ServicePrincipalNames         = $null
-                        UserPrincipalName             = $null
-                        DisplayName                   = $null
-                        Path                          = $null
-                        Description                   = $null
-                        Enabled                       = $false
-                        Manager                       = $null
-                        DomainController              = $null
-                        DomainAdministratorCredential = $null
-                        RequestFile                   = $null
-                        RestoreFromRecycleBin         = $false
-                        EnabledOnCreation             = $false
-                        DistinguishedName             = $null
-                        SID                           = $null
-                        SamAccountName                = $null
+                        Ensure                = 'Absent'
+                        ComputerName          = $null
+                        Location              = $null
+                        DnsHostName           = $null
+                        ServicePrincipalNames = $null
+                        UserPrincipalName     = $null
+                        DisplayName           = $null
+                        Path                  = $null
+                        Description           = $null
+                        Enabled               = $false
+                        Manager               = $null
+                        DomainController      = $null
+                        Credential            = $null
+                        RequestFile           = $null
+                        RestoreFromRecycleBin = $false
+                        EnabledOnCreation     = $false
+                        DistinguishedName     = $null
+                        SID                   = $null
+                        SamAccountName        = $null
                     }
                 }
 
                 $mockGetTargetResource_Present = {
                     return @{
-                        Ensure                        = 'Present'
-                        ComputerName                  = $mockComputerNamePresent
-                        Location                      = $mockLocation
-                        DnsHostName                   = $mockDnsHostName
-                        ServicePrincipalNames         = $mockServicePrincipalNames_DefaultValues
-                        UserPrincipalName             = $mockUserPrincipalName
-                        DisplayName                   = $mockDisplayName
-                        Path                          = $mockParentContainer
-                        Description                   = $mockDescription
-                        Enabled                       = $true
-                        Manager                       = $mockManagedBy
-                        DomainController              = 'DC01'
-                        DomainAdministratorCredential = $mockCredential
-                        RequestFile                   = 'TestDrive:\ODJ.txt'
-                        RestoreFromRecycleBin         = $false
-                        EnabledOnCreation             = $false
-                        DistinguishedName             = $mockDistinguishedName
-                        SID                           = $mockSID
-                        SamAccountName                = $mockSamAccountName
+                        Ensure                = 'Present'
+                        ComputerName          = $mockComputerNamePresent
+                        Location              = $mockLocation
+                        DnsHostName           = $mockDnsHostName
+                        ServicePrincipalNames = $mockServicePrincipalNames_DefaultValues
+                        UserPrincipalName     = $mockUserPrincipalName
+                        DisplayName           = $mockDisplayName
+                        Path                  = $mockParentContainer
+                        Description           = $mockDescription
+                        Enabled               = $true
+                        Manager               = $mockManagedBy
+                        DomainController      = 'DC01'
+                        Credential            = $mockCredential
+                        RequestFile           = 'TestDrive:\ODJ.txt'
+                        RestoreFromRecycleBin = $false
+                        EnabledOnCreation     = $false
+                        DistinguishedName     = $mockDistinguishedName
+                        SID                   = $mockSID
+                        SamAccountName        = $mockSamAccountName
                     }
                 }
             }
@@ -733,13 +733,13 @@ try
                         Mock -CommandName Get-TargetResource -MockWith $mockGetTargetResource_Present
 
                         $setTargetResourceParameters = @{
-                            ComputerName                  = $mockComputerNamePresent
-                            DomainController              = 'DC01'
-                            DomainAdministratorCredential = $mockCredential
-                            RequestFile                   = 'TestDrive:\ODJ.txt'
-                            RestoreFromRecycleBin         = $false
-                            EnabledOnCreation             = $false
-                            Verbose                       = $true
+                            ComputerName          = $mockComputerNamePresent
+                            DomainController      = 'DC01'
+                            Credential            = $mockCredential
+                            RequestFile           = 'TestDrive:\ODJ.txt'
+                            RestoreFromRecycleBin = $false
+                            EnabledOnCreation     = $false
+                            Verbose               = $true
                         }
                     }
 
