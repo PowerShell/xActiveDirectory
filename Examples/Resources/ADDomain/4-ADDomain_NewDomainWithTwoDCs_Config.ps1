@@ -134,7 +134,7 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         ADDomainController 'SecondDC'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $Credential
+            Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
 
             DependsOn                     = '[WaitForADDomain]DscForestWait'

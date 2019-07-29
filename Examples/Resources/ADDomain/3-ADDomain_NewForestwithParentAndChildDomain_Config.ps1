@@ -135,7 +135,7 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         {
             DomainName                    = $Node.DomainName
             ParentDomainName              = $Node.ParentDomainName
-            DomainAdministratorCredential = $Credential
+            Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
 
             DependsOn                     = '[WaitForADDomain]DscForestWait'
