@@ -41,6 +41,10 @@
       [new helper functions for localization](https://github.com/PowerShell/DscResources/blob/master/StyleGuidelines.md#helper-functions-for-localization)
       ([issue #316](https://github.com/PowerShell/ActiveDirectoryDsc/issues/316),
       [issue #317](https://github.com/PowerShell/ActiveDirectoryDsc/issues/317)).
+    - Removed the alias `DomainAdministratorCredential` from the parameter
+      `Credential` in the function `Restore-ADCommonObject`
+    - Removed the alias `DomainAdministratorCredential` from the parameter
+      `Credential` in the function `Get-ADCommonParameters`
   - Updated all the examples files to be prefixed with the resource
     name so they are more easily discovered in PowerShell Gallery and
     Azure Automation ([issue #416](https://github.com/PowerShell/ActiveDirectoryDsc/issues/416)).
