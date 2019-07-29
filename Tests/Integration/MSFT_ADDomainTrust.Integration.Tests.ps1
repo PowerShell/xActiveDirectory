@@ -75,7 +75,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Present'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceDomain
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetDomain
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -Be 'External'
                 $resourceCurrentState.TrustDirection | Should -Be 'Outbound'
             }
@@ -126,7 +126,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Present'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceDomain
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetDomain
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -Be 'External'
                 $resourceCurrentState.TrustDirection | Should -Be 'Inbound'
             }
@@ -177,7 +177,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Absent'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceDomain
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetDomain
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -BeNullOrEmpty
                 $resourceCurrentState.TrustDirection | Should -BeNullOrEmpty
             }
@@ -228,7 +228,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Present'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceForest
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetForest
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -Be 'Forest'
                 $resourceCurrentState.TrustDirection | Should -Be 'Outbound'
             }
@@ -279,7 +279,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Present'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceForest
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetForest
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -Be 'Forest'
                 $resourceCurrentState.TrustDirection | Should -Be 'Inbound'
             }
@@ -330,7 +330,7 @@ try
                 $resourceCurrentState.Ensure | Should -Be 'Absent'
                 $resourceCurrentState.SourceDomainName | Should -Be $configurationData.AllNodes.SourceForest
                 $resourceCurrentState.TargetDomainName | Should -Be $configurationData.AllNodes.TargetForest
-                $resourceCurrentState.TargetDomainAdministratorCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
+                $resourceCurrentState.TargetCredential.UserName | Should -Be $configurationData.AllNodes.TargetUserName
                 $resourceCurrentState.TrustType | Should -BeNullOrEmpty
                 $resourceCurrentState.TrustDirection | Should -BeNullOrEmpty
             }

@@ -17,7 +17,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADDomainTrust'
     .PARAMETER TargetDomainName
         Specifies the name of the Active Directory domain that is being trusted.
 
-    .PARAMETER TargetDomainAdministratorCredential
+    .PARAMETER TargetCredential
         Specifies the credentials to authenticate to the target domain.
 
     .PARAMETER TrustType
@@ -43,7 +43,7 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+        $TargetCredential,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('External', 'Forest')]
@@ -57,19 +57,19 @@ function Get-TargetResource
     )
 
     # Return a credential object without the password.
-    $cimCredentialInstance = New-CimCredentialInstance -Credential $TargetDomainAdministratorCredential
+    $cimCredentialInstance = New-CimCredentialInstance -Credential $TargetCredential
 
     $returnValue = @{
-        SourceDomainName                    = $SourceDomainName
-        TargetDomainName                    = $TargetDomainName
-        TargetDomainAdministratorCredential = $cimCredentialInstance
+        SourceDomainName = $SourceDomainName
+        TargetDomainName = $TargetDomainName
+        TargetCredential = $cimCredentialInstance
     }
 
     $getTrustTargetAndSourceObject = @{
-        SourceDomainName                    = $SourceDomainName
-        TargetDomainName                    = $TargetDomainName
-        TargetDomainAdministratorCredential = $TargetDomainAdministratorCredential
-        TrustType                           = $TrustType
+        SourceDomainName = $SourceDomainName
+        TargetDomainName = $TargetDomainName
+        TargetCredential = $TargetCredential
+        TrustType        = $TrustType
     }
 
     $trustSource, $trustTarget = Get-TrustSourceAndTargetObject @getTrustTargetAndSourceObject
@@ -114,7 +114,7 @@ function Get-TargetResource
     .PARAMETER TargetDomainName
         Specifies the name of the Active Directory domain that is being trusted.
 
-    .PARAMETER TargetDomainAdministratorCredential
+    .PARAMETER TargetCredential
         Specifies the credentials to authenticate to the target domain.
 
     .PARAMETER TrustType
@@ -143,7 +143,7 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+        $TargetCredential,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('External', 'Forest')]
@@ -162,10 +162,10 @@ function Set-TargetResource
     )
 
     $getTrustTargetAndSourceObject = @{
-        SourceDomainName                    = $SourceDomainName
-        TargetDomainName                    = $TargetDomainName
-        TargetDomainAdministratorCredential = $TargetDomainAdministratorCredential
-        TrustType                           = $TrustType
+        SourceDomainName = $SourceDomainName
+        TargetDomainName = $TargetDomainName
+        TargetCredential = $TargetCredential
+        TrustType        = $TrustType
     }
 
     $trustSource, $trustTarget = Get-TrustSourceAndTargetObject @getTrustTargetAndSourceObject
@@ -283,7 +283,7 @@ function Set-TargetResource
     .PARAMETER TargetDomainName
         Specifies the name of the Active Directory domain that is being trusted.
 
-    .PARAMETER TargetDomainAdministratorCredential
+    .PARAMETER TargetCredential
         Specifies the credentials to authenticate to the target domain.
 
     .PARAMETER TrustType
@@ -313,7 +313,7 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+        $TargetCredential,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('External', 'Forest')]
@@ -369,7 +369,7 @@ function Test-TargetResource
     .PARAMETER TargetDomainName
         Specifies the name of the Active Directory domain that is being trusted.
 
-    .PARAMETER TargetDomainAdministratorCredential
+    .PARAMETER TargetCredential
         Specifies the credentials to authenticate to the target domain.
 
     .PARAMETER TrustType
@@ -398,7 +398,7 @@ function Compare-TargetResourceState
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+        $TargetCredential,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('External', 'Forest')]
@@ -417,11 +417,11 @@ function Compare-TargetResourceState
     )
 
     $getTargetResourceParameters = @{
-        SourceDomainName                    = $SourceDomainName
-        TargetDomainName                    = $TargetDomainName
-        TargetDomainAdministratorCredential = $TargetDomainAdministratorCredential
-        TrustType                           = $TrustType
-        TrustDirection                      = $TrustDirection
+        SourceDomainName = $SourceDomainName
+        TargetDomainName = $TargetDomainName
+        TargetCredential = $TargetCredential
+        TrustType        = $TrustType
+        TrustDirection   = $TrustDirection
     }
 
     $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
@@ -604,7 +604,7 @@ function ConvertFrom-DirectoryContextType
     .PARAMETER TargetDomainName
         Specifies the name of the Active Directory domain that is being trusted.
 
-    .PARAMETER TargetDomainAdministratorCredential
+    .PARAMETER TargetCredential
         Specifies the credentials to authenticate to the target domain.
 
     .PARAMETER TrustType
@@ -632,7 +632,7 @@ function Get-TrustSourceAndTargetObject
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $TargetDomainAdministratorCredential,
+        $TargetCredential,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('External', 'Forest')]
@@ -646,7 +646,7 @@ function Get-TrustSourceAndTargetObject
     $getADDirectoryContextParameters = @{
         DirectoryContextType = $directoryContextType
         Name                 = $TargetDomainName
-        Credential           = $TargetDomainAdministratorCredential
+        Credential           = $TargetCredential
     }
 
     $targetDirectoryContext = Get-ADDirectoryContext @getADDirectoryContextParameters

@@ -45,12 +45,12 @@ Configuration ADDomainTrust_NewOneWayTrust_Config
     {
         ADDomainTrust 'Trust'
         {
-            Ensure                              = 'Present'
-            SourceDomainName                    = $SourceDomain
-            TargetDomainName                    = $TargetDomain
-            TargetDomainAdministratorCredential = $TargetDomainAdminCred
-            TrustDirection                      = 'Inbound'
-            TrustType                           = 'External'
+            Ensure           = 'Present'
+            SourceDomainName = $SourceDomain
+            TargetDomainName = $TargetDomain
+            TargetCredential = $TargetDomainAdminCred
+            TrustDirection   = 'Inbound'
+            TrustType        = 'External'
         }
     }
 }

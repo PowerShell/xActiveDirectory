@@ -59,11 +59,11 @@ Configuration MSFT_ADDomainTrust_CreateDomainTrust_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            SourceDomainName                    = $Node.SourceDomain
-            TargetDomainName                    = $Node.TargetDomain
-            TrustType                           = 'External'
-            TrustDirection                      = 'Outbound'
-            TargetDomainAdministratorCredential = New-Object `
+            SourceDomainName = $Node.SourceDomain
+            TargetDomainName = $Node.TargetDomain
+            TrustType        = 'External'
+            TrustDirection   = 'Outbound'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 
@@ -83,11 +83,11 @@ Configuration MSFT_ADDomainTrust_ChangeDomainTrustDirection_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            SourceDomainName                    = $Node.SourceDomain
-            TargetDomainName                    = $Node.TargetDomain
-            TrustType                           = 'External'
-            TrustDirection                      = 'Inbound'
-            TargetDomainAdministratorCredential = New-Object `
+            SourceDomainName = $Node.SourceDomain
+            TargetDomainName = $Node.TargetDomain
+            TrustType        = 'External'
+            TrustDirection   = 'Inbound'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 
@@ -107,12 +107,12 @@ Configuration MSFT_ADDomainTrust_RemoveDomainTrust_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            Ensure                              = 'Absent'
-            SourceDomainName                    = $Node.SourceDomain
-            TargetDomainName                    = $Node.TargetDomain
-            TrustType                           = 'External'
-            TrustDirection                      = 'Bidirectional'
-            TargetDomainAdministratorCredential = New-Object `
+            Ensure           = 'Absent'
+            SourceDomainName = $Node.SourceDomain
+            TargetDomainName = $Node.TargetDomain
+            TrustType        = 'External'
+            TrustDirection   = 'Bidirectional'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 
@@ -132,11 +132,11 @@ Configuration MSFT_ADDomainTrust_CreateForestTrust_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            SourceDomainName                    = $Node.SourceForest
-            TargetDomainName                    = $Node.TargetForest
-            TrustType                           = 'Forest'
-            TrustDirection                      = 'Outbound'
-            TargetDomainAdministratorCredential = New-Object `
+            SourceDomainName = $Node.SourceForest
+            TargetDomainName = $Node.TargetForest
+            TrustType        = 'Forest'
+            TrustDirection   = 'Outbound'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 
@@ -156,11 +156,11 @@ Configuration MSFT_ADDomainTrust_ChangeForestTrustDirection_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            SourceDomainName                    = $Node.SourceForest
-            TargetDomainName                    = $Node.TargetForest
-            TrustType                           = 'Forest'
-            TrustDirection                      = 'Inbound'
-            TargetDomainAdministratorCredential = New-Object `
+            SourceDomainName = $Node.SourceForest
+            TargetDomainName = $Node.TargetForest
+            TrustType        = 'Forest'
+            TrustDirection   = 'Inbound'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 
@@ -180,12 +180,12 @@ Configuration MSFT_ADDomainTrust_RemoveForestTrust_Config
     {
         ADDomainTrust 'Integration_Test'
         {
-            Ensure                              = 'Absent'
-            SourceDomainName                    = $Node.SourceForest
-            TargetDomainName                    = $Node.TargetForest
-            TrustType                           = 'Forest'
-            TrustDirection                      = 'Bidirectional'
-            TargetDomainAdministratorCredential = New-Object `
+            Ensure           = 'Absent'
+            SourceDomainName = $Node.SourceForest
+            TargetDomainName = $Node.TargetForest
+            TrustType        = 'Forest'
+            TrustDirection   = 'Bidirectional'
+            TargetCredential = New-Object `
                 -TypeName System.Management.Automation.PSCredential `
                 -ArgumentList @($Node.TargetUserName, (ConvertTo-SecureString -String $Node.TargetPassword -AsPlainText -Force))
 

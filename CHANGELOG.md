@@ -89,6 +89,9 @@
   - Minor change to the unit tests that did not correct assert the localized
     string when an account is not found.
 - Changes to ADDomainTrust
+  - BREAKING CHANGE: Renamed the parameter `TargetDomainAdministratorCredential`
+    to `TargetCredential` to better indicate that it is possible to impersonate
+    any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
   - Refactored the resource to enable unit tests, and at the same time changed
     it to use the same code pattern as the resource xADObjectEnabledState.
   - Added unit tests ([issue #324](https://github.com/PowerShell/ActiveDirectoryDsc/issues/324)).

@@ -50,7 +50,7 @@ try
                 $mockDefaultParameters = @{
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
-                    TargetDomainAdministratorCredential = $mockCredential
+                    TargetCredential = $mockCredential
                     TrustDirection                      = 'Outbound'
                     Verbose                             = $true
                 }
@@ -99,7 +99,7 @@ try
                             $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                             $getTargetResourceResult.SourceDomainName | Should -Be $mockGetTargetResourceParameters.SourceDomainName
                             $getTargetResourceResult.TargetDomainName | Should -Be $mockGetTargetResourceParameters.TargetDomainName
-                            $getTargetResourceResult.TargetDomainAdministratorCredential.UserName | Should -Be $mockCredential.UserName
+                            $getTargetResourceResult.TargetCredential.UserName | Should -Be $mockCredential.UserName
                         }
 
                         It 'Should return the correct values for the other properties' {
@@ -150,7 +150,7 @@ try
                             $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                             $getTargetResourceResult.SourceDomainName | Should -Be $mockGetTargetResourceParameters.SourceDomainName
                             $getTargetResourceResult.TargetDomainName | Should -Be $mockGetTargetResourceParameters.TargetDomainName
-                            $getTargetResourceResult.TargetDomainAdministratorCredential.UserName | Should -Be $mockCredential.UserName
+                            $getTargetResourceResult.TargetCredential.UserName | Should -Be $mockCredential.UserName
                         }
 
                         It 'Should return the correct values for the other properties' {
@@ -199,7 +199,7 @@ try
                         $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                         $getTargetResourceResult.SourceDomainName | Should -Be $mockGetTargetResourceParameters.SourceDomainName
                         $getTargetResourceResult.TargetDomainName | Should -Be $mockGetTargetResourceParameters.TargetDomainName
-                        $getTargetResourceResult.TargetDomainAdministratorCredential.UserName | Should -Be $mockCredential.UserName
+                        $getTargetResourceResult.TargetCredential.UserName | Should -Be $mockCredential.UserName
                     }
 
                     It 'Should return the correct values for the other properties' {
@@ -217,7 +217,7 @@ try
                 $mockDefaultParameters = @{
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
-                    TargetDomainAdministratorCredential = $mockCredential
+                    TargetCredential = $mockCredential
                     Verbose                             = $true
                 }
             }
@@ -362,7 +362,7 @@ try
                 $mockDefaultParameters = @{
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
-                    TargetDomainAdministratorCredential = $mockCredential
+                    TargetCredential = $mockCredential
                     Verbose                             = $true
                 }
 
@@ -371,7 +371,7 @@ try
                         Ensure                              = 'Absent'
                         SourceDomainName                    = $mockSourceDomainName
                         TargetDomainName                    = $mockTargetDomainName
-                        TargetDomainAdministratorCredential = $mockCredential
+                        TargetCredential = $mockCredential
                         TrustDirection                      = $null
                         TrustType                           = $null
                     }
@@ -382,7 +382,7 @@ try
                         Ensure                              = 'Present'
                         SourceDomainName                    = $mockSourceDomainName
                         TargetDomainName                    = $mockTargetDomainName
-                        TargetDomainAdministratorCredential = $mockCredential
+                        TargetCredential = $mockCredential
                         TrustDirection                      = 'Outbound'
                         TrustType                           = 'External'
                     }
@@ -583,7 +583,7 @@ try
                   $mockDefaultParameters = @{
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
-                    TargetDomainAdministratorCredential = $mockCredential
+                    TargetCredential = $mockCredential
                     TrustDirection                      = 'Outbound'
                     Verbose                             = $true
                 }
@@ -961,7 +961,7 @@ try
                 $testParameters = @{
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
-                    TargetDomainAdministratorCredential = $mockCredential
+                    TargetCredential = $mockCredential
                     TrustType                           = $TrustType
                     Verbose                             = $true
                 }

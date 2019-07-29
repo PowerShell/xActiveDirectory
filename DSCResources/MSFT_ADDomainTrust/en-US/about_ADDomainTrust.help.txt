@@ -13,7 +13,7 @@
     Allowed values: Present, Absent
     Specifies whether the computer account is present or absent. Default value is 'Present'.
 
-.PARAMETER TargetDomainAdministratorCredential
+.PARAMETER TargetCredential
     Required - String
     Specifies the credentials to authenticate to the target domain.
 
@@ -63,12 +63,12 @@ Configuration ADDomainTrust_NewOneWayTrust_Config
     {
         ADDomainTrust 'Trust'
         {
-            Ensure                              = 'Present'
-            SourceDomainName                    = $SourceDomain
-            TargetDomainName                    = $TargetDomain
-            TargetDomainAdministratorCredential = $TargetDomainAdminCred
-            TrustDirection                      = 'Inbound'
-            TrustType                           = 'External'
+            Ensure           = 'Present'
+            SourceDomainName = $SourceDomain
+            TargetDomainName = $TargetDomain
+            TargetCredential = $TargetDomainAdminCred
+            TrustDirection   = 'Inbound'
+            TrustType        = 'External'
         }
     }
 }
