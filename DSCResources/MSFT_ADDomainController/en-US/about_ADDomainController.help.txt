@@ -1,4 +1,4 @@
-﻿.NAME
+.NAME
     ADDomainController
 
 .DESCRIPTION

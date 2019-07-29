@@ -40,7 +40,7 @@ Configuration ADDomain_NewChildDomain_Config
     Import-DscResource -ModuleName PSDscResources
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
-    node $AllNodes.NodeName
+    node 'localhost'
     {
         WindowsFeature 'ADDS'
         {
@@ -54,24 +54,13 @@ Configuration ADDomain_NewChildDomain_Config
             Ensure = 'Present'
         }
 
-        ADDomain $Node.DomainName
+        ADDomain 'child'
         {
-            DomainName                    = $Node.DomainName
+            DomainName                    = 'child'
             Credential                    = $Credential
             SafemodeAdministratorPassword = $SafeModePassword
-            DomainMode                    = $Node.DFL
-            ParentDomainName              = $node.ParentDomain
+            DomainMode                    = Win2012R2'
+            ParentDomainName              = 'contoso.com'
         }
     }
-}
-
-$ConfigurationData = @{
-    AllNodes = @(
-        @{
-            NodeName     = 'localhost'
-            DFL          = 'Win2012R2'
-            DomainName   = 'child'
-            ParentDomain = 'contoso.com'
-        }
-    )
 }

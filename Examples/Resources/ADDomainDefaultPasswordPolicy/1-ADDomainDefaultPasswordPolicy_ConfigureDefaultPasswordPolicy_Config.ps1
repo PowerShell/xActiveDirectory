@@ -26,15 +26,15 @@ Configuration ADDomainDefaultPasswordPolicy_ConfigureDefaultPasswordPolicy_Confi
 {
     Param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.String]
         $DomainName,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Boolean]
         $ComplexityEnabled,
 
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
         [System.Int32]
         $MinPasswordLength
     )

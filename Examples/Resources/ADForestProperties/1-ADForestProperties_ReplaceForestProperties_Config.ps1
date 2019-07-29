@@ -27,25 +27,13 @@ Configuration ADForestProperties_ReplaceForestProperties_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
-    node $AllNodes.NodeName
+    node 'localhost'
     {
         ADForestProperties $Node.ForestName
         {
-            ForestName                 = $Node.ForestName
-            UserPrincipalNameSuffix    = $Node.UserPrincipalNameSuffix
-            ServicePrincipalNameSuffix = $Node.ServicePrincipalNameSuffix
-        }
-    }
-}
-
-$ConfigurationData = @{
-    AllNodes = @(
-        @{
-            NodeName                   = 'dc.contoso.com'
             ForestName                 = 'contoso.com'
             UserPrincipalNameSuffix    = 'fabrikam.com', 'industry.com'
             ServicePrincipalNameSuffix = 'corporate.com'
         }
-    )
+    }
 }
-

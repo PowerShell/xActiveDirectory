@@ -17,31 +17,6 @@
 
 #Requires -module ActiveDirectoryDsc
 
-$ConfigurationData = @{
-    AllNodes = @(
-        @{
-            NodeName         = 'dsc-testNode1'
-            Role             = 'Parent DC'
-            DomainName       = 'dsc-test.contoso.com'
-            CertificateFile  = 'C:\publicKeys\targetNode.cer'
-            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
-            RetryCount       = 50
-            RetryIntervalSec = 30
-        },
-
-        @{
-            NodeName         = 'dsc-testNode2'
-            Role             = 'Child DC'
-            DomainName       = 'dsc-child'
-            ParentDomainName = 'dsc-test.contoso.com'
-            CertificateFile  = 'C:\publicKeys\targetNode.cer'
-            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
-            RetryCount       = 50
-            RetryIntervalSec = 30
-        }
-    )
-}
-
 <#
     .DESCRIPTION
         This configuration will create a domain, and then create a child domain on
@@ -72,7 +47,7 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
-    Node $AllNodes.Where{ $_.Role -eq 'Parent DC' }.NodeName
+    Node 'dsc-testParentNode1'
     {
         WindowsFeature 'ADDSInstall'
         {
@@ -82,7 +57,7 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 
         ADDomain 'FirstDS'
         {
-            DomainName                    = $Node.DomainName
+            DomainName                    = 'dsc-test.contoso.com'
             Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
             DnsDelegationCredential       = $DnsDelegationCredential
@@ -92,17 +67,17 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 
         WaitForADDomain 'DscForestWait'
         {
-            DomainName           = $Node.DomainName
+            DomainName           = 'dsc-test.contoso.com'
             DomainUserCredential = $Credential
-            RetryCount           = $Node.RetryCount
-            RetryIntervalSec     = $Node.RetryIntervalSec
+            RetryCount           = 50
+            RetryIntervalSec     = 30
 
             DependsOn            = '[ADDomain]FirstDS'
         }
 
         ADUser 'FirstUser'
         {
-            DomainName = $Node.DomainName
+            DomainName = 'dsc-test.contoso.com'
             Credential = $Credential
             UserName   = 'dummy'
             Password   = $NewADUserPassword
@@ -113,7 +88,7 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 
     }
 
-    Node $AllNodes.Where{ $_.Role -eq 'Child DC' }.NodeName
+    Node 'dsc-testChildNode2'
     {
         WindowsFeature 'ADDSInstall'
         {
@@ -123,18 +98,18 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
 
         WaitForADDomain 'DscForestWait'
         {
-            DomainName           = $Node.ParentDomainName
+            DomainName           = 'dsc-test.contoso.com'
             DomainUserCredential = $Credential
-            RetryCount           = $Node.RetryCount
-            RetryIntervalSec     = $Node.RetryIntervalSec
+            RetryCount           = 50
+            RetryIntervalSec     = 30
 
             DependsOn            = '[WindowsFeature]ADDSInstall'
         }
 
         ADDomain 'ChildDS'
         {
-            DomainName                    = $Node.DomainName
-            ParentDomainName              = $Node.ParentDomainName
+            DomainName                    = 'dsc-child'
+            ParentDomainName              = 'dsc-test.contoso.com'
             Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
 

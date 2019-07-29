@@ -40,7 +40,7 @@ Configuration ADDomain_NewForest_Config
     Import-DscResource -ModuleName PSDscResources
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
-    node $AllNodes.NodeName
+    node 'localhost'
     {
         WindowsFeature 'ADDS'
         {
@@ -54,22 +54,12 @@ Configuration ADDomain_NewForest_Config
             Ensure = 'Present'
         }
 
-        ADDomain $Node.DomainName
+        ADDomain 'contoso.com'
         {
-            DomainName                    = $Node.DomainName
+            DomainName                    = 'contoso.com'
             Credential                    = $Credential
             SafemodeAdministratorPassword = $SafeModePassword
-            ForestMode                    = $Node.FFL
+            ForestMode                    = 'WinThreshold'
         }
     }
-}
-
-$ConfigurationData = @{
-    AllNodes = @(
-        @{
-            NodeName   = 'localhost'
-            FFL        = 'WinThreshold'
-            DomainName = 'contoso.com'
-        }
-    )
 }

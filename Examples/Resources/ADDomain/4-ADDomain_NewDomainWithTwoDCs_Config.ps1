@@ -17,30 +17,6 @@
 
 #Requires -module ActiveDirectoryDsc
 
-# Configuration Data for AD
-$ConfigurationData = @{
-    AllNodes = @(
-        @{
-            NodeName         = 'dsc-testNode1'
-            Role             = 'Primary DC'
-            DomainName       = 'dsc-test.contoso.com'
-            CertificateFile  = 'C:\publicKeys\targetNode.cer'
-            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
-            RetryCount       = 20
-            RetryIntervalSec = 30
-        },
-        @{
-            NodeName         = 'dsc-testNode2'
-            Role             = 'Replica DC'
-            DomainName       = 'dsc-test.contoso.com'
-            CertificateFile  = 'C:\publicKeys\targetNode.cer'
-            Thumbprint       = 'AC23EA3A9E291A75757A556D0B71CBBF8C4F6FD8'
-            RetryCount       = 20
-            RetryIntervalSec = 30
-        }
-    )
-}
-
 <#
     .DESCRIPTION
         This configuration will create a highly available domain by adding
@@ -73,7 +49,7 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
-    Node $AllNodes.Where{ $_.Role -eq 'Primary DC' }.NodeName
+    Node 'dsc-testDomainNode1'
     {
         WindowsFeature 'ADDSInstall'
         {
@@ -83,7 +59,7 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
 
         ADDomain 'FirstDS'
         {
-            DomainName                    = $Node.DomainName
+            DomainName                    = 'dsc-test.contoso.com'
             Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
             DnsDelegationCredential       = $DnsDelegationCredential
@@ -93,17 +69,17 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
 
         WaitForADDomain 'DscForestWait'
         {
-            DomainName           = $Node.DomainName
+            DomainName           = 'dsc-test.contoso.com'
             DomainUserCredential = $Credential
-            RetryCount           = $Node.RetryCount
-            RetryIntervalSec     = $Node.RetryIntervalSec
+            RetryCount           = 20
+            RetryIntervalSec     = 30
 
             DependsOn            = '[ADDomain]FirstDS'
         }
 
         ADUser 'FirstUser'
         {
-            DomainName = $Node.DomainName
+            DomainName = 'dsc-test.contoso.com'
             Credential = $Credential
             UserName   = 'dummy'
             Password   = $NewADUserPassword
@@ -113,7 +89,7 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         }
     }
 
-    Node $AllNodes.Where{ $_.Role -eq 'Replica DC' }.NodeName
+    Node 'dsc-testDomainNode2'
     {
         WindowsFeature 'ADDSInstall'
         {
@@ -123,17 +99,17 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
 
         WaitForADDomain 'DscForestWait'
         {
-            DomainName           = $Node.DomainName
+            DomainName           = 'dsc-test.contoso.com'
             DomainUserCredential = $Credential
-            RetryCount           = $Node.RetryCount
-            RetryIntervalSec     = $Node.RetryIntervalSec
+            RetryCount           = 20
+            RetryIntervalSec     = 30
 
             DependsOn            = '[WindowsFeature]ADDSInstall'
         }
 
         ADDomainController 'SecondDC'
         {
-            DomainName                    = $Node.DomainName
+            DomainName                    = 'dsc-test.contoso.com'
             Credential                    = $Credential
             SafeModeAdministratorPassword = $SafeModePassword
 
