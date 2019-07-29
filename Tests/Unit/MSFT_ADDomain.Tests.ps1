@@ -66,8 +66,8 @@ try
         )
 
         $testDefaultParams = @{
-            DomainAdministratorCredential = $testAdminCredential
-            SafemodeAdministratorPassword = $testAdminCredential
+            Credential = $testAdminCredential
+            SafeModeAdministratorPassword = $testAdminCredential
         }
 
         #region Function Get-TargetResource
@@ -220,8 +220,8 @@ try
             )
 
             $testDefaultParams = @{
-                DomainAdministratorCredential = $testAdminCredential
-                SafemodeAdministratorPassword = $testAdminCredential
+                Credential = $testAdminCredential
+                SafeModeAdministratorPassword = $testAdminCredential
             }
 
             $stubDomain = @{
@@ -352,15 +352,15 @@ try
 
             $newForestParams = @{
                 DomainName = $testDomainName
-                DomainAdministratorCredential = $testAdminCredential
-                SafemodeAdministratorPassword = $testSafemodeCredential
+                Credential = $testAdminCredential
+                SafeModeAdministratorPassword = $testSafemodeCredential
             }
 
             $newDomainParams = @{
                 DomainName = $testDomainName
                 ParentDomainName = $testParentDomainName
-                DomainAdministratorCredential = $testAdminCredential
-                SafemodeAdministratorPassword = $testSafemodeCredential
+                Credential = $testAdminCredential
+                SafeModeAdministratorPassword = $testSafemodeCredential
             }
 
             $stubTargetResource = @{
@@ -381,12 +381,12 @@ try
                 Assert-MockCalled -CommandName Install-ADDSForest -ParameterFilter  { $DomainName -eq $testDomainName } -Scope It
             }
 
-            It 'Calls "Install-ADDSForest" with "SafemodeAdministratorPassword" when creating forest' {
-                Mock -CommandName Install-ADDSForest -ParameterFilter { $SafemodeAdministratorPassword -eq $testSafemodePassword }
+            It 'Calls "Install-ADDSForest" with "SafeModeAdministratorPassword" when creating forest' {
+                Mock -CommandName Install-ADDSForest -ParameterFilter { $SafeModeAdministratorPassword -eq $testSafemodePassword }
 
                 Set-TargetResource @newForestParams
 
-                Assert-MockCalled -CommandName Install-ADDSForest -ParameterFilter { $SafemodeAdministratorPassword -eq $testSafemodePassword } -Scope It
+                Assert-MockCalled -CommandName Install-ADDSForest -ParameterFilter { $SafeModeAdministratorPassword -eq $testSafemodePassword } -Scope It
             }
 
             It 'Calls "Install-ADDSForest" with "DnsDelegationCredential" when creating forest, if specified' {
@@ -482,12 +482,12 @@ try
                 Assert-MockCalled -CommandName Install-ADDSDomain -ParameterFilter  { $DomainType -eq 'ChildDomain' } -Scope It
             }
 
-            It 'Calls "Install-ADDSDomain" with "SafemodeAdministratorPassword" when creating child domain' {
-                Mock -CommandName Install-ADDSDomain -ParameterFilter { $SafemodeAdministratorPassword -eq $testSafemodePassword }
+            It 'Calls "Install-ADDSDomain" with "SafeModeAdministratorPassword" when creating child domain' {
+                Mock -CommandName Install-ADDSDomain -ParameterFilter { $SafeModeAdministratorPassword -eq $testSafemodePassword }
 
                 Set-TargetResource @newDomainParams
 
-                Assert-MockCalled -CommandName Install-ADDSDomain -ParameterFilter { $SafemodeAdministratorPassword -eq $testSafemodePassword } -Scope It
+                Assert-MockCalled -CommandName Install-ADDSDomain -ParameterFilter { $SafeModeAdministratorPassword -eq $testSafemodePassword } -Scope It
             }
 
             It 'Calls "Install-ADDSDomain" with "Credential" when creating child domain' {

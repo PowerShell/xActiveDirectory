@@ -74,6 +74,9 @@
    distinguished name and parameter Credential is used ([issue #451](https://github.com/PowerShell/ActiveDirectoryDsc/issues/451)).
   - Added integration tests ([issue #359](https://github.com/PowerShell/ActiveDirectoryDsc/issues/359)).
 - Changes to ADDomain
+  - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
+    to `Credential` to better indicate that it is possible to impersonate
+    any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
   - Updated tests and replaced `Write-Error` with `throw`
     ([issue #332](https://github.com/PowerShell/ActiveDirectoryDsc/pull/332)).
   - Added comment-based help ([issue #335](https://github.com/PowerShell/ActiveDirectoryDsc/issues/335)).

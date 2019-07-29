@@ -52,20 +52,22 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
     param
     (
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorCred,
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainCred,
+        $DnsDelegationCredential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DnsDelegationCred,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $NewADUserCred
+        $NewADUserPassword
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -81,28 +83,31 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         ADDomain 'FirstDS'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
-            DnsDelegationCredential       = $DnsDelegationCred
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+            DnsDelegationCredential       = $DnsDelegationCredential
+
             DependsOn                     = '[WindowsFeature]ADDSInstall'
         }
 
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
+
             DependsOn            = '[ADDomain]FirstDS'
         }
 
         ADUser 'FirstUser'
         {
             DomainName = $Node.DomainName
-            Credential = $domaincred
+            Credential = $Credential
             UserName   = 'dummy'
-            Password   = $NewADUserCred
+            Password   = $NewADUserPassword
             Ensure     = 'Present'
+
             DependsOn  = '[WaitForADDomain]DscForestWait'
         }
 
@@ -119,9 +124,10 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.ParentDomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
+
             DependsOn            = '[WindowsFeature]ADDSInstall'
         }
 
@@ -129,8 +135,9 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         {
             DomainName                    = $Node.DomainName
             ParentDomainName              = $Node.ParentDomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DomainAdministratorCredential = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+
             DependsOn                     = '[WaitForADDomain]DscForestWait'
         }
     }

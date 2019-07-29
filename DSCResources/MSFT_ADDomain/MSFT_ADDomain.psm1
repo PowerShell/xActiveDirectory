@@ -53,8 +53,9 @@ function Get-TrackingFilename
     .PARAMETER DomainName
         The fully qualified domain name (FQDN) of the new domain.
 
-    .PARAMETER DomainAdministratorCredential
-        Credentials used to query for domain existence.
+    .PARAMETER Credential
+        Specifies the user name and password that corresponds to the account
+        used to install the domain controller.
 
     .PARAMETER SafemodeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
@@ -95,7 +96,7 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -164,8 +165,8 @@ function Get-TargetResource
             else
             {
                 Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN)
-                $domain = Get-ADDomain -Identity $domainFQDN -Credential $DomainAdministratorCredential -ErrorAction Stop
-                $forest = Get-ADForest -Identity $domain.Forest -Credential $DomainAdministratorCredential -ErrorAction Stop
+                $domain = Get-ADDomain -Identity $domainFQDN -Credential $Credential -ErrorAction Stop
+                $forest = Get-ADForest -Identity $domain.Forest -Credential $Credential -ErrorAction Stop
             }
 
             <#
@@ -237,8 +238,9 @@ function Get-TargetResource
     .PARAMETER DomainName
         The fully qualified domain name (FQDN) of the new domain.
 
-    .PARAMETER DomainAdministratorCredential
-        Credentials used to query for domain existence.
+    .PARAMETER Credential
+        Specifies the user name and password that corresponds to the account
+        used to install the domain controller.
 
     .PARAMETER SafemodeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
@@ -279,7 +281,7 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -376,8 +378,9 @@ function Test-TargetResource
     .PARAMETER DomainName
         The fully qualified domain name (FQDN) of the new domain.
 
-    .PARAMETER DomainAdministratorCredential
-        Credentials used to query for domain existence.
+    .PARAMETER Credential
+        Specifies the user name and password that corresponds to the account
+        used to install the domain controller.
 
     .PARAMETER SafemodeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
@@ -429,7 +432,7 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential,
+        $Credential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
@@ -517,7 +520,7 @@ function Set-TargetResource
     if ($PSBoundParameters.ContainsKey('ParentDomainName'))
     {
         Write-Verbose -Message ($script:localizedData.CreatingChildDomain -f $DomainName, $ParentDomainName)
-        $installADDSParams['Credential'] = $DomainAdministratorCredential
+        $installADDSParams['Credential'] = $Credential
         $installADDSParams['NewDomainName'] = $DomainName
         $installADDSParams['ParentDomainName'] = $ParentDomainName
         $installADDSParams['DomainType'] = 'ChildDomain'

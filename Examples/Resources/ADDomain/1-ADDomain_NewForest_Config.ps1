@@ -29,7 +29,12 @@ Configuration ADDomain_NewForest_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -52,8 +57,8 @@ Configuration ADDomain_NewForest_Config
         ADDomain $Node.DomainName
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafemodeAdministratorPassword = $SafeModePassword
             ForestMode                    = $Node.FFL
         }
     }

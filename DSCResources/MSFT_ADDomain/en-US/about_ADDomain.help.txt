@@ -12,9 +12,9 @@
     Key - String
     The fully qualified domain name (FQDN) of the new domain.
 
-.PARAMETER DomainAdministratorCredential
+.PARAMETER Credential
     Required - String
-    Credentials used to query for domain existence.
+    Specifies the user name and password that corresponds to the account used to install the domain controller.
 
 .PARAMETER SafemodeAdministratorPassword
     Required - String
@@ -66,7 +66,12 @@ Configuration ADDomain_NewForest_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -89,8 +94,8 @@ Configuration ADDomain_NewForest_Config
         ADDomain $Node.DomainName
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafemodeAdministratorPassword = $SafeModePassword
             ForestMode                    = $Node.FFL
         }
     }
@@ -118,7 +123,12 @@ Configuration ADDomain_NewChildDomain_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
     )
 
     Import-DscResource -ModuleName PSDscResources
@@ -141,8 +151,8 @@ Configuration ADDomain_NewChildDomain_Config
         ADDomain $Node.DomainName
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $DomainAdministratorCredential
-            SafemodeAdministratorPassword = $DomainAdministratorCredential
+            Credential                    = $Credential
+            SafemodeAdministratorPassword = $SafeModePassword
             DomainMode                    = $Node.DFL
             ParentDomainName              = $node.ParentDomain
         }
@@ -170,20 +180,22 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
     param
     (
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorCred,
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DomainCred,
+        $DnsDelegationCredential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DnsDelegationCred,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $NewADUserCred
+        $NewADUserPassword
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -199,28 +211,31 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         ADDomain 'FirstDS'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
-            DnsDelegationCredential       = $DnsDelegationCred
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+            DnsDelegationCredential       = $DnsDelegationCredential
+
             DependsOn                     = '[WindowsFeature]ADDSInstall'
         }
 
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
+
             DependsOn            = '[ADDomain]FirstDS'
         }
 
         ADUser 'FirstUser'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domaincred
+            DomainAdministratorCredential = $Credential
             UserName                      = 'dummy'
-            Password                      = $NewADUserCred
+            Password                      = $NewADUserPassword
             Ensure                        = 'Present'
+
             DependsOn                     = '[WaitForADDomain]DscForestWait'
         }
 
@@ -237,9 +252,10 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.ParentDomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
+
             DependsOn            = '[WindowsFeature]ADDSInstall'
         }
 
@@ -247,8 +263,9 @@ Configuration ADDomain_NewForestWithParentAndChildDomain_Config
         {
             DomainName                    = $Node.DomainName
             ParentDomainName              = $Node.ParentDomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DomainAdministratorCredential = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+
             DependsOn                     = '[WaitForADDomain]DscForestWait'
         }
     }
@@ -291,20 +308,22 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
     param
     (
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorCred,
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $domainCred,
+        $DnsDelegationCredential,
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $DNSDelegationCred,
-
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
-        $NewADUserCred
+        $NewADUserPassword
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -320,16 +339,16 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         ADDomain 'FirstDS'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
-            DnsDelegationCredential       = $DNSDelegationCred
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+            DnsDelegationCredential       = $DnsDelegationCredential
             DependsOn                     = '[WindowsFeature]ADDSInstall'
         }
 
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
             DependsOn            = '[ADDomain]FirstDS'
@@ -338,9 +357,9 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         ADUser 'FirstUser'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domainCred
+            DomainAdministratorCredential = $Credential
             UserName                      = 'dummy'
-            Password                      = $NewADUserCred
+            Password                      = $NewADUserPassword
             Ensure                        = 'Present'
             DependsOn                     = '[WaitForADDomain]DscForestWait'
         }
@@ -357,7 +376,7 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         WaitForADDomain 'DscForestWait'
         {
             DomainName           = $Node.DomainName
-            DomainUserCredential = $domainCred
+            DomainUserCredential = $Credential
             RetryCount           = $Node.RetryCount
             RetryIntervalSec     = $Node.RetryIntervalSec
             DependsOn            = '[WindowsFeature]ADDSInstall'
@@ -366,8 +385,8 @@ Configuration ADDomain_NewDomainWithTwoDCs_Config
         ADDomainController 'SecondDC'
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $domainCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
+            DomainAdministratorCredential = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
             DependsOn                     = '[WaitForADDomain]DscForestWait'
         }
     }

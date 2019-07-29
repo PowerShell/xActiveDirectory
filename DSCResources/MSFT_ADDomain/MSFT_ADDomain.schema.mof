@@ -2,7 +2,7 @@
 class MSFT_ADDomain : OMI_BaseResource
 {
     [Key, Description("The fully qualified domain name (FQDN) of the new domain.")] String DomainName;
-    [Required, Description("Credentials used to query for domain existence."), EmbeddedInstance("MSFT_Credential")] String DomainAdministratorCredential;
+    [Required, Description("Specifies the user name and password that corresponds to the account used to install the domain controller."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Required, Description("Password for the administrator account when the computer is started in Safe Mode."), EmbeddedInstance("MSFT_Credential")] String SafemodeAdministratorPassword;
     [Write, Description("Fully qualified domain name (FQDN) of the parent domain.")] String ParentDomainName;
     [Write, Description("NetBIOS name for the new domain.")] String DomainNetbiosName;
