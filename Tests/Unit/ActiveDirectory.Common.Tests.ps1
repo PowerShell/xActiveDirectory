@@ -1091,15 +1091,6 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
             $result['Server'] | Should -Be $testServer
         }
 
-        It "Converts 'DomainAdministratorCredential' parameter to 'Credential' key" {
-            $testIdentity = 'contoso.com'
-            $testCredential = [System.Management.Automation.PSCredential]::Empty
-
-            $result = Get-ADCommonParameters -Identity $testIdentity -DomainAdministratorCredential $testCredential
-
-            $result['Credential'] | Should -Be $testCredential
-        }
-
         It "Converts 'DomainController' parameter to 'Server' key" {
             $testIdentity = 'contoso.com'
             $testServer = 'testserver.contoso.com'

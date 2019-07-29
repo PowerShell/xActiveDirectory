@@ -31,7 +31,7 @@ Configuration ADObjectEnabledState_CreateClusterComputerAccount_Config
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.PSCredential]
-        $DomainAdministratorCredential
+        $Credential
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
@@ -49,7 +49,7 @@ Configuration ADObjectEnabledState_CreateClusterComputerAccount_Config
         {
             Name                          = 'CLU_CNO01'
             StaticIPAddress               = '192.168.100.20/24'
-            DomainAdministratorCredential = $DomainAdministratorCredential
+            DomainAdministratorCredential = $Credential
 
             DependsOn                     = '[ADComputer]ClusterAccount'
         }

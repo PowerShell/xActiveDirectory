@@ -76,7 +76,7 @@ try
                 $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
                 $resourceCurrentState.UserPrincipalName | Should -Be $ConfigurationData.AllNodes.UserName1
                 $resourceCurrentState.DisplayName | Should -Be $ConfigurationData.AllNodes.DisplayName1
-                $resourceCurrentState.DomainAdministratorCredential | Should -BeNullOrEmpty
+                $resourceCurrentState.Credential | Should -BeNullOrEmpty
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {
@@ -126,7 +126,7 @@ try
                 $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
                 $resourceCurrentState.UserPrincipalName | Should -BeNullOrEmpty
                 $resourceCurrentState.DisplayName | Should -BeNullOrEmpty
-                $resourceCurrentState.DomainAdministratorCredential | Should -BeNullOrEmpty
+                $resourceCurrentState.Credential | Should -BeNullOrEmpty
             }
 
             It 'Should return $true when Test-DscConfiguration is run' {

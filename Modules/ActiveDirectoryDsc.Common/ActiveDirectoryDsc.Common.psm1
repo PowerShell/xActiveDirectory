@@ -1073,7 +1073,6 @@ function Get-ADCommonParameters
 
         [Parameter()]
         [ValidateNotNull()]
-        [Alias('DomainAdministratorCredential')]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
         $Credential,
@@ -1322,7 +1321,6 @@ function Restore-ADCommonObject
 
         [Parameter()]
         [ValidateNotNull()]
-        [Alias('DomainAdministratorCredential')]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
         $Credential,

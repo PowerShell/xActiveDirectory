@@ -84,7 +84,7 @@ try
                 $resourceCurrentState.Enabled | Should -BeTrue
                 $resourceCurrentState.EnabledOnCreation | Should -BeFalse
                 $resourceCurrentState.DomainController | Should -BeNullOrEmpty
-                $resourceCurrentState.DomainAdministratorCredential | Should -BeNullOrEmpty
+                $resourceCurrentState.Credential | Should -BeNullOrEmpty
                 $resourceCurrentState.RequestFile | Should -BeNullOrEmpty
                 $resourceCurrentState.RestoreFromRecycleBin | Should -BeFalse
                 $resourceCurrentState.DistinguishedName | Should -Match ('^CN={0}' -f $ConfigurationData.AllNodes.ComputerName1)
@@ -340,7 +340,7 @@ try
                 $resourceCurrentState.Enabled | Should -BeTrue
                 $resourceCurrentState.EnabledOnCreation | Should -BeFalse
                 $resourceCurrentState.DomainController | Should -BeNullOrEmpty
-                $resourceCurrentState.DomainAdministratorCredential | Should -BeNullOrEmpty
+                $resourceCurrentState.Credential | Should -BeNullOrEmpty
                 $resourceCurrentState.RequestFile | Should -BeNullOrEmpty
                 $resourceCurrentState.RestoreFromRecycleBin | Should -BeFalse
                 $resourceCurrentState.DistinguishedName | Should -Match ('^CN={0}' -f $ConfigurationData.AllNodes.ComputerName1)
