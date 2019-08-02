@@ -6,6 +6,10 @@ function Get-TargetResource
     (
         [parameter(Mandatory = $true)]
         [System.String]
+        $FeatureName,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
         $ForestFQDN,
 
         [parameter(Mandatory = $true)]
@@ -18,15 +22,12 @@ function Get-TargetResource
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $RootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
-        $RecycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($RootDSE.configurationNamingContext)"
-        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($RootDSE.configurationNamingContext)" -Property msDS-EnabledFeature -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
-            Select-Object -ExpandProperty msDS-EnabledFeature
+        $Feature = Get-ADOptionalFeature -Filter {name -eq $FeatureName} -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
 
-        If ($msDSEnabledFeature -contains $RecycleBinPath) {
-            $RecycleBinEnabled = $True
+        If ($Feature.EnabledScopes.Count -gt 0) {
+            $FeatureEnabled = $True
         } Else {
-            $RecycleBinEnabled = $False
+            $FeatureEnabled = $False
         }
     }
 
@@ -39,7 +40,7 @@ function Get-TargetResource
         Throw $_
     }
     Catch {
-        Write-Error -Message "Unhandled exception getting Recycle Bin status for forest $ForestFQDN."
+        Write-Error -Message "Unhandled exception getting $FeatureName status for forest $ForestFQDN."
         Throw $_
     }
 
@@ -49,8 +50,8 @@ function Get-TargetResource
 
     $returnValue = @{
         ForestFQDN = $ForestFQDN
-        RecycleBinEnabled = $RecycleBinEnabled
-        ForestMode = $RootDSE.forestFunctionality.ToString()
+        FeatureName = $FeatureName
+        Enabled = $FeatureEnabled
     }
 
     $returnValue
@@ -62,6 +63,10 @@ function Set-TargetResource
     [CmdletBinding(SupportsShouldProcess=$true)]
     param
     (
+        [parameter(Mandatory = $true)]
+        [System.String]
+        $FeatureName,
+
         [parameter(Mandatory = $true)]
         [System.String]
         $ForestFQDN,
@@ -77,16 +82,26 @@ function Set-TargetResource
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $Forest = Get-ADForest -Identity $ForestFQDN -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+        $Feature = Get-ADOptionalFeature -Filter {name -eq $FeatureName} -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+
+        $Forest = Get-ADForest -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+        $Domain = Get-ADDomain -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
+
 
         # Check minimum forest level and throw if not
-        If (($Forest.ForestMode -as [int]) -lt 4) {
-            Write-Verbose -Message "Forest functionality level $($Forest.ForestMode) does not meet minimum requirement of Windows2008R2Forest or greater."
-            Throw "Forest functionality level $($Forest.ForestMode) does not meet minimum requirement of Windows2008R2Forest or greater."
+        If (($Forest.ForestMode -as [int]) -lt ($Feature.RequiredForestMode -as [int])) {
+            Write-Verbose -Message "Forest functionality level $($Forest.ForestMode) does not meet minimum requirement of $($Feature.RequiredForestMode) or greater."
+            Throw "Forest functionality level $($Forest.ForestMode) does not meet minimum requirement of $($Feature.RequiredForestMode) or greater."
         }
 
-        If ($PSCmdlet.ShouldProcess($Forest.RootDomain, "Enable Active Directory Recycle Bin")) {
-            Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet `
+        # Check minimum domain level and throw if not
+        If (($Domain.DomainMode -as [int]) -lt ($Feature.RequiredDomainMode -as [int])) {
+            Write-Verbose -Message "Forest functionality level $($Forest.ForestMode) does not meet minimum requirement of $($Feature.RequiredDomainMode) or greater."
+            Throw "Domain functionality level $($Domain.DomainMode) does not meet minimum requirement of $($Feature.RequiredDomainMode) or greater."
+        }
+
+        If ($PSCmdlet.ShouldProcess($Forest.RootDomain, "Enable $FeatureName")) {
+            Enable-ADOptionalFeature $FeatureName -Scope ForestOrConfigurationSet `
                 -Target $Forest.RootDomain -Server $Forest.DomainNamingMaster `
                 -Credential $EnterpriseAdministratorCredential `
                 -Verbose
@@ -102,7 +117,7 @@ function Set-TargetResource
         Throw $_
     }
     Catch {
-        Write-Error -Message "Unhandled exception setting Recycle Bin status for forest $ForestFQDN."
+        Write-Error -Message "Unhandled exception setting $FeatureName status for forest $ForestFQDN."
         Throw $_
     }
 
@@ -121,6 +136,10 @@ function Test-TargetResource
     (
         [parameter(Mandatory = $true)]
         [System.String]
+        $FeatureName,
+
+        [parameter(Mandatory = $true)]
+        [System.String]
         $ForestFQDN,
 
         [parameter(Mandatory = $true)]
@@ -132,16 +151,13 @@ function Test-TargetResource
         # AD cmdlets generate non-terminating errors.
         $ErrorActionPreference = 'Stop'
 
-        $RootDSE = Get-ADRootDSE -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential
-        $RecycleBinPath = "CN=Recycle Bin Feature,CN=Optional Features,CN=Directory Service,CN=Windows NT,CN=Services,$($RootDSE.configurationNamingContext)"
-        $msDSEnabledFeature = Get-ADObject -Identity "CN=Partitions,$($RootDSE.configurationNamingContext)" -Property msDS-EnabledFeature -Server $ForestFQDN -Credential $EnterpriseAdministratorCredential |
-            Select-Object -ExpandProperty msDS-EnabledFeature
+        $State = Get-TargetResource @PSBoundParameters
 
-        If ($msDSEnabledFeature -contains $RecycleBinPath) {
-            Write-Verbose "Active Directory Recycle Bin is enabled."
+        If ($true -eq $State.Enabled) {
+            Write-Verbose "$FeatureName is enabled."
             Return $True
         } Else {
-            Write-Verbose "Active Directory Recycle Bin is not enabled."
+            Write-Verbose "$FeatureName is not enabled."
             Return $False
         }
     }
@@ -155,7 +171,7 @@ function Test-TargetResource
         Throw $_
     }
     Catch {
-        Write-Error -Message "Unhandled exception testing Recycle Bin status for forest $ForestFQDN."
+        Write-Error -Message "Unhandled exception testing $FeatureName status for forest $ForestFQDN."
         Throw $_
     }
 
@@ -175,15 +191,12 @@ Test syntax:
 $cred = Get-Credential contoso\administrator
 
 # Valid Domain
-Get-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
-Test-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
-Set-TargetResource -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred -WhatIf
+Get-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
+Test-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred
+Set-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.com -EnterpriseAdministratorCredential $cred -WhatIf
 
 # Invalid Domain
-Get-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
-Test-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
-Set-TargetResource -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred -WhatIf
+Get-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
+Test-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred
+Set-TargetResource -FeatureName 'Privileged Access Management Feature' -ForestFQDN contoso.cm -EnterpriseAdministratorCredential $cred -WhatIf
 #>
-
-
-

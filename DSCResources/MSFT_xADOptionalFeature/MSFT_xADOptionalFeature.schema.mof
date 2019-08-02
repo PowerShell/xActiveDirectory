@@ -1,0 +1,8 @@
+[ClassVersion("1.0.0.0"), FriendlyName("xADOptionalFeature")]
+class MSFT_xADOptionalFeature : OMI_BaseResource
+{
+    [Key] String ForestFQDN;
+    [Key] String FeatureName;
+    [Required, EmbeddedInstance("MSFT_Credential")] String EnterpriseAdministratorCredential;
+    [Read] Boolean Enabled;
+};

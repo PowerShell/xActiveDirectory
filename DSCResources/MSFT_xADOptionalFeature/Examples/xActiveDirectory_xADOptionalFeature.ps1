@@ -1,4 +1,4 @@
-Configuration Example_xADRecycleBin
+Configuration Example_xADOptionalFeature
 {
 Param(
     [parameter(Mandatory = $true)]
@@ -7,15 +7,16 @@ Param(
 
     [parameter(Mandatory = $true)]
     [System.Management.Automation.PSCredential]
-    $EACredential 
+    $EACredential
 )
 
     Import-DscResource -Module xActiveDirectory
 
     Node $AllNodes.NodeName
     {
-        xADRecycleBin RecycleBin
+        xADOptionalFeature RecycleBin
         {
+           FeatureName = "Recycle Bin Feature"
            EnterpriseAdministratorCredential = $EACredential
            ForestFQDN = $ForestFQDN
         }
@@ -31,9 +32,8 @@ $ConfigurationData = @{
     )
 }
 
-Example_xADRecycleBin -EACredential (Get-Credential contoso\administrator) -ForestFQDN 'contoso.com' -ConfigurationData $ConfigurationData
+Example_xADOptionalFeature -EACredential (Get-Credential contoso\administrator) -ForestFQDN 'contoso.com' -ConfigurationData $ConfigurationData
 
-Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose -WhatIf
+Start-DscConfiguration -Path .\Example_xADOptionalFeature -Wait -Verbose -WhatIf
 
-Start-DscConfiguration -Path .\Example_xADRecycleBin -Wait -Verbose
-
+Start-DscConfiguration -Path .\Example_xADOptionalFeature -Wait -Verbose
