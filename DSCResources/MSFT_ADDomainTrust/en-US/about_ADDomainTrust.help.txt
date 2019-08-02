@@ -35,12 +35,16 @@
     Key - String
     Specifies the name of the Active Directory domain that is requesting the trust.
 
+.PARAMETER AllowTrustRecreation
+    Write - Boolean
+    Specifies if the is allowed to be recreated if required. Default value is $false.
+
 .EXAMPLE 1
 
 This configuration will create a new one way inbound trust between two
 domains.
 
-Configuration ADDomainTrust_NewOneWayTrust_Config
+Configuration ADDomainTrust_ExternalInboundTrust_Config
 {
     param
     (
@@ -69,6 +73,46 @@ Configuration ADDomainTrust_NewOneWayTrust_Config
             TargetCredential = $TargetDomainAdminCred
             TrustDirection   = 'Inbound'
             TrustType        = 'External'
+        }
+    }
+}
+
+.EXAMPLE 2
+
+This configuration will create a new one way inbound trust between two
+domains, and allows the trust to recreated if it should have the wrong
+trust type.
+
+Configuration ADDomainTrust_ExternalInboundTrustWithOptInToRecreate_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceDomain,
+
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $TargetDomain,
+
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSCredential]
+        $TargetDomainAdminCred
+    )
+
+    Import-DscResource -module ActiveDirectoryDsc
+
+    node localhost
+    {
+        ADDomainTrust 'Trust'
+        {
+            Ensure               = 'Present'
+            SourceDomainName     = $SourceDomain
+            TargetDomainName     = $TargetDomain
+            TargetCredential     = $TargetDomainAdminCred
+            TrustDirection       = 'Inbound'
+            TrustType            = 'External'
+            AllowTrustRecreation = $true
         }
     }
 }
