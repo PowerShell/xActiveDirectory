@@ -20,9 +20,10 @@
 <#
     .DESCRIPTION
         This configuration will create a new one way inbound trust between two
-        domains.
+        domains, and allows the trust to recreated if it should have the wrong
+        trust type.
 #>
-Configuration ADDomainTrust_NewOneWayTrust_Config
+Configuration ADDomainTrust_ExternalInboundTrustWithOptInToRecreate_Config
 {
     param
     (
@@ -45,12 +46,13 @@ Configuration ADDomainTrust_NewOneWayTrust_Config
     {
         ADDomainTrust 'Trust'
         {
-            Ensure           = 'Present'
-            SourceDomainName = $SourceDomain
-            TargetDomainName = $TargetDomain
-            TargetCredential = $TargetDomainAdminCred
-            TrustDirection   = 'Inbound'
-            TrustType        = 'External'
+            Ensure               = 'Present'
+            SourceDomainName     = $SourceDomain
+            TargetDomainName     = $TargetDomain
+            TargetCredential     = $TargetDomainAdminCred
+            TrustDirection       = 'Inbound'
+            TrustType            = 'External'
+            AllowTrustRecreation = $true
         }
     }
 }
