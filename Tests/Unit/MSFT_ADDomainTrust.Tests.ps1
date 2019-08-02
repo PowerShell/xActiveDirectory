@@ -106,6 +106,32 @@ try
                             $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                             $getTargetResourceResult.TrustDirection | Should -Be $mockGetTargetResourceParameters.TrustDirection
                             $getTargetResourceResult.TrustType | Should -Be $mockGetTargetResourceParameters.TrustType
+                            $getTargetResourceResult.AllowTrustRecreation | Should -BeFalse
+                        }
+
+                        Context 'When the called with the AllowTrustRecreation set to $true' {
+                            BeforeEach {
+                                $mockGetTargetResourceParameters['AllowTrustRecreation'] = $true
+                            }
+
+                            It 'Should return the state as present' {
+                                $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
+                                $getTargetResourceResult.Ensure | Should -Be 'Present'
+                            }
+
+                            It 'Should return the same values as passed as parameters' {
+                                $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
+                                $getTargetResourceResult.SourceDomainName | Should -Be $mockGetTargetResourceParameters.SourceDomainName
+                                $getTargetResourceResult.TargetDomainName | Should -Be $mockGetTargetResourceParameters.TargetDomainName
+                                $getTargetResourceResult.TargetCredential.UserName | Should -Be $mockCredential.UserName
+                                $getTargetResourceResult.AllowTrustRecreation | Should -BeTrue
+                            }
+
+                            It 'Should return the correct values for the other properties' {
+                                $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
+                                $getTargetResourceResult.TrustDirection | Should -Be $mockGetTargetResourceParameters.TrustDirection
+                                $getTargetResourceResult.TrustType | Should -Be $mockGetTargetResourceParameters.TrustType
+                            }
                         }
                     }
 
@@ -157,6 +183,7 @@ try
                             $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                             $getTargetResourceResult.TrustDirection | Should -Be $mockGetTargetResourceParameters.TrustDirection
                             $getTargetResourceResult.TrustType | Should -Be $mockGetTargetResourceParameters.TrustType
+                            $getTargetResourceResult.AllowTrustRecreation | Should -BeFalse
                         }
                     }
                 }
@@ -206,6 +233,7 @@ try
                         $getTargetResourceResult = Get-TargetResource @mockGetTargetResourceParameters
                         $getTargetResourceResult.TrustDirection | Should -BeNullOrEmpty
                         $getTargetResourceResult.TrustType | Should -BeNullOrEmpty
+                        $getTargetResourceResult.AllowTrustRecreation | Should -BeFalse
                     }
                 }
             }
@@ -791,6 +819,39 @@ try
                 }
 
                 Context 'When a property of a domain trust is not in desired state' {
+                    Context 'When property TrustType is not in desired state, and not opt-in to recreate trust' {
+                        BeforeAll {
+                            Mock -CommandName Compare-TargetResourceState -MockWith {
+                                return @(
+                                    @{
+                                        ParameterName  = 'Ensure'
+                                        Actual = 'Present'
+                                        Expected = 'Present'
+                                        InDesiredState = $true
+                                    }
+                                    @{
+                                        ParameterName  = 'TrustType'
+                                        Actual = 'Domain'
+                                        Expected = 'Forest'
+                                        InDesiredState = $false
+                                    }
+                                )
+                            }
+                        }
+
+                        BeforeEach {
+                            $setTargetResourceParameters = $mockDefaultParameters.Clone()
+                            $setTargetResourceParameters['TrustType'] = 'Forest'
+                            $setTargetResourceParameters['TrustDirection'] = 'Inbound'
+                        }
+
+                        It 'Should not throw and call the correct methods' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Throw $script:localizedData.NotOptInToRecreateTrust
+
+                            Assert-MockCalled -CommandName Get-TrustSourceAndTargetObject -Exactly -Times 1 -Scope It
+                        }
+                    }
+
                     Context 'When both properties TrustType and and TrustDirection is not in desired state' {
                         BeforeAll {
                             Mock -CommandName Compare-TargetResourceState -MockWith {
@@ -825,6 +886,7 @@ try
                             $setTargetResourceParameters = $mockDefaultParameters.Clone()
                             $setTargetResourceParameters['TrustType'] = 'Forest'
                             $setTargetResourceParameters['TrustDirection'] = 'Inbound'
+                            $setTargetResourceParameters['AllowTrustRecreation'] = $true
                         }
 
                         It 'Should not throw and call the correct methods' {

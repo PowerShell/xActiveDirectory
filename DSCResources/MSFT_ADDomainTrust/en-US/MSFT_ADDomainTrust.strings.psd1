@@ -11,4 +11,5 @@ InDesiredState            = The Active Directory trust is in the desired state. 
 NotInDesiredState         = The Active Directory trust is not in the desired state. (ADDT0009)
 NeedToRecreateTrust       = The trust type is not in desired state, removing the trust between the domains '{0}' and '{1}' with the context type '{2}' to be able to recreate the trust with the correct context type '{3}'. (ADDT0010)
 RecreatedTrustType        = Recreated the trust between domains '{0}' and '{1}' with the context type '{2}' and direction '{3}'. (ADDT0011)
+NotOptInToRecreateTrust   = Not opt-in to recreate trust. To opt-in set the parameter AllowTrustRecreation to $true.
 '@

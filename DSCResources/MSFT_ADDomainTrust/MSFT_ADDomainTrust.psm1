@@ -26,6 +26,10 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADDomainTrust'
 
     .PARAMETER TrustDirection
         Specifies the direction of the trust.
+
+    .PARAMETER AllowTrustRecreation
+        Specifies if the is allowed to be recreated if required. Default value is
+        $false.
 #>
 function Get-TargetResource
 {
@@ -53,16 +57,21 @@ function Get-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateSet('Bidirectional', 'Inbound', 'Outbound')]
         [System.String]
-        $TrustDirection
+        $TrustDirection,
+
+        [Parameter()]
+        [System.Boolean]
+        $AllowTrustRecreation = $false
     )
 
     # Return a credential object without the password.
     $cimCredentialInstance = New-CimCredentialInstance -Credential $TargetCredential
 
     $returnValue = @{
-        SourceDomainName = $SourceDomainName
-        TargetDomainName = $TargetDomainName
-        TargetCredential = $cimCredentialInstance
+        SourceDomainName     = $SourceDomainName
+        TargetDomainName     = $TargetDomainName
+        TargetCredential     = $cimCredentialInstance
+        AllowTrustRecreation = $AllowTrustRecreation
     }
 
     $getTrustTargetAndSourceObject = @{
@@ -127,6 +136,10 @@ function Get-TargetResource
     .PARAMETER Ensure
         Specifies whether the computer account is present or absent. Default
         value is 'Present'.
+
+    .PARAMETER AllowTrustRecreation
+        Specifies if the is allowed to be recreated if required. Default value is
+        $false.
 #>
 function Set-TargetResource
 {
@@ -158,7 +171,11 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [System.Boolean]
+        $AllowTrustRecreation = $false
     )
 
     $getTrustTargetAndSourceObject = @{
@@ -170,15 +187,19 @@ function Set-TargetResource
 
     $trustSource, $trustTarget = Get-TrustSourceAndTargetObject @getTrustTargetAndSourceObject
 
-    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
+    # Only pass those properties that should be evaluated.
+    $compareTargetResourceStateParameters = @{} + $PSBoundParameters
+    $compareTargetResourceStateParameters.Remove('AllowTrustRecreation')
+
+    $compareTargetResourceStateResult = Compare-TargetResourceState @compareTargetResourceStateParameters
 
     # Get all properties that are not in desired state.
     $propertiesNotInDesiredState = $compareTargetResourceStateResult |
-        Where-Object -FilterScript {
-            -not $_.InDesiredState
-        }
+    Where-Object -FilterScript {
+        -not $_.InDesiredState
+    }
 
-    if ($propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'Ensure' }))
+    if ($propertiesNotInDesiredState.Where( { $_.ParameterName -eq 'Ensure' }))
     {
         if ($Ensure -eq 'Present')
         {
@@ -216,7 +237,7 @@ function Set-TargetResource
             $trustRecreated = $false
 
             # Check properties.
-            $trustTypeProperty = $propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'TrustType' })
+            $trustTypeProperty = $propertiesNotInDesiredState.Where( { $_.ParameterName -eq 'TrustType' })
 
             if ($trustTypeProperty)
             {
@@ -229,19 +250,26 @@ function Set-TargetResource
                     )
                 )
 
-                $trustSource.DeleteTrustRelationship($trustTarget)
-                $trustSource.CreateTrustRelationship($trustTarget, $TrustDirection)
+                if ($AllowTrustRecreation)
+                {
+                    $trustSource.DeleteTrustRelationship($trustTarget)
+                    $trustSource.CreateTrustRelationship($trustTarget, $TrustDirection)
 
-                Write-Verbose -Message (
-                    $script:localizedData.RecreatedTrustType -f @(
-                        $SourceDomainName,
-                        $TargetDomainName,
-                        $TrustType,
-                        $TrustDirection
+                    Write-Verbose -Message (
+                        $script:localizedData.RecreatedTrustType -f @(
+                            $SourceDomainName,
+                            $TargetDomainName,
+                            $TrustType,
+                            $TrustDirection
+                        )
                     )
-                )
 
-                $trustRecreated = $true
+                    $trustRecreated = $true
+                }
+                else
+                {
+                    throw $script:localizedData.NotOptInToRecreateTrust
+                }
             }
 
             <#
@@ -251,7 +279,7 @@ function Set-TargetResource
             #>
             if (-not $trustRecreated)
             {
-                if ($propertiesNotInDesiredState.Where({ $_.ParameterName -eq 'TrustDirection' }))
+                if ($propertiesNotInDesiredState.Where( { $_.ParameterName -eq 'TrustDirection' }))
                 {
                     $trustSource.UpdateTrustRelationship($trustTarget, $TrustDirection)
 
@@ -296,6 +324,10 @@ function Set-TargetResource
     .PARAMETER Ensure
         Specifies whether the computer account is present or absent. Default
         value is 'Present'.
+
+    .PARAMETER AllowTrustRecreation
+        Specifies if the is allowed to be recreated if required. Default value is
+        $false.
 #>
 function Test-TargetResource
 {
@@ -328,18 +360,26 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present'
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [System.Boolean]
+        $AllowTrustRecreation = $false
     )
 
     Write-Verbose -Message (
         $script:localizedData.TestConfiguration -f $SourceDomainName, $TargetDomainName, $TrustType
     )
 
+    # Only pass those properties that should be evaluated.
+    $compareTargetResourceStateParameters = @{} + $PSBoundParameters
+    $compareTargetResourceStateParameters.Remove('AllowTrustRecreation')
+
     <#
         This returns array of hashtables which contain the properties ParameterName,
         Expected, Actual, and InDesiredState.
     #>
-    $compareTargetResourceStateResult = Compare-TargetResourceState @PSBoundParameters
+    $compareTargetResourceStateResult = Compare-TargetResourceState @compareTargetResourceStateParameters
 
     if ($false -in $compareTargetResourceStateResult.InDesiredState)
     {

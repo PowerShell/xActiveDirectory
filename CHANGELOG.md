@@ -91,6 +91,10 @@
   - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
     to `Credential` to better indicate that it is possible to impersonate
     any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
+  - BREAKING CHANGE: A new parameter `AllowTrustRecreation` has been added
+    that when set allows a trust to be recreated in scenarios where that
+    is required. This way the user have to opt-in to such destructive
+    action since since it can result in service interruption ([issue #421](https://github.com/PowerShell/ActiveDirectoryDsc/issues/421)).
   - Updated tests and replaced `Write-Error` with `throw`
     ([issue #332](https://github.com/PowerShell/ActiveDirectoryDsc/pull/332)).
   - Added comment-based help ([issue #335](https://github.com/PowerShell/ActiveDirectoryDsc/issues/335)).

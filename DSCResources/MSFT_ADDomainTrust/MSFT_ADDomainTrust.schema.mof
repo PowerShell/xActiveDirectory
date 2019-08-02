@@ -7,4 +7,5 @@ class MSFT_ADDomainTrust : OMI_BaseResource
     [Required, Description("Specifies the type of trust. The value 'External' means the context Domain, while the value 'Forest' means the context 'Forest'."), ValueMap{"External","Forest"}, Values{"External","Forest"}] String TrustType;
     [Required, Description("Specifies the direction of the trust."), ValueMap{"Bidirectional","Inbound","Outbound"}, Values{"Bidirectional","Inbound","Outbound"}] String TrustDirection;
     [Key, Description("Specifies the name of the Active Directory domain that is requesting the trust.")] String SourceDomainName;
+    [Write, Description("Specifies if the is allowed to be recreated if required. Default value is $false.")] Boolean AllowTrustRecreation;
 };
