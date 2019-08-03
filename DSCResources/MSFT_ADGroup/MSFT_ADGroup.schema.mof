@@ -2,7 +2,7 @@
 class MSFT_ADGroup : OMI_BaseResource
 {
     [Key, Description("Name of the Active Directory group.")] String GroupName;
-    [Write, Description("Active Directory group scope. Default value is 'Group'."), ValueMap{"DomainLocal","Global","Universal"}, Values{"DomainLocal","Global","Universal"}] String GroupScope;
+    [Write, Description("Active Directory group scope. Default value is 'Global'."), ValueMap{"DomainLocal","Global","Universal"}, Values{"DomainLocal","Global","Universal"}] String GroupScope;
     [Write, Description("Active Directory group category. Default value is 'Security'."), ValueMap{"Security","Distribution"}, Values{"Security","Distribution"}] String Category;
     [Write, Description("Location of the group within Active Directory expressed as a Distinguished Name.")] String Path;
     [Write, Description("Specifies if this Active Directory group should be present or absent. Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;

@@ -40,6 +40,7 @@
 - [ ] Resource parameter descriptions added/updated in schema.mof
       and comment-based help.
 - [ ] Comment-based help added/updated.
+- [ ] Conceptual help topic added/updated (cultureFolder\about_ResourceName.help.txt).
 - [ ] Localization strings added/updated in all localization files as appropriate.
 - [ ] Examples appropriately added/updated.
 - [ ] Unit tests added/updated. See [DSC Resource Testing Guidelines](https://github.com/PowerShell/DscResources/blob/master/TestsGuidelines.md).

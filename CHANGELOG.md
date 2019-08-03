@@ -55,6 +55,10 @@
   - Updated all the examples files to be prefixed with the resource
     name so they are more easily discovered in PowerShell Gallery and
     Azure Automation ([issue #416](https://github.com/PowerShell/ActiveDirectoryDsc/issues/416)).
+  - Fix examples that had duplicate guid that would have prevented them
+    to be published.
+  - Integration tests are now correctly evaluates the value from `Test-DscConfiguration`
+    ([issue #434](https://github.com/PowerShell/ActiveDirectoryDsc/issues/434)).
 - Changes to ADManagedServiceAccount
   - Added a requirement to README stating "Group Managed Service Accounts
     need at least one Windows Server 2012 Domain Controller"
@@ -68,6 +72,7 @@
     any credential with enough permission to perform the task ([issue #269](https://github.com/PowerShell/ActiveDirectoryDsc/issues/269)).
   - Fixed the GUID in Example 3-AddComputerAccountSpecificPath_Config
     ([issue #410](https://github.com/PowerShell/ActiveDirectoryDsc/issues/410)).
+  - Add example showing how to create cluster computer account ([issue #401](https://github.com/PowerShell/ActiveDirectoryDsc/issues/401)).
 - Changes to ADOrganizationalUnit
   - Catch exception when the path property specifies a non-existing path
     ([issue #408](https://github.com/PowerShell/ActiveDirectoryDsc/issues/408)).
@@ -87,6 +92,11 @@
   - Now it correctly tests passwords when parameter DomainName is set to
    distinguished name and parameter Credential is used ([issue #451](https://github.com/PowerShell/ActiveDirectoryDsc/issues/451)).
   - Added integration tests ([issue #359](https://github.com/PowerShell/ActiveDirectoryDsc/issues/359)).
+  - Update the logic for setting the default value for the parameter
+    `CommonName`. This is due to an how LCM handles parameters when a
+    default value is derived from another parameter ([issue #427](https://github.com/PowerShell/ActiveDirectoryDsc/issues/427)).
+  - Now uses the helper function `Add-TypeAssembly` which have some benefit
+    instead of directly using `Add-Type`, like verbose logging ([issue #431](https://github.com/PowerShell/ActiveDirectoryDsc/issues/431)).
 - Changes to ADDomain
   - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
     to `Credential` to better indicate that it is possible to impersonate
@@ -135,6 +145,12 @@
   - Refactored unit tests for Test-TargetResource.
 - Changes to ADObjectPermissionEntry
   - Remove remnants of the `SupportsShouldProcess` ([issue #329](https://github.com/PowerShell/ActiveDirectoryDsc/issues/329)).
+- Changes to ADGroup
+  - Added comment-based help ([issue #338](https://github.com/PowerShell/ActiveDirectoryDsc/issues/338)).
+  - Update the documentation with the correct default value for the parameter
+    GroupScope.
+- Changes to ADDomainDefaultPasswordPolicy
+  - Added comment-based help ([issue #336](https://github.com/PowerShell/ActiveDirectoryDsc/issues/336)).
 
 ## 3.0.0.0
 

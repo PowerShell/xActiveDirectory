@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0.0
-.GUID 1da557bb-07a1-4461-8f64-df0d62b30305
+.GUID 331c7f40-112d-468c-9bd0-8f1b073bee44
 .AUTHOR Microsoft Corporation
 .COMPANYNAME Microsoft Corporation
 .COPYRIGHT (c) Microsoft Corporation. All rights reserved.
@@ -20,10 +20,11 @@
 
 <#
     .DESCRIPTION
-        This configuration will configure a cluster using a pre-staged computer
-        account, and enforcing the pre-staged computer account to be enabled.
+        This configuration will create a computer account disabled, configure
+        a cluster using the disabled computer account, and enforcing the
+        computer account to be enabled.
 #>
-Configuration ADObjectEnabledState_EnabledPrestagedClusterComputerAccount_Config
+Configuration ADComputer_CreateClusterComputerAccount_Config
 {
     param
     (
@@ -38,11 +39,19 @@ Configuration ADObjectEnabledState_EnabledPrestagedClusterComputerAccount_Config
 
     node localhost
     {
+        ADComputer 'ClusterAccount'
+        {
+            ComputerName      = 'CLU_CNO01'
+            EnabledOnCreation = $false
+        }
+
         xCluster 'CreateCluster'
         {
             Name                          = 'CLU_CNO01'
             StaticIPAddress               = '192.168.100.20/24'
             DomainAdministratorCredential = $Credential
+
+            DependsOn                     = '[ADComputer]ClusterAccount'
         }
 
         ADObjectEnabledState 'EnforceEnabledPropertyToEnabled'
@@ -51,9 +60,7 @@ Configuration ADObjectEnabledState_EnabledPrestagedClusterComputerAccount_Config
             ObjectClass = 'Computer'
             Enabled     = $true
 
-            DependsOn   = @(
-                '[xCluster]CreateCluster'
-            )
+            DependsOn   = '[xCluster]CreateCluster'
         }
     }
 }

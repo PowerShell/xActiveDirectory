@@ -460,7 +460,7 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $CommonName = $UserName,
+        $CommonName,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -733,6 +733,15 @@ function Get-TargetResource
         [System.String[]]
         $ProxyAddresses
     )
+
+    <#
+        This is a workaround to make the resource able to enter debug mode.
+        For more information see issue https://github.com/PowerShell/ActiveDirectoryDsc/issues/427.
+    #>
+    if (-not $PSBoundParameters.ContainsKey('CommonName'))
+    {
+        $CommonName = $UserName
+    }
 
     Assert-Module -ModuleName 'ActiveDirectory'
 
@@ -1107,7 +1116,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $CommonName = $UserName,
+        $CommonName,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -1380,6 +1389,15 @@ function Test-TargetResource
         [System.String[]]
         $ProxyAddresses
     )
+
+    <#
+        This is a workaround to make the resource able to enter debug mode.
+        For more information see issue https://github.com/PowerShell/ActiveDirectoryDsc/issues/427.
+    #>
+    if (-not $PSBoundParameters.ContainsKey('CommonName'))
+    {
+        $CommonName = $UserName
+    }
 
     Assert-Parameters @PSBoundParameters
 
@@ -1723,7 +1741,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $CommonName = $UserName,
+        $CommonName,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -1996,6 +2014,15 @@ function Set-TargetResource
         [System.String[]]
         $ProxyAddresses
     )
+
+    <#
+        This is a workaround to make the resource able to enter debug mode.
+        For more information see issue https://github.com/PowerShell/ActiveDirectoryDsc/issues/427.
+    #>
+    if (-not $PSBoundParameters.ContainsKey('CommonName'))
+    {
+        $CommonName = $UserName
+    }
 
     Assert-Parameters @PSBoundParameters
 
@@ -2350,7 +2377,9 @@ function Test-Password
 
     Write-Verbose -Message ($script:localizedData.CreatingADDomainConnection -f $DomainName)
 
-    Add-Type -AssemblyName 'System.DirectoryServices.AccountManagement'
+    $typeName = 'System.DirectoryServices.AccountManagement.PrincipalContext'
+
+    Add-TypeAssembly -AssemblyName 'System.DirectoryServices.AccountManagement' -TypeName $typeName
 
     <#
         If the domain name contains a distinguished name, set it to the fully
@@ -2370,7 +2399,7 @@ function Test-Password
             $script:localizedData.TestPasswordUsingImpersonation -f $Credential.UserName, $UserName
         )
 
-        $principalContext = New-Object -TypeName 'System.DirectoryServices.AccountManagement.PrincipalContext' -ArgumentList @(
+        $principalContext = New-Object -TypeName $typeName -ArgumentList @(
             [System.DirectoryServices.AccountManagement.ContextType]::Domain,
             $DomainName,
             $Credential.UserName,
@@ -2379,7 +2408,7 @@ function Test-Password
     }
     else
     {
-        $principalContext = New-Object -TypeName 'System.DirectoryServices.AccountManagement.PrincipalContext' -ArgumentList @(
+        $principalContext = New-Object -TypeName $typeName -ArgumentList @(
             [System.DirectoryServices.AccountManagement.ContextType]::Domain,
             $DomainName,
             $null,

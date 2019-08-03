@@ -41,6 +41,20 @@ $mutablePropertyMap = @(
     }
 )
 
+<#
+    .SYNOPSIS
+        Returns the current state of the Active Directory default domain password
+        policy.
+
+    .PARAMETER DomainName
+         Name of the domain to which the password policy will be applied.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Credential
+        Credentials used to access the domain.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -85,6 +99,47 @@ function Get-TargetResource
     }
 } #end Get-TargetResource
 
+<#
+    .SYNOPSIS
+        Determines if the Active Directory default domain password policy is in
+        the desired state
+
+    .PARAMETER DomainName
+         Name of the domain to which the password policy will be applied.
+
+    .PARAMETER ComplexityEnabled
+        Whether password complexity is enabled for the default password policy.
+
+    .PARAMETER LockoutDuration
+        Length of time that an account is locked after the number of failed login attempts (minutes).
+
+    .PARAMETER LockoutObservationWindow
+        Maximum time between two unsuccessful login attempts before the counter is reset to 0 (minutes).
+
+    .PARAMETER LockoutThreshold
+        Number of unsuccessful login attempts that are permitted before an account is locked out.
+
+    .PARAMETER MinPasswordAge
+        Minimum length of time that you can have the same password (minutes).
+
+    .PARAMETER MaxPasswordAge
+        Maximum length of time that you can have the same password (minutes).
+
+    .PARAMETER MinPasswordLength
+        Minimum number of characters that a password must contain.
+
+    .PARAMETER PasswordHistoryCount
+        Number of previous passwords to remember.
+
+    .PARAMETER ReversibleEncryptionEnabled
+        Whether the directory must store passwords using reversible encryption.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Credential
+        Credentials used to access the domain.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -189,6 +244,46 @@ function Test-TargetResource
     }
 } #end Test-TargetResource
 
+<#
+    .SYNOPSIS
+        Modifies the Active Directory default domain password policy.
+
+    .PARAMETER DomainName
+         Name of the domain to which the password policy will be applied.
+
+    .PARAMETER ComplexityEnabled
+        Whether password complexity is enabled for the default password policy.
+
+    .PARAMETER LockoutDuration
+        Length of time that an account is locked after the number of failed login attempts (minutes).
+
+    .PARAMETER LockoutObservationWindow
+        Maximum time between two unsuccessful login attempts before the counter is reset to 0 (minutes).
+
+    .PARAMETER LockoutThreshold
+        Number of unsuccessful login attempts that are permitted before an account is locked out.
+
+    .PARAMETER MinPasswordAge
+        Minimum length of time that you can have the same password (minutes).
+
+    .PARAMETER MaxPasswordAge
+        Maximum length of time that you can have the same password (minutes).
+
+    .PARAMETER MinPasswordLength
+        Minimum number of characters that a password must contain.
+
+    .PARAMETER PasswordHistoryCount
+        Number of previous passwords to remember.
+
+    .PARAMETER ReversibleEncryptionEnabled
+        Whether the directory must store passwords using reversible encryption.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Credential
+        Credentials used to access the domain.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]

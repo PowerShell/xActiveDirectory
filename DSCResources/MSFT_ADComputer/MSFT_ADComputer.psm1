@@ -469,7 +469,7 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-        Creates. removes or modifies the Active Directory computer account.
+        Creates, removes or modifies the Active Directory computer account.
 
     .PARAMETER ComputerName
          Specifies the name of the Active Directory computer account to manage.

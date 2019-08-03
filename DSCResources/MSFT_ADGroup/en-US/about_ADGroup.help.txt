@@ -15,7 +15,7 @@
 .PARAMETER GroupScope
     Write - String
     Allowed values: DomainLocal, Global, Universal
-    Active Directory group scope. Default value is 'Group'.
+    Active Directory group scope. Default value is 'Global'.
 
 .PARAMETER Category
     Write - String

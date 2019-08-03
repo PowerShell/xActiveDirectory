@@ -6,6 +6,60 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADGroup'
 
+<#
+    .SYNOPSIS
+        Returns the current state of the Active Directory group.
+
+    .PARAMETER GroupName
+         Name of the Active Directory group.
+
+    .PARAMETER GroupScope
+        Active Directory group scope. Default value is 'Global'.
+
+    .PARAMETER Category
+        Active Directory group category. Default value is 'Security'.
+
+    .PARAMETER Path
+        Location of the group within Active Directory expressed as a Distinguished Name.
+
+    .PARAMETER Ensure
+        Specifies if this Active Directory group should be present or absent.
+        Default value is 'Present'.
+
+    .PARAMETER Description
+        Description of the Active Directory group.
+
+    .PARAMETER DisplayName
+        Display name of the Active Directory group.
+
+    .PARAMETER Credential
+        Credentials used to enact the change upon.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Members
+        Active Directory group membership should match membership exactly.
+
+    .PARAMETER MembersToInclude
+        Active Directory group should include these members.
+
+    .PARAMETER MembersToExclude
+        Active Directory group should NOT include these members.
+
+    .PARAMETER MembershipAttribute
+        Active Directory attribute used to perform membership operations.
+        Default value is 'SamAccountName'.
+
+    .PARAMETER ManagedBy
+        Active Directory managed by attribute specified as a DistinguishedName.
+
+    .PARAMETER Notes
+        Active Directory group notes field.
+
+    .PARAMETER RestoreFromRecycleBin
+        Try to restore the group from the recycle bin before creating a new one.
+#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -150,6 +204,60 @@ function Get-TargetResource
     return $targetResource
 } #end function Get-TargetResource
 
+<#
+    .SYNOPSIS
+        Determines if the Active Directory group is in the desired state.
+
+    .PARAMETER GroupName
+         Name of the Active Directory group.
+
+    .PARAMETER GroupScope
+        Active Directory group scope. Default value is 'Global'.
+
+    .PARAMETER Category
+        Active Directory group category. Default value is 'Security'.
+
+    .PARAMETER Path
+        Location of the group within Active Directory expressed as a Distinguished Name.
+
+    .PARAMETER Ensure
+        Specifies if this Active Directory group should be present or absent.
+        Default value is 'Present'.
+
+    .PARAMETER Description
+        Description of the Active Directory group.
+
+    .PARAMETER DisplayName
+        Display name of the Active Directory group.
+
+    .PARAMETER Credential
+        Credentials used to enact the change upon.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Members
+        Active Directory group membership should match membership exactly.
+
+    .PARAMETER MembersToInclude
+        Active Directory group should include these members.
+
+    .PARAMETER MembersToExclude
+        Active Directory group should NOT include these members.
+
+    .PARAMETER MembershipAttribute
+        Active Directory attribute used to perform membership operations.
+        Default value is 'SamAccountName'.
+
+    .PARAMETER ManagedBy
+        Active Directory managed by attribute specified as a DistinguishedName.
+
+    .PARAMETER Notes
+        Active Directory group notes field.
+
+    .PARAMETER RestoreFromRecycleBin
+        Try to restore the group from the recycle bin before creating a new one.
+#>
 function Test-TargetResource
 {
     [CmdletBinding()]
@@ -318,6 +426,60 @@ function Test-TargetResource
     return $targetResourceInCompliance
 } #end function Test-TargetResource
 
+<#
+    .SYNOPSIS
+        Creates, removes or modifies the Active Directory group.
+
+    .PARAMETER GroupName
+         Name of the Active Directory group.
+
+    .PARAMETER GroupScope
+        Active Directory group scope. Default value is 'Global'.
+
+    .PARAMETER Category
+        Active Directory group category. Default value is 'Security'.
+
+    .PARAMETER Path
+        Location of the group within Active Directory expressed as a Distinguished Name.
+
+    .PARAMETER Ensure
+        Specifies if this Active Directory group should be present or absent.
+        Default value is 'Present'.
+
+    .PARAMETER Description
+        Description of the Active Directory group.
+
+    .PARAMETER DisplayName
+        Display name of the Active Directory group.
+
+    .PARAMETER Credential
+        Credentials used to enact the change upon.
+
+    .PARAMETER DomainController
+        Active Directory domain controller to enact the change upon.
+
+    .PARAMETER Members
+        Active Directory group membership should match membership exactly.
+
+    .PARAMETER MembersToInclude
+        Active Directory group should include these members.
+
+    .PARAMETER MembersToExclude
+        Active Directory group should NOT include these members.
+
+    .PARAMETER MembershipAttribute
+        Active Directory attribute used to perform membership operations.
+        Default value is 'SamAccountName'.
+
+    .PARAMETER ManagedBy
+        Active Directory managed by attribute specified as a DistinguishedName.
+
+    .PARAMETER Notes
+        Active Directory group notes field.
+
+    .PARAMETER RestoreFromRecycleBin
+        Try to restore the group from the recycle bin before creating a new one.
+#>
 function Set-TargetResource
 {
     [CmdletBinding()]
