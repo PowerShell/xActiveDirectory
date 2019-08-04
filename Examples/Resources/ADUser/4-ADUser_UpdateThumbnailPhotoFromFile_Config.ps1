@@ -22,7 +22,7 @@
         This configuration will update a user with a thumbnail photo using
         a jpeg file.
 #>
-Configuration ADUser_UpdateThumbnailPhotoFromFile_Config.ps1
+Configuration ADUser_UpdateThumbnailPhotoFromFile_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 

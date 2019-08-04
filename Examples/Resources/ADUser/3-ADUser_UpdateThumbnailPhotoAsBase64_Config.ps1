@@ -22,7 +22,7 @@
         This configuration will update a user with a thumbnail photo using
         a jpeg image encoded as a Base64 string.
 #>
-Configuration ADUser_UpdateThumbnailPhotoAsBase64_Config.ps1
+Configuration ADUser_UpdateThumbnailPhotoAsBase64_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
