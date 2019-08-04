@@ -143,6 +143,10 @@ $adPropertyMap = @(
         Parameter = 'OtherName'
     }
     @{
+        Parameter = 'ThumbnailPhoto'
+        ADProperty = 'thumbnailPhoto'
+    }
+    @{
         Parameter          = 'PasswordNeverExpires'
         UseCmdletParameter = $true
     }
@@ -431,6 +435,12 @@ $adPropertyMap = @(
     .PARAMETER ProxyAddresses
         Specifies the proxy addresses for the user account.
 
+    .PARAMETER ThumbnailPhoto
+        Specifies the thumbnail photo to be used for the user object. Can be set
+        to either a path to a .jpg-file or a Base64-encoded jpg. If set to an
+        empty string ('') the current thumbnail photo will be removed. The
+        property ThumbnailPhoto will always return the Base64-encoded string of
+        the image even if it was set to a file path.
 #>
 function Get-TargetResource
 {
@@ -731,7 +741,11 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String[]]
-        $ProxyAddresses
+        $ProxyAddresses,
+
+        [Parameter()]
+        [System.String]
+        $ThumbnailPhoto
     )
 
     <#
@@ -802,18 +816,31 @@ function Get-TargetResource
             # The path returned is not the parent container
             if (-not [System.String]::IsNullOrEmpty($adUser.DistinguishedName))
             {
-                $targetResource['Path'] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
+                $targetResource[$parameter] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
             }
         }
-        elseif (($parameter) -eq 'ChangePasswordAtLogon')
+        elseif ($parameter -eq 'ChangePasswordAtLogon')
         {
             if ($adUser.pwdlastset -eq 0)
             {
-                $targetResource['ChangePasswordAtLogon'] = $true
+                $targetResource[$parameter] = $true
             }
             else
             {
-                $targetResource['ChangePasswordAtLogon'] = $false
+                $targetResource[$parameter] = $false
+            }
+        }
+        elseif ($parameter -eq 'ThumbnailPhoto')
+        {
+            if ([System.String]::IsNullOrEmpty($adUser.$parameter))
+            {
+                $targetResource[$parameter] = $null
+                $targetResource['ThumbnailPhotoHash'] = $null
+            }
+            else
+            {
+                $targetResource[$parameter] = [System.Convert]::ToBase64String($adUser.$parameter)
+                $targetResource['ThumbnailPhotoHash'] = Get-MD5HashString -Bytes $adUser.$parameter
             }
         }
         elseif ($property.ADProperty)
@@ -844,7 +871,7 @@ function Get-TargetResource
     }
 
     return $targetResource
-} #end function Get-TargetResource
+} # end function Get-TargetResource
 
 <#
     .SYNOPSIS
@@ -1087,6 +1114,12 @@ function Get-TargetResource
     .PARAMETER ProxyAddresses
         Specifies the proxy addresses for the user account.
 
+    .PARAMETER ThumbnailPhoto
+        Specifies the thumbnail photo to be used for the user object. Can be set
+        to either a path to a .jpg-file or a Base64-encoded jpg. If set to an
+        empty string ('') the current thumbnail photo will be removed. The
+        property ThumbnailPhoto will always return the Base64-encoded string of
+        the image even if it was set to a file path.
 #>
 function Test-TargetResource
 {
@@ -1387,7 +1420,11 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String[]]
-        $ProxyAddresses
+        $ProxyAddresses,
+
+        [Parameter()]
+        [System.String]
+        $ThumbnailPhoto
     )
 
     <#
@@ -1446,6 +1483,24 @@ function Test-TargetResource
                 # Only process the ChangePasswordAtLogon = $true parameter during new user creation
                 continue
             }
+            elseif ($parameter -eq 'ThumbnailPhoto')
+            {
+                <#
+                    Compare thumbnail hash if they are the same. The function
+                    Compare-ThumbnailPhoto returns $null if they are the same.
+                #>
+                $compareThumbnailPhotoResult = Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash
+
+                if ($compareThumbnailPhotoResult)
+                {
+                    Write-Verbose -Message (
+                        $script:localizedData.ADUserNotDesiredPropertyState `
+                            -f $parameter, $compareThumbnailPhotoResult.DesiredThumbnailPhotoHash, $compareThumbnailPhotoResult.CurrentThumbnailPhotoHash
+                    )
+
+                    $isCompliant = $false
+                }
+            }
             # Only check properties that are returned by Get-TargetResource
             elseif ($targetResource.ContainsKey($parameter))
             {
@@ -1470,7 +1525,7 @@ function Test-TargetResource
     }
 
     return $isCompliant
-} #end function Test-TargetResource
+} # end function Test-TargetResource
 
 <#
     .SYNOPSIS
@@ -1713,6 +1768,12 @@ function Test-TargetResource
     .PARAMETER ProxyAddresses
         Specifies the proxy addresses for the user account.
 
+    .PARAMETER ThumbnailPhoto
+        Specifies the thumbnail photo to be used for the user object. Can be set
+        to either a path to a .jpg-file or a Base64-encoded jpg. If set to an
+        empty string ('') the current thumbnail photo will be removed. The
+        property ThumbnailPhoto will always return the Base64-encoded string of
+        the image even if it was set to a file path.
 #>
 function Set-TargetResource
 {
@@ -2012,7 +2073,11 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String[]]
-        $ProxyAddresses
+        $ProxyAddresses,
+
+        [Parameter()]
+        [System.String]
+        $ThumbnailPhoto
     )
 
     <#
@@ -2073,6 +2138,7 @@ function Set-TargetResource
         }
 
         $setADUserParams = Get-ADCommonParameters @PSBoundParameters
+
         $replaceUserProperties = @{ }
         $clearUserProperties = @()
         $moveUserRequired = $false
@@ -2084,7 +2150,12 @@ function Set-TargetResource
             # parameters. This will ignore common parameters such as -Verbose etc.
             if ($targetResource.ContainsKey($parameter))
             {
-                $adProperty = $adPropertyMap | Where-Object -FilterScript { $_.Parameter -eq $parameter }
+                # Find the associated AD property
+                $adProperty = $adPropertyMap |
+                    Where-Object -FilterScript {
+                        $_.Parameter -eq $parameter
+                    }
+
                 if ($parameter -eq 'Path' -and ($PSBoundParameters.Path -ne $targetResource.Path))
                 {
                     # Move user after any property changes
@@ -2122,7 +2193,37 @@ function Set-TargetResource
                     # Only process the ChangePasswordAtLogon = $true parameter during new user creation
                     continue
                 }
-                elseif ($parameter -eq 'Enabled' -and ($PSBoundParameters.$parameter -ne $targetResource.$parameter))
+                elseif ($parameter -eq 'ThumbnailPhoto')
+                {
+                    <#
+                        Compare thumbnail hash if they are the same. The function
+                        Compare-ThumbnailPhoto returns $null if they are the same.
+                    #>
+                    if (Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash)
+                    {
+                        if ($ThumbnailPhoto -eq [System.String]::Empty)
+                        {
+                            $clearUserProperties += $adProperty.ADProperty
+
+                            Write-Verbose -Message (
+                                $script:localizedData.RemovingThumbnailPhoto -f $adProperty.ADProperty
+                            )
+                        }
+                        else
+                        {
+                            [System.Byte[]] $thumbnailPhotoBytes = Get-ThumbnailByteArray -ThumbnailPhoto $ThumbnailPhoto
+
+                            $thumbnailPhotoHash = Get-MD5HashString -Bytes $thumbnailPhotoBytes
+
+                            Write-Verbose -Message (
+                                $script:localizedData.UpdatingThumbnailPhotoProperty -f $adProperty.ADProperty, $thumbnailPhotoHash
+                            )
+
+                            $replaceUserProperties[$adProperty.ADProperty] = $thumbnailPhotoBytes
+                        }
+                    }
+                }
+                elseif ($parameter -eq 'Enabled' -and $PSBoundParameters.$parameter -ne $targetResource.$parameter)
                 {
                     <#
                         We cannot enable/disable an account with -Add or -Replace parameters, but inform that
@@ -2142,10 +2243,6 @@ function Set-TargetResource
                     ($null -eq $PSBoundParameters.$parameter -and $null -ne $targetResource.$parameter) -or
                     (Compare-Object -ReferenceObject $PSBoundParameters.$parameter -DifferenceObject $targetResource.$parameter))
                 {
-                    # Find the associated AD property
-                    $adProperty = $adPropertyMap |
-                        Where-Object -FilterScript { $_.Parameter -eq $parameter }
-
                     if ([System.String]::IsNullOrEmpty($adProperty))
                     {
                         # We can't do anything is an empty AD property!
@@ -2249,7 +2346,7 @@ function Set-TargetResource
         [ref] $null = Remove-ADUser @adCommonParameters -Confirm:$false
     }
 
-} #end function Set-TargetResource
+} # end function Set-TargetResource
 
 <#
     .SYNOPSIS
@@ -2274,7 +2371,6 @@ function Set-TargetResource
         Sets the rest of the arguments that are not passed into the this
         function.
 #>
-# Internal function to validate unsupported options/configurations
 function Assert-Parameters
 {
     [CmdletBinding()]
@@ -2343,7 +2439,6 @@ function Assert-Parameters
         Specifies the authentication context type used when testing passwords.
         Default value is 'Default'.
 #>
-
 function Test-Password
 {
     [CmdletBinding()]
@@ -2436,6 +2531,153 @@ function Test-Password
             $Password.GetNetworkCredential().Password
         )
     }
-} #end function Test-Password
+} # end function Test-Password
+
+<#
+    .SYNOPSIS
+        Internal function to calculate the thumbnailPhoto hash.
+
+    .PARAMETER DomainName
+        Name of the domain where the user account is located (only used if
+        password is managed).
+
+    .OUTPUTS
+        Returns the MD5 hash of the bytes past in parameter Bytes, or $null if
+        the value of parameter is $null.
+#>
+function Get-MD5HashString
+{
+    [CmdletBinding()]
+    [OutputType([System.Byte[]])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [System.Byte[]]
+        $Bytes
+    )
+
+    $md5ReturnValue = $null
+
+    if ($null -ne $Bytes)
+    {
+        $md5 = [System.Security.Cryptography.MD5]::Create()
+        $hashBytes = $md5.ComputeHash($Bytes)
+
+        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-','')
+    }
+
+    return $md5ReturnValue
+} # end function Get-MD5HashString
+
+<#
+    .SYNOPSIS
+        Internal function to convert Base64 or filename to byte[].
+
+    .PARAMETER DomainName
+        Name of the domain where the user account is located (only used if
+        password is managed).
+
+    .OUTPUTS
+        Returns a byte array of a either a .jpg-file or a Base64-encoded jpg.
+#>
+function Get-ThumbnailByteArray
+{
+    [CmdletBinding()]
+    [OutputType([System.Byte[]])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $ThumbnailPhoto
+    )
+
+    # If $ThumbnailPhoto contains '.' or '\' then we assume that we have a file path
+    if ($ThumbnailPhoto -match '\.|\\')
+    {
+        if (Test-Path -Path $ThumbnailPhoto)
+        {
+            Write-Verbose -Message ($script:localizedData.LoadingThumbnailFromFile -f $ThumbnailPhoto)
+            $thumbnailPhotoAsByteArray = Get-Content -Path $ThumbnailPhoto -Encoding Byte
+        }
+        else
+        {
+            $errorMessage = $script:localizedData.ThumbnailPhotoNotAFile
+            New-InvalidOperationException -Message $errorMessage
+        }
+    }
+    else
+    {
+        $thumbnailPhotoAsByteArray = [System.Convert]::FromBase64String($ThumbnailPhoto)
+    }
+
+    return $thumbnailPhotoAsByteArray
+} # end function Get-ThumbnailByteArray
+
+<#
+    .SYNOPSIS
+        Internal function to compare two thumbnail photos.
+
+    .PARAMETER DesiredThumbnailPhoto
+        The desired thumbnail photo. Can be set to either a path to a .jpg-file,
+        a Base64-encoded jpg, an empty string, or $null.
+
+    .PARAMETER CurrentThumbnailPhotoHash
+        The current thumbnail photo MD5 hash, or an empty string or $null if there
+        are no current thumbnail photo.
+
+    .OUTPUTS
+        Returns $null if the thumbnail photos are the same, or a hashtable with
+        the hashes if the thumbnail photos does not match.
+#>
+function Compare-ThumbnailPhoto
+{
+    [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [System.String]
+        $DesiredThumbnailPhoto,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [System.String]
+        $CurrentThumbnailPhotoHash
+    )
+
+    if ([System.String]::IsNullOrEmpty($DesiredThumbnailPhoto))
+    {
+        $desiredThumbnailPhotoHash = $null
+    }
+    else
+    {
+        $desiredThumbnailPhotoHash = Get-MD5HashString -Bytes (Get-ThumbnailByteArray -ThumbnailPhoto $DesiredThumbnailPhoto)
+    }
+
+    <#
+        Compare thumbnail hashes. Must [System.String]::IsNullOrEmpty() to
+        compare empty values correctly.
+    #>
+    if ($desiredThumbnailPhotoHash -eq $CurrentThumbnailPhotoHash `
+        -or (
+            [System.String]::IsNullOrEmpty($desiredThumbnailPhotoHash) `
+            -and [System.String]::IsNullOrEmpty($CurrentThumbnailPhotoHash)
+            )
+        )
+    {
+        $returnValue = $null
+    }
+    else
+    {
+        $returnValue = @{
+            CurrentThumbnailPhotoHash = $CurrentThumbnailPhotoHash
+            DesiredThumbnailPhotoHash = $desiredThumbnailPhotoHash
+        }
+    }
+
+    return $returnValue
+}
 
 Export-ModuleMember -Function *-TargetResource

@@ -18,5 +18,9 @@ ConvertFrom-StringData @'
     MovingADUser                         = Moving user from '{0}' to '{1}'. (ADU0016)
     RenamingADUser                       = Renaming user from '{0}' to '{1}'. (ADU0017)
     RestoringUser                        = Attempting to restore the user object {0} from the recycle bin. (ADU0018)
-    TestPasswordUsingImpersonation       = Impersonating the credentials ''{0}'' to test password for user ''{1}''.
+    TestPasswordUsingImpersonation       = Impersonating the credentials ''{0}'' to test password for user ''{1}''. (ADU0019)
+    LoadingThumbnailFromFile             = Importing thumbnail photo from the file '{0}'. (ADU0020)
+    ThumbnailPhotoNotAFile               = Expected the thumbnail photo to be a file because the string contained the character '.' or '\', but the file could not be found. (ADU0021)
+    UpdatingThumbnailPhotoProperty       = Updating the property '{0}' with a new thumbnail photo with MD5 hash '{1}'. (ADU0022)
+    RemovingThumbnailPhoto               = Removing the thumbnail photo from the property '{0}'. (ADU0023)
 '@

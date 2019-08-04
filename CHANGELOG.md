@@ -97,6 +97,8 @@
     default value is derived from another parameter ([issue #427](https://github.com/PowerShell/ActiveDirectoryDsc/issues/427)).
   - Now uses the helper function `Add-TypeAssembly` which have some benefit
     instead of directly using `Add-Type`, like verbose logging ([issue #431](https://github.com/PowerShell/ActiveDirectoryDsc/issues/431)).
+  - Add new property `ThumbnailPhoto` and read-only property `ThumbnailPhotoHash`
+    ([issue #44](https://github.com/PowerShell/ActiveDirectoryDsc/issues/44)).
 - Changes to ADDomain
   - BREAKING CHANGE: Renamed the parameter `DomainAdministratorCredential`
     to `Credential` to better indicate that it is possible to impersonate

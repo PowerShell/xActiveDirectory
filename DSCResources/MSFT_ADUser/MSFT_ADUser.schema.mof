@@ -60,5 +60,7 @@ class MSFT_ADUser : OMI_BaseResource
     [Write, Description("Specifies whether an account supports Kerberos service tickets which includes the authorization data for the user's device. This value sets the compound identity supported flag of the Active Directory msDS-SupportedEncryptionTypes attribute.")] Boolean CompoundIdentitySupported;
     [Write, Description("Specifies whether the account requires a password. A password is not required for a new account. This parameter sets the PasswordNotRequired property of an account object.")] Boolean PasswordNotRequired;
     [Write, Description("Specifies whether a smart card is required to logon. This parameter sets the SmartCardLoginRequired property for a user object. This parameter also sets the ADS_UF_SMARTCARD_REQUIRED flag of the Active Directory User Account Control attribute.")] Boolean SmartcardLogonRequired;
+    [Write, Description("Specifies the thumbnail photo to be used for the user object. Can be set to either a path to a .jpg-file or a Base64-encoded jpg. If set to an empty string ('') the current thumbnail photo will be removed. The property ThumbnailPhoto will always return the Base64-encoded string of the image even if it was set to a file path.")] String ThumbnailPhoto;
     [Read, Description("Returns the X.500 path of the object.")] String DistinguishedName;
+    [Read, Description("Return the MD5 hash of the current thumbnail photo, or $null if no thumbnail photo exist.")] String ThumbnailPhotoHash;
 };
