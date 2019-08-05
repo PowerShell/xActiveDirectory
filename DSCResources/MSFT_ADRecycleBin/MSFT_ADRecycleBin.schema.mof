@@ -1,8 +1,0 @@
-[ClassVersion("1.0.0.0"), FriendlyName("ADRecycleBin")]
-class MSFT_ADRecycleBin : OMI_BaseResource
-{
-    [Key, Description("The fully qualified domain name (FQDN) of the forest in which to change the Recycle Bin feature.")] String ForestFQDN;
-    [Required, Description("The user account credentials to use to perform this task."), EmbeddedInstance("MSFT_Credential")] String EnterpriseAdministratorCredential;
-    [Read, Description("Returns the state of the Recycle Bin feature.")] String RecycleBinEnabled;
-    [Read, Description("Returns the functional level of the forest.")] String ForestMode;
-};

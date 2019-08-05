@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0
-.GUID 63447da7-3fe9-4d03-b680-2129a2d0318f
+.GUID 63447da7-3fe9-4d03-b680-2129a2e0318f
 .AUTHOR Microsoft Corporation
 .COMPANYNAME Microsoft Corporation
 .COPYRIGHT (c) Microsoft Corporation. All rights reserved.
@@ -22,7 +22,7 @@
         This configuration will enable the Active Directory Recycle Bin for a
         specified Domain
 #>
-Configuration ADRecycleBin_EnableADRecycleBin_Config
+Configuration ADOptionalFeature_EnableADRecycleBin_Config
 {
     param
     (
@@ -32,16 +32,17 @@ Configuration ADRecycleBin_EnableADRecycleBin_Config
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $EACredential
+        $EnterpriseAdministratorCredential
     )
 
     Import-DscResource -Module ActiveDirectoryDsc
 
     Node localhost
     {
-        ADRecycleBin 'RecycleBin'
+        ADOptionalFeature RecycleBin
         {
-            EnterpriseAdministratorCredential = $EACredential
+            FeatureName                       = "Recycle Bin Feature"
+            EnterpriseAdministratorCredential = $EnterpriseAdministratorCredential
             ForestFQDN                        = $ForestFQDN
         }
     }

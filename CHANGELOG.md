@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Changes to ActiveDirectoryDsc
+  - BREAKING CHANGE: ADRecycleBin is replaced by the new resource ADOptionalFeature ([issue #162](https://github.com/PowerShell/ActiveDirectoryDsc/issues/162)).
+  - New resource ADOptionalFeature ([issue #162](https://github.com/PowerShell/ActiveDirectoryDsc/issues/162)).
   - BREAKING CHANGE: Renamed the xActiveDirectory to ActiveDirectoryDsc
     and removed the 'x' from all resource names ([issue #312](https://github.com/PowerShell/ActiveDirectoryDsc/issues/312)).
   - The helper function `Find-DomainController` is exported in the module
@@ -110,11 +112,6 @@
   - Updated tests and replaced `Write-Error` with `throw`
     ([issue #332](https://github.com/PowerShell/ActiveDirectoryDsc/pull/332)).
   - Added comment-based help ([issue #335](https://github.com/PowerShell/ActiveDirectoryDsc/issues/335)).
-- Changes to ADRecycleBin
-  - Updated tests and remove unnecessary mocks of `Write-Error`.
-  - Removed `SupportsShouldProcess` from the resource since DSC does not
-    support that interactive function ([issue #328](https://github.com/PowerShell/ActiveDirectoryDsc/issues/328)).
-  - Added comment-based help ([issue #330](https://github.com/PowerShell/ActiveDirectoryDsc/issues/330)).
 - Changes to ADServicePrincipalName
   - Minor change to the unit tests that did not correct assert the localized
     string when an account is not found.

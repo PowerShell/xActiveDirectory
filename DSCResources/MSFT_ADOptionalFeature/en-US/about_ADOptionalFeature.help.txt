@@ -1,9 +1,9 @@
 .NAME
-    ADRecycleBin
+    ADOptionalFeature
 
 .DESCRIPTION
-    The ADRecycleBin DSC resource will enable the Active Directory Recycle Bin feature for the target forest.
-    This resource first verifies that the forest mode is Windows Server 2008 R2 or greater.  If the forest mode
+    The ADOptionalFeature DSC resource will enable the Active Directory Optional Feature i.e. Recycle Bin feature for the target forest.
+    This resource first verifies that the forest mode matches the required level or greater.  If the forest mode
     is insufficient, then the resource will exit with an error message.  The change is executed against the
     Domain Naming Master FSMO of the forest.
 
@@ -15,24 +15,24 @@
     Key - String
     The fully qualified domain name (FQDN) of the forest in which to change the Recycle Bin feature.
 
+.PARAMETER FeatureName
+    Key - String
+    The name of the feature to be enabled.
+
 .PARAMETER EnterpriseAdministratorCredential
     Required - String
     The user account credentials to use to perform this task.
 
-.PARAMETER RecycleBinEnabled
-    Read - String
-    Returns the state of the Recycle Bin feature.
-
-.PARAMETER ForestMode
-    Read - String
-    Returns the functional level of the forest.
+.PARAMETER Enabled
+    Read - Boolean
+    Returns the state of the Optional Feature.
 
 .EXAMPLE 1
 
 This configuration will enable the Active Directory Recycle Bin for a
 specified Domain
 
-Configuration ADRecycleBin_EnableADRecycleBin_Config
+Configuration ADOptionalFeature_EnableADRecycleBin_Config
 {
     param
     (
@@ -49,12 +49,11 @@ Configuration ADRecycleBin_EnableADRecycleBin_Config
 
     Node localhost
     {
-        ADRecycleBin 'RecycleBin'
+        ADOptionalFeature RecycleBin
         {
-            EnterpriseAdministratorCredential = $EACredential
-            ForestFQDN                        = $ForestFQDN
+           FeatureName = "Recycle Bin Feature"
+           EnterpriseAdministratorCredential = $EACredential
+           ForestFQDN = $ForestFQDN
         }
     }
 }
-
-
