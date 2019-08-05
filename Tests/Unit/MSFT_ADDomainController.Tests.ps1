@@ -48,6 +48,12 @@ try
             Add-Type -Path $adModuleStub
         }
 
+        # If one type does not exist, it's assumed the other ones does not exist either.
+        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+        {
+            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
+        }
+
         #region Pester Test Variable Initialization
         $correctDomainName = 'present.com'
         $testAdminCredential = [System.Management.Automation.PSCredential]::Empty
@@ -757,42 +763,6 @@ try
                     }
                 }
 
-                Context 'When adding a domain controller and the FlexibleSingleMasterOperationRole is set to ''RIDMaster''' {
-                    BeforeAll {
-                        function Move-ADDirectoryServerOperationMasterRole
-                        {
-                            <#
-                                Mock this function to simplify unit test without
-                                the need to mock classes.
-                            #>
-
-                        }
-
-                        Mock -CommandName Move-ADDirectoryServerOperationMasterRole
-                        Mock -CommandName Get-ADForest
-                        Mock -CommandName Get-ADDomain -MockWith {
-                            return @{
-                                RIDMaster = 'dc.contoso.com'
-                            }
-                        }
-
-                        Mock -CommandName Get-TargetResource -MockWith {
-                            return @{
-                                Ensure = $true
-                                FlexibleSingleMasterOperationRole = @('DomainNamingMaster')
-                            }
-                        }
-                    }
-
-                    It 'It should call the correct mocks' {
-                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('RIDMaster') } | Should -Not -Throw
-
-                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 0 -Scope It
-                        Assert-MockCalled -CommandName Move-ADDirectoryServerOperationMasterRole -Exactly -Times 1 -Scope It
-                    }
-                }
-
                 Context 'When a domain controller is in the wrong site' {
                     BeforeAll {
                         Mock -CommandName Move-ADDirectoryServer
@@ -944,6 +914,72 @@ try
 
                         Assert-MockCalled -CommandName Remove-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Add-ADDomainControllerPasswordReplicationPolicy -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When adding a domain controller and the FlexibleSingleMasterOperationRole is set to ''RIDMaster''' {
+                    BeforeAll {
+                        Mock -CommandName Move-ADDirectoryServerOperationMasterRole
+                        Mock -CommandName Get-ADForest
+                        Mock -CommandName Get-ADDomain -MockWith {
+                            return @{
+                                RIDMaster = 'dc.contoso.com'
+                            }
+                        }
+
+                        Mock -CommandName Get-DomainControllerObject {
+                            $domainControllerObject = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                            $domainControllerObject.OperationMasterRoles = @('DomainNamingMaster')
+                            return $domainControllerObject
+                        }
+
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure = $true
+                                FlexibleSingleMasterOperationRole = @('DomainNamingMaster')
+                            }
+                        }
+                    }
+
+                    It 'It should call the correct mocks' {
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('RIDMaster') } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Move-ADDirectoryServerOperationMasterRole -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When adding a domain controller and the FlexibleSingleMasterOperationRole is set to ''SchemaMaster''' {
+                    BeforeAll {
+                        Mock -CommandName Move-ADDirectoryServerOperationMasterRole
+                        Mock -CommandName Get-ADDomain
+                        Mock -CommandName Get-ADForest -MockWith {
+                            return @{
+                                RIDMaster = 'dc.contoso.com'
+                            }
+                        }
+
+                        Mock -CommandName Get-DomainControllerObject {
+                            $domainControllerObject = New-Object -TypeName Microsoft.ActiveDirectory.Management.ADDomainController
+                            $domainControllerObject.OperationMasterRoles = @('DomainNamingMaster')
+                            return $domainControllerObject
+                        }
+
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure = $true
+                                FlexibleSingleMasterOperationRole = @('DomainNamingMaster')
+                            }
+                        }
+                    }
+
+                    It 'It should call the correct mocks' {
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('SchemaMaster') } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Move-ADDirectoryServerOperationMasterRole -Exactly -Times 1 -Scope It
                     }
                 }
             }

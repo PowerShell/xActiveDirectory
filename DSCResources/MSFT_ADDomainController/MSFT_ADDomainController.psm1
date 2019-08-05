@@ -503,7 +503,7 @@ function Set-TargetResource
 
                         {$_ -in @('InfrastructureMaster', 'PDCEmulator', 'RIDMaster')}
                         {
-                            $currentOwnerFullyQualifiedDomainName = (Get-ADDomain ).$_
+                            $currentOwnerFullyQualifiedDomainName = (Get-ADDomain).$_
                         }
                     }
 

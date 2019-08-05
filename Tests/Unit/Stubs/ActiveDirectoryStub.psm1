@@ -2857,7 +2857,7 @@ function Move-ADDirectoryServerOperationMasterRole
     param
     (
         [Parameter()]
-        [Microsoft.ActiveDirectory.Management.ADAuthType]
+        [PSObject]
         $AuthType,
 
         [Parameter()]
@@ -2869,11 +2869,11 @@ function Move-ADDirectoryServerOperationMasterRole
         $Force,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADDirectoryServer]
+        [PSObject]
         $Identity,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADOperationMasterRole[]]
+        [PSObject[]]
         $OperationMasterRole,
 
         [Parameter()]
