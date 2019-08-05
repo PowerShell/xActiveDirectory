@@ -157,6 +157,7 @@ try
                             $domainControllerObject.Domain = $correctDomainName
                             $domainControllerObject.IsGlobalCatalog = $true
                             $domainControllerObject.IsReadOnly = $false
+                            $domainControllerObject.OperationMasterRoles = @('DomainNamingMaster','RIDMaster')
                             return $domainControllerObject
                         }
 
@@ -184,7 +185,7 @@ try
                         New-Item -Path 'TestDrive:\' -ItemType Directory -Name IFM
                     }
 
-                    It 'Returns current Domain Controller properties' {
+                    It 'Should returns current Domain Controller properties' {
                         $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
 
                         $result.DomainName | Should -Be $correctDomainName
@@ -197,6 +198,8 @@ try
                         $result.ReadOnlyReplica | Should -Be $false
                         $result.AllowPasswordReplicationAccountName | Should -BeNullOrEmpty
                         $result.DenyPasswordReplicationAccountName | Should -BeNullOrEmpty
+                        $result.FlexibleSingleMasterOperationRole | Should -Contain 'DomainNamingMaster'
+                        $result.FlexibleSingleMasterOperationRole | Should -Contain 'RIDMaster'
                     }
                 }
 
@@ -279,6 +282,7 @@ try
                         $result.ReadOnlyReplica | Should -Be $false
                         $result.AllowPasswordReplicationAccountName | Should -BeNullOrEmpty
                         $result.DenyPasswordReplicationAccountName | Should -BeNullOrEmpty
+                        $result.FlexibleSingleMasterOperationRole | Should -BeNullOrEmpty
                     }
                 }
             }
@@ -310,6 +314,7 @@ try
                             IsGlobalCatalog                     = $true
                             AllowPasswordReplicationAccountName = @($allowedAccount)
                             DenyPasswordReplicationAccountName  = @($deniedAccount)
+                            FlexibleSingleMasterOperationRole   = @('DomainNamingMaster','RIDMaster')
                             Ensure                              = $true
                         }
                     }
@@ -366,6 +371,15 @@ try
 
                         Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                         Assert-MockCalled -CommandName Test-ADReplicationSite -Exactly -Times 0 -Scope It
+                    }
+                }
+
+                Context 'When property FlexibleSingleMasterOperationRole is in desired state' {
+                    It 'Should return $true' {
+                        $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('RIDMaster')
+                        $result | Should -Be $true
+
+                        Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                     }
                 }
             }
@@ -540,6 +554,26 @@ try
                                 Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                                 Assert-MockCalled -CommandName Test-ADReplicationSite -Exactly -Times 0 -Scope It
                             }
+                        }
+                    }
+
+                    Context 'When property FlexibleSingleMasterOperationRole is not in desired state' {
+                        BeforeAll {
+                            Mock -CommandName Get-TargetResource -MockWith {
+                                return @{
+                                    DomainName                          = $correctDomainName
+                                    DenyPasswordReplicationAccountName  = @($deniedAccount,'Member2')
+                                    Ensure                              = $true
+                                    FlexibleSingleMasterOperationRole   = @('DomainNamingMaster')
+                                }
+                            }
+                        }
+
+                        It 'Should return $false' {
+                            $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('RIDMaster')
+                            $result | Should -Be $false
+
+                            Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1 -Scope It
                         }
                     }
                 }
@@ -720,6 +754,42 @@ try
                         Assert-MockCalled -CommandName Install-ADDSDomainController -ParameterFilter {
                             $DenyPasswordReplicationAccountName -eq $deniedAccount
                         } -Exactly -Times 1 -Scope It
+                    }
+                }
+
+                Context 'When adding a domain controller and the FlexibleSingleMasterOperationRole is set to ''RIDMaster''' {
+                    BeforeAll {
+                        function Move-ADDirectoryServerOperationMasterRole
+                        {
+                            <#
+                                Mock this function to simplify unit test without
+                                the need to mock classes.
+                            #>
+
+                        }
+
+                        Mock -CommandName Move-ADDirectoryServerOperationMasterRole
+                        Mock -CommandName Get-ADForest
+                        Mock -CommandName Get-ADDomain -MockWith {
+                            return @{
+                                RIDMaster = 'dc.contoso.com'
+                            }
+                        }
+
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure = $true
+                                FlexibleSingleMasterOperationRole = @('DomainNamingMaster')
+                            }
+                        }
+                    }
+
+                    It 'It should call the correct mocks' {
+                        { Set-TargetResource @testDefaultParams -DomainName $correctDomainName -FlexibleSingleMasterOperationRole @('RIDMaster') } | Should -Not -Throw
+
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Move-ADDirectoryServerOperationMasterRole -Exactly -Times 1 -Scope It
                     }
                 }
 

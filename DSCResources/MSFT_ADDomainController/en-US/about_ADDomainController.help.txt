@@ -14,6 +14,12 @@
     >Make sure to use a correct domain account with the correct permission as
     >the account for the parameter `Credential`.
 
+    The parameter `FlexibleSingleMasterOperationRole` is ignored until
+    the node has been provisioned as a domain controller.
+
+    >The resource does not support seizing of Flexible Single Master Operation
+    >(FSMO) roles
+
     ## Requirements
 
     * Target machine must be running Windows Server 2008 R2 or later.
@@ -69,6 +75,11 @@
 .PARAMETER DenyPasswordReplicationAccountName
     Write - String
     Specifies the names of user accounts, group accounts, and computer accounts whose passwords are not to be replicated to this Read-Only Domain Controller (RODC).
+
+.PARAMETER FlexibleSingleMasterOperationRole
+    Write - String
+    Allowed values: DomainNamingMaster,  SchemaMaster,  InfrastructureMaster,  PDCEmulator,  RIDMaster
+    Specifies one or more Flexible Single Master Operation (FSMO) roles to move to this domain controller. The current owner must be online and responding for the move to be allowed.
 
 .EXAMPLE 1
 
@@ -308,6 +319,65 @@ Configuration ADDomainController_AddReadOnlyDomainController_Config
             DenyPasswordReplicationAccountName  = @('SVC_PVS', 'TA2SCVMM')
 
             DependsOn                           = '[WaitForADDomain]WaitForestAvailability'
+        }
+    }
+}
+
+.EXAMPLE 5
+
+This configuration will add a domain controller to the domain
+contoso.com.
+
+Configuration ADDomainController_AddDomainControllerAndMoveRole_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
+    )
+
+    Import-DscResource -ModuleName PSDscResources
+    Import-DscResource -ModuleName ActiveDirectoryDsc
+
+    node localhost
+    {
+        WindowsFeature 'InstallADDomainServicesFeature'
+        {
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
+        }
+
+        WindowsFeature 'RSATADPowerShell'
+        {
+            Ensure    = 'Present'
+            Name      = 'RSAT-AD-PowerShell'
+
+            DependsOn = '[WindowsFeature]InstallADDomainServicesFeature'
+        }
+
+        WaitForADDomain 'WaitForestAvailability'
+        {
+            DomainName = 'contoso.com'
+            Credential = $Credential
+
+            DependsOn  = '[WindowsFeature]RSATADPowerShell'
+        }
+
+        ADDomainController 'DomainControllerMinimal'
+        {
+            DomainName                        = 'contoso.com'
+            Credential                        = $Credential
+            SafeModeAdministratorPassword     = $SafeModePassword
+            FlexibleSingleMasterOperationRole = @('RIDMaster')
+
+            DependsOn                         = '[WaitForADDomain]WaitForestAvailability'
         }
     }
 }

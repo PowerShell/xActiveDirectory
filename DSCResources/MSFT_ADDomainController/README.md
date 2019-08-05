@@ -12,6 +12,12 @@ controllers in Active Directory. Installation of Read-Only Domain Controllers
 >Make sure to use a correct domain account with the correct permission as
 >the account for the parameter `Credential`.
 
+The parameter `FlexibleSingleMasterOperationRole` is ignored until
+the node has been provisioned as a domain controller.
+
+>The resource does not support seizing of Flexible Single Master Operation
+>(FSMO) roles
+
 ## Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.

@@ -79,6 +79,7 @@ function Get-TargetResource
         ReadOnlyReplica                     = $false
         AllowPasswordReplicationAccountName = $null
         DenyPasswordReplicationAccountName  = $null
+        FlexibleSingleMasterOperationRole   = $null
     }
 
     Write-Verbose -Message (
@@ -125,6 +126,9 @@ function Get-TargetResource
         $getTargetResourceResult.ReadOnlyReplica = $domainControllerObject.IsReadOnly
         $getTargetResourceResult.AllowPasswordReplicationAccountName = $allowedPasswordReplicationAccountName
         $getTargetResourceResult.DenyPasswordReplicationAccountName = $deniedPasswordReplicationAccountName
+
+        $getTargetResourceResult.FlexibleSingleMasterOperationRole = `
+            $domainControllerObject.OperationMasterRoles -as [System.String[]]
     }
     else
     {
@@ -178,6 +182,11 @@ function Get-TargetResource
 
     .PARAMETER DenyPasswordReplicationAccountName
         Provides a list of the users, computers, and groups to add to the password replication denied list.
+
+    .PARAMETER FlexibleSingleMasterOperationRole
+        Specifies one or more Flexible Single Master Operation (FSMO) roles to
+        move to this domain controller. The current owner must be online and
+        responding for the move to be allowed.
 #>
 function Set-TargetResource
 {
@@ -243,7 +252,12 @@ function Set-TargetResource
 
         [Parameter()]
         [System.String[]]
-        $DenyPasswordReplicationAccountName
+        $DenyPasswordReplicationAccountName,
+
+        [Parameter()]
+        [ValidateSet('DomainNamingMaster', 'SchemaMaster', 'InfrastructureMaster', 'PDCEmulator', 'RIDMaster')]
+        [System.String[]]
+        $FlexibleSingleMasterOperationRole
     )
 
     $getTargetResourceParameters = @{} + $PSBoundParameters
@@ -252,6 +266,7 @@ function Set-TargetResource
     $getTargetResourceParameters.Remove('ReadOnlyReplica')
     $getTargetResourceParameters.Remove('AllowPasswordReplicationAccountName')
     $getTargetResourceParameters.Remove('DenyPasswordReplicationAccountName')
+    $getTargetResourceParameters.Remove('FlexibleSingleMasterOperationRole')
     $targetResource = Get-TargetResource @getTargetResourceParameters
 
     if ($targetResource.Ensure -eq $false)
@@ -468,6 +483,50 @@ function Set-TargetResource
 
             }
         }
+
+        if ($PSBoundParameters.ContainsKey('FlexibleSingleMasterOperationRole'))
+        {
+            foreach ($desiredFlexibleSingleMasterOperationRole in $FlexibleSingleMasterOperationRole)
+            {
+                if ($desiredFlexibleSingleMasterOperationRole -notin $targetResource.FlexibleSingleMasterOperationRole)
+                {
+                    switch ($desiredFlexibleSingleMasterOperationRole)
+                    {
+                        <#
+                            Connect to any available domain controller to get the
+                            current owner for the specific role.
+                        #>
+                        {$_ -in @('DomainNamingMaster', 'SchemaMaster')}
+                        {
+                            $currentOwnerFullyQualifiedDomainName = (Get-ADForest).$_
+                        }
+
+                        {$_ -in @('InfrastructureMaster', 'PDCEmulator', 'RIDMaster')}
+                        {
+                            $currentOwnerFullyQualifiedDomainName = (Get-ADDomain ).$_
+                        }
+                    }
+
+                    Write-Verbose -Message (
+                        $script:localizedData.MovingFlexibleSingleMasterOperationRole -f $desiredFlexibleSingleMasterOperationRole, $currentOwnerFullyQualifiedDomainName
+                    )
+
+                    <#
+                        Using the object returned from Get-ADDomainController to handle
+                        an issue with calling Move-ADDirectoryServerOperationMasterRole
+                        with Fully Qualified Domain Name (FQDN) in the Identity parameter.
+                    #>
+                    $MoveADDirectoryServerOperationMasterRoleParameters = @{
+                        Identity = $domainControllerObject
+                        OperationMasterRole = $desiredFlexibleSingleMasterOperationRole
+                        Server = $currentOwnerFullyQualifiedDomainName
+                        ErrorAction = 'Stop'
+                    }
+
+                    Move-ADDirectoryServerOperationMasterRole @MoveADDirectoryServerOperationMasterRoleParameters
+                }
+            }
+        }
     }
 }
 
@@ -513,6 +572,11 @@ function Set-TargetResource
 
     .PARAMETER DenyPasswordReplicationAccountName
         Provides a list of the users, computers, and groups to add to the password replication denied list.
+
+    .PARAMETER FlexibleSingleMasterOperationRole
+        Specifies one or more Flexible Single Master Operation (FSMO) roles to
+        move to this domain controller. The current owner must be online and
+        responding for the move to be allowed.
 #>
 function Test-TargetResource
 {
@@ -568,7 +632,12 @@ function Test-TargetResource
 
         [Parameter()]
         [System.String[]]
-        $DenyPasswordReplicationAccountName
+        $DenyPasswordReplicationAccountName,
+
+        [Parameter()]
+        [ValidateSet('DomainNamingMaster', 'SchemaMaster', 'InfrastructureMaster', 'PDCEmulator', 'RIDMaster')]
+        [System.String[]]
+        $FlexibleSingleMasterOperationRole
     )
 
     Write-Verbose -Message (
@@ -598,6 +667,7 @@ function Test-TargetResource
     $getTargetResourceParameters.Remove('ReadOnlyReplica')
     $getTargetResourceParameters.Remove('AllowPasswordReplicationAccountName')
     $getTargetResourceParameters.Remove('DenyPasswordReplicationAccountName')
+    $getTargetResourceParameters.Remove('FlexibleSingleMasterOperationRole')
     $existingResource = Get-TargetResource @getTargetResourceParameters
 
     $testTargetResourceReturnValue = $existingResource.Ensure
@@ -673,6 +743,24 @@ function Test-TargetResource
             )
 
             $testTargetResourceReturnValue = $false
+        }
+    }
+
+    <#
+        Only evaluate Flexible Single Master Operation (FSMO) roles if the
+        node is already a domain controller.
+    #>
+    if ($PSBoundParameters.ContainsKey('FlexibleSingleMasterOperationRole') -and $existingResource.Ensure -eq $true)
+    {
+        $FlexibleSingleMasterOperationRole | ForEach-Object -Process {
+            if ($_ -notin $existingResource.FlexibleSingleMasterOperationRole)
+            {
+                Write-Verbose -Message (
+                    $script:localizedData.NotOwnerOfFlexibleSingleMasterOperationRole -f $_
+                )
+
+                $testTargetResourceReturnValue = $false
+            }
         }
     }
 

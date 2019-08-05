@@ -20,4 +20,6 @@ ConvertFrom-StringData @'
     DenySyncAccountsMismatch      = There is a mismatch in DenyPasswordReplicationAccountName list. Got {0}, expected was {1}. (ADDC0021)
     RODCMissingSite               = You have specified 'ReadOnlyReplica', but did not provide a site name. (ADDC0022)
     CannotConvertToRODC           = Cannot convert a existing domain controller to a Read-Only Domain Controller (RODC). (ADDC0023)
+    NotOwnerOfFlexibleSingleMasterOperationRole = The domain controller was expected to be the owner of the Flexible Single Master Operation (FSMO) role '{0}', but it is not. (ADDC0024)
+    MovingFlexibleSingleMasterOperationRole     = The Flexible Single Master Operation (FSMO) role '{0}' is being moved from domain controller '{1}' to this domain controller. (ADDC0025)
 '@

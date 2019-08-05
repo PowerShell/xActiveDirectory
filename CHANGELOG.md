@@ -140,6 +140,10 @@
     ([issue #40](https://github.com/PowerShell/ActiveDirectoryDsc/issues/40)).
     [Svilen @SSvilen](https://github.com/SSvilen)
   - Refactored unit tests for Test-TargetResource.
+  - Added new parameter `FlexibleSingleMasterOperationRole` to able to move
+    Flexible Single Master Operation (FSMO) roles to the current node.
+    It does not allow seizing of roles, only allows a move when both
+    domain controllers are available ([issue #55](https://github.com/PowerShell/ActiveDirectoryDsc/issues/55)).
 - Changes to ADObjectPermissionEntry
   - Remove remnants of the `SupportsShouldProcess` ([issue #329](https://github.com/PowerShell/ActiveDirectoryDsc/issues/329)).
 - Changes to ADGroup
