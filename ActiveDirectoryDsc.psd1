@@ -37,6 +37,9 @@ FunctionsToExport = @(
 # Cmdlets to export from this module
 CmdletsToExport = @()
 
+# Variables to export from this module
+VariablesToExport = @()
+
 # Aliases to export from this module
 AliasesToExport = @()
 

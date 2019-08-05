@@ -12,6 +12,9 @@
     module will also import the nested module ActiveDirectoryDsc.Common.
     It is exported so that the resource WaitForADDomain can reuse code
     when running a background job to search for a domain controller.
+  - Module manifest has been updated to optimize module auto-discovery
+    according to the article [*PowerShell module authoring considerations*](https://docs.microsoft.com/en-us/windows-server/administration/performance-tuning/powershell/module-authoring-considerations)
+    ([issue #463](https://github.com/PowerShell/ActiveDirectoryDsc/issues/463)).
   - Added a Requirements section to every DSC resource README with the
     bullet point stating "Target machine must be running Windows Server
     2008 R2 or later" ([issue #399](https://github.com/PowerShell/ActiveDirectoryDsc/issues/399)).
