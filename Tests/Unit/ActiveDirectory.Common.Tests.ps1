@@ -695,28 +695,53 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
     }
 
     Describe 'ActiveDirectoryDsc.Common\Remove-DuplicateMembers' {
-        It 'Removes one duplicate' {
+        It 'Should removes one duplicate' {
             $members = Remove-DuplicateMembers -Members 'User1','User2','USER1'
+            $members -is [System.String[]] | Should -BeTrue
 
             $members.Count | Should -Be 2
             $members -contains 'User1' | Should -Be $true
             $members -contains 'User2' | Should -Be $true
         }
 
-        It 'Removes two duplicates' {
+        It 'Should removes two duplicates' {
             $members = Remove-DuplicateMembers -Members 'User1','User2','USER1','USER2'
+            $members -is [System.String[]] | Should -BeTrue
 
             $members.Count | Should -Be 2
             $members -contains 'User1' | Should -Be $true
             $members -contains 'User2' | Should -Be $true
         }
 
-        It 'Removes double duplicates' {
+        It 'Should removes double duplicates' {
             $members = Remove-DuplicateMembers -Members 'User1','User2','USER1','user1'
+            $members -is [System.String[]] | Should -BeTrue
 
             $members.Count | Should -Be 2
             $members -contains 'User1' | Should -Be $true
             $members -contains 'User2' | Should -Be $true
+        }
+
+        It 'Should return a string array with one one entry' {
+            $members = Remove-DuplicateMembers -Members 'User1','USER1','user1'
+            $members -is [System.String[]] | Should -BeTrue
+
+            $members.Count | Should -Be 1
+            $members -contains 'User1' | Should -Be $true
+        }
+
+        It 'Should return empty collection when passed a $null value' {
+            $members = Remove-DuplicateMembers -Members $null
+            $members -is [System.String[]] | Should -BeTrue
+
+            $members.Count | Should -Be 0
+        }
+
+        It 'Should return empty collection when passed an empty collection' {
+            $members = Remove-DuplicateMembers -Members @()
+            $members -is [System.String[]] | Should -BeTrue
+
+            $members.Count | Should -Be 0
         }
     }
 

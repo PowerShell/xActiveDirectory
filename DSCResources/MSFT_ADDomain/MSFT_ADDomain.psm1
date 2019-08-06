@@ -480,7 +480,7 @@ function Set-TargetResource
     )
 
     # Debug can pause Install-ADDSForest/Install-ADDSDomain, so we remove it.
-    [ref] $null = $PSBoundParameters.Remove('Debug')
+    $null = $PSBoundParameters.Remove('Debug')
 
     # Not entirely necessary, but run Get-TargetResource to ensure we raise any pre-flight errors.
     $targetResource = Get-TargetResource @PSBoundParameters

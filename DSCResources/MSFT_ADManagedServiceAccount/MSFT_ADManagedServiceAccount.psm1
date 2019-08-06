@@ -424,7 +424,7 @@ function Set-TargetResource
             # We want the account to be present, but it currently does not exist
             if ($isEnsureNonCompliant)
             {
-                $PSBoundParameters.Remove('AccountTypeForce')
+                $null = $PSBoundParameters.Remove('AccountTypeForce')
                 New-ADServiceAccountHelper @PSBoundParameters
             }
             else
@@ -441,7 +441,7 @@ function Set-TargetResource
                         # We need to recreate account first before we can update any properties
                         Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountProperty -f 'AccountType', $AccountType)
                         Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false
-                        $PSBoundParameters.Remove('AccountTypeForce')
+                        $null = $PSBoundParameters.Remove('AccountTypeForce')
                         New-ADServiceAccountHelper @PSBoundParameters
                     }
                     else

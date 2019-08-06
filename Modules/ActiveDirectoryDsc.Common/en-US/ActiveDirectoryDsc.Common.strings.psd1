@@ -20,7 +20,6 @@ ConvertFrom-StringData @'
     CheckingMembers                     = Checking for '{0}' members. (ADCOMMON0019)
     MembershipCountMismatch             = Membership count is not correct. Expected '{0}' members, actual '{1}' members. (ADCOMMON0020)
     MemberNotInDesiredState             = Member '{0}' is not in the desired state. (ADCOMMON0021)
-    RemovingDuplicateMember             = Removing duplicate member '{0}' definition. (ADCOMMON0022)
     MembershipInDesiredState            = Membership is in the desired state. (ADCOMMON0023)
     MembershipNotDesiredState           = Membership is NOT in the desired state. (ADCOMMON0024)
     CheckingSite                        = Checking for site '{0}'. (ADCOMMON0026)

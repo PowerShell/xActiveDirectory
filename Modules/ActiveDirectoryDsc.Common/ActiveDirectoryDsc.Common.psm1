@@ -697,12 +697,12 @@ function Assert-MemberParameters
 
     if ($PSBoundParameters.ContainsKey('MembersToInclude'))
     {
-        $MembersToInclude = [System.String[]] @(Remove-DuplicateMembers -Members $MembersToInclude)
+        $MembersToInclude = Remove-DuplicateMembers -Members $MembersToInclude
     }
 
     if ($PSBoundParameters.ContainsKey('MembersToExclude'))
     {
-        $MembersToExclude = [System.String[]] @(Remove-DuplicateMembers -Members $MembersToExclude)
+        $MembersToExclude = Remove-DuplicateMembers -Members $MembersToExclude
     }
 
     if (($PSBoundParameters.ContainsKey('MembersToInclude')) -and ($PSBoundParameters.ContainsKey('MembersToExclude')))
@@ -728,10 +728,14 @@ function Assert-MemberParameters
 
 <#
     .SYNOPSIS
-        Remove duplicate case insensitive strings (members) from a string array.
+        Remove duplicate members from a string array. The comparison is
+        case insensitive.
 
     .PARAMETER Members
         The array of members to remove duplicates from.
+
+    .OUTPUTS
+        A string array with the unique members-
 #>
 function Remove-DuplicateMembers
 {
@@ -744,38 +748,20 @@ function Remove-DuplicateMembers
         $Members
     )
 
-    Set-StrictMode -Version Latest
-
-    $destIndex = 0
-
-    for ($sourceIndex = 0 ; $sourceIndex -lt $Members.Count; $sourceIndex++)
+    if ($null -eq $Members -or $Members.Count -eq 0)
     {
-        $matchFound = $false
-
-        for ($matchIndex = 0; $matchIndex -lt $destIndex; $matchIndex++)
-        {
-            if ($Members[$sourceIndex] -eq $Members[$matchIndex])
-            {
-                # A duplicate is found. Discard the duplicate.
-                Write-Verbose -Message ($script:localizedData.RemovingDuplicateMember -f $Members[$sourceIndex])
-                $matchFound = $true
-                continue
-            }
-        }
-
-        if (!$matchFound)
-        {
-            $Members[$destIndex++] = $Members[$sourceIndex].ToLowerInvariant()
-        }
+        $uniqueMembers = [System.String[]] @()
+    }
+    else
+    {
+        $uniqueMembers = [System.String[]] ($members | Sort-Object -Unique)
     }
 
-    # Create the output array.
-    $destination = New-Object -TypeName 'System.String[]' -ArgumentList $destIndex
-
-    # Copy only distinct elements from the original array to the destination array.
-    [System.Array]::Copy($Members, $destination, $destIndex)
-
-    return $destination
+    <#
+        Comma make sure we return the string array as the correct type,
+        and also make sure one entry is returned as a string array.
+    #>
+    return ,$uniqueMembers
 } #end function RemoveDuplicateMembers
 
 <#
@@ -831,7 +817,7 @@ function Test-Members
 
         Write-Verbose ($script:localizedData.CheckingMembers -f 'Explicit')
 
-        $Members = [System.String[]] @(Remove-DuplicateMembers -Members $Members)
+        $Members = Remove-DuplicateMembers -Members $Members
 
         if ($ExistingMembers.Count -ne $Members.Count)
         {
@@ -866,7 +852,7 @@ function Test-Members
 
         Write-Verbose -Message ($script:localizedData.CheckingMembers -f 'Included')
 
-        $MembersToInclude = [System.String[]] @(Remove-DuplicateMembers -Members $MembersToInclude)
+        $MembersToInclude = Remove-DuplicateMembers -Members $MembersToInclude
 
         $isInDesiredState = $true
 
@@ -895,7 +881,7 @@ function Test-Members
 
         Write-Verbose -Message ($script:localizedData.CheckingMembers -f 'Excluded')
 
-        $MembersToExclude = [System.String[]] @(Remove-DuplicateMembers -Members $MembersToExclude)
+        $MembersToExclude = Remove-DuplicateMembers -Members $MembersToExclude
 
         $isInDesiredState = $true
 
