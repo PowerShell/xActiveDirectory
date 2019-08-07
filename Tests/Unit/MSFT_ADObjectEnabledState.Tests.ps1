@@ -50,7 +50,7 @@ try
             $mockCredentialUserName, $mockCredentialPassword
         )
 
-        Describe 'MSFT_ADComputer\Get-TargetResource' -Tag 'Get' {
+        Describe 'MSFT_ADObjectEnabledState\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
                 Mock -CommandName Assert-Module
             }
@@ -246,7 +246,7 @@ try
             }
         }
 
-        Describe 'MSFT_ADComputer\Test-TargetResource' -Tag 'Test' {
+        Describe 'MSFT_ADObjectEnabledState\Test-TargetResource' -Tag 'Test' {
             BeforeAll {
                 Mock -CommandName Assert-Module
 
@@ -356,7 +356,7 @@ try
             }
         }
 
-        Describe 'MSFT_ADComputer\Set-TargetResource' -Tag 'Set' {
+        Describe 'MSFT_ADObjectEnabledState\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
                 Mock -CommandName Assert-Module
                 Mock -CommandName Set-DscADComputer
