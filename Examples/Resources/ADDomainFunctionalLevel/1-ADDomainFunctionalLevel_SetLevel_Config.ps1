@@ -22,13 +22,13 @@
         This configuration will change the domain functional level to
         a Windows Server 2012 R2 Domain.
 #>
-Configuration ADDomainControllerProperties_SetContentFreshness_Config
+Configuration ADDomainFunctionalLevel_SetLevel_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
     node localhost
     {
-        ADDomainControllerProperties 'ChangeForestFunctionalLevel'
+        ADDomainFunctionalLevel 'ChangeDomainFunctionalLevel'
         {
             DomainIdentity          = 'contoso.com'
             DomainMode              = 'Windows2012R2Domain'
