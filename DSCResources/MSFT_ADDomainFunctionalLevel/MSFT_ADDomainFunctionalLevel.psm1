@@ -8,7 +8,7 @@ $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADDomainFunctional
 
 <#
     .SYNOPSIS
-        Returns the current mode of the domain.
+        Returns the current functional level of the domain.
 
     .PARAMETER DomainIdentity
         Specifies the Active Directory domain to modify. You can identify a
@@ -54,7 +54,7 @@ function Get-TargetResource
 
 <#
     .SYNOPSIS
-        Determines if the domain mode is in the desired state.
+        Determines if the functional level is in the desired state.
 
     .PARAMETER DomainIdentity
         Specifies the Active Directory domain to modify. You can identify a
@@ -104,7 +104,7 @@ function Test-TargetResource
 
 <#
     .SYNOPSIS
-        Sets the domain mode on the Active Directory domain.
+        Sets the functional level on the Active Directory domain.
 
     .PARAMETER DomainIdentity
         Specifies the Active Directory domain to modify. You can identify a
