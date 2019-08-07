@@ -7240,7 +7240,7 @@ function Set-ADDomain
 #>
 function Set-ADDomainMode
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
