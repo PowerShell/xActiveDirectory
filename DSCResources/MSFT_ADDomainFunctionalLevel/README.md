@@ -13,3 +13,5 @@ article [Upgrade Domain Controllers to Windows Server 2016](https://docs.microso
 ## Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.
+* Target machine must be running the minimum required operating system
+  version for the domain functional level to set.
