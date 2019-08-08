@@ -45,7 +45,6 @@ Configuration MSFT_ADObjectEnabledState_Prerequisites_Config
 <#
     .SYNOPSIS
         Disables a computer account.
-
 #>
 Configuration MSFT_ADObjectEnabledState_DisableComputerAccount_Config
 {
@@ -65,7 +64,6 @@ Configuration MSFT_ADObjectEnabledState_DisableComputerAccount_Config
 <#
     .SYNOPSIS
         Enables a computer account.
-
 #>
 Configuration MSFT_ADObjectEnabledState_EnableComputerAccount_Config
 {

@@ -7438,7 +7438,7 @@ function Set-ADForest
 #>
 function Set-ADForestMode
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]

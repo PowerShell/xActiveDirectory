@@ -1676,6 +1676,15 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
 
                 Test-DscPropertyState -Values $mockValues | Should -BeFalse
             }
+
+            It 'Should return true when two strings are equal' {
+                $mockValues = @{
+                    CurrentValue = [System.String] 'Something'
+                    DesiredValue = [System.String] 'Something'
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $true
+            }
         }
 
         Context 'When comparing integers' {
@@ -1688,6 +1697,33 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                 Test-DscPropertyState -Values $mockValues | Should -BeFalse
             }
 
+            It 'Should return true when the values are the same for [System.Int32]' {
+                $mockValues = @{
+                    CurrentValue = [System.Int32] 2
+                    DesiredValue = [System.Int32] 2
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $true
+            }
+
+            It 'Should return false when a value is different for [System.UInt32]' {
+                $mockValues = @{
+                    CurrentValue = [System.UInt32] 1
+                    DesiredValue = [System.UInt32] 2
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $false
+            }
+
+            It 'Should return true when the values are the same for [System.UInt32]' {
+                $mockValues = @{
+                    CurrentValue = [System.UInt32] 2
+                    DesiredValue = [System.UInt32] 2
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $true
+            }
+
             It 'Should return false when a value is different for [System.Int16]' {
                 $mockValues = @{
                     CurrentValue = [System.Int16] 1
@@ -1697,6 +1733,15 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                 Test-DscPropertyState -Values $mockValues | Should -BeFalse
             }
 
+            It 'Should return true when the values are the same for [System.Int16]' {
+                $mockValues = @{
+                    CurrentValue = [System.Int16] 2
+                    DesiredValue = [System.Int16] 2
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $true
+            }
+
             It 'Should return false when a value is different for [System.UInt16]' {
                 $mockValues = @{
                     CurrentValue = [System.UInt16] 1
@@ -1704,6 +1749,15 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                 }
 
                 Test-DscPropertyState -Values $mockValues | Should -BeFalse
+            }
+
+            It 'Should return true when the values are the same for [System.UInt16]' {
+                $mockValues = @{
+                    CurrentValue = [System.UInt16] 2
+                    DesiredValue = [System.UInt16] 2
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -Be $true
             }
 
             It 'Should return false when a Integer value is missing' {
