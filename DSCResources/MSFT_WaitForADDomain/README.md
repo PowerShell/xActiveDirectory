@@ -11,6 +11,14 @@ a specific site in the domain.
 >In all other scenarios use either the built-in parameter
 >`PsDscRunAsCredential`, or the parameter `Credential`.
 
+Using the parameter `IgnoreAuthenticationErrors` ignores authentication
+errors a let the resource wait until time timeout is reached. If the
+parameter `IgnoreAuthenticationErrors` is not specified and the resource
+throws an authentication error, then the resource will fail. But the
+Local Configuration Manger (LCM) will automatically run the configuration
+again to try to get the node in desired state. If and when the LCM retries
+depends on how the LCM is configured.
+
 ## Requirements
 
 * Target machine must be running Windows Server 2008 R2 or later.

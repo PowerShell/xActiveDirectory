@@ -19,4 +19,5 @@ ConvertFrom-StringData @'
     StartOutputBackgroundJob  = --- Start of result from background job. (WFADD0021)
     EndOutputBackgroundJob    = --- End of result from background job. (WFADD0022)
     RemoveBackgroundJob       = Removing the background job. (WFADD0023)
+    IgnoreCredentialError     = Suppressing the credential error '{0}' with the message '{1}'. (WFADD0024)
 '@
