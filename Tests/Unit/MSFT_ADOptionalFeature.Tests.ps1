@@ -43,15 +43,8 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
-        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
-
-        # If one type does not exist, it's assumed the other ones does not exist either.
-        if (-not ('Microsoft.ActiveDirectory.Management.ADComputer' -as [Type]))
-        {
-            $adModuleStub = (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\Microsoft.ActiveDirectory.Management.cs')
-            Add-Type -Path $adModuleStub
-        }
+        # Load stub cmdlets and classes.
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
         $forestName = 'contoso.com'
         $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(

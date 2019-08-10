@@ -30,17 +30,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 function Invoke-TestSetup
 {
-    # If one type does not exist, it's assumed the other ones does not exist either.
-    if (-not ('Microsoft.DirectoryServices.Deployment.Types.ForestMode' -as [Type]))
-    {
-        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.DirectoryServices.Deployment.Types.cs')
-    }
-
-    # If one type does not exist, it's assumed the other ones does not exist either.
-    if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
-    {
-        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
-    }
 }
 
 function Invoke-TestCleanup
@@ -54,14 +43,9 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
-        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
-
-        # If one type does not exist, it's assumed the other ones does not exist either.
-        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
-        {
-            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
-        }
+        # Load stub cmdlets and classes.
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ADDSDeployment_2019.psm1') -Force
 
         $correctDomainName = 'present.com'
         $incorrectDomainName = 'incorrect.com'
@@ -305,46 +289,6 @@ try
 
         #region Function Set-TargetResource
         Describe 'ADDomain\Set-TargetResource' {
-            function Install-ADDSForest
-            {
-                param
-                (
-                     $DomainName,
-                     $SafeModeAdministratorPassword,
-                     $CreateDnsDelegation,
-                     $DatabasePath,
-                     $DnsDelegationCredential,
-                     $InstallDns,
-                     $LogPath,
-                     $NoRebootOnCompletion,
-                     $SysvolPath,
-                     $DomainNetbiosName,
-                     $ForestMode,
-                     $DomainMode
-                 )
-            }
-
-            function Install-ADDSDomain
-            {
-                param
-                (
-                    $NewDomainName,
-                    $ParentDomainName,
-                    $SafeModeAdministratorPassword,
-                    $CreateDnsDelegation,
-                    $Credential,
-                    $DatabasePath,
-                    $DnsDelegationCredential,
-                    $DomainType,
-                    $InstallDns,
-                    $LogPath,
-                    $NewDomainNetbiosName,
-                    $NoRebootOnCompletion,
-                    $SysvolPath,
-                    $DomainMode
-                )
-            }
-
             $testDomainName = 'present.com'
             $testParentDomainName = 'parent.com'
             $testDomainNetBIOSNameName = 'PRESENT'

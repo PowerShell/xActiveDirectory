@@ -45,21 +45,9 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
-        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
-
-        # If one type does not exist, it's assumed the other ones does not exist either.
-        if (-not ('Microsoft.ActiveDirectory.Management.ADAuthType' -as [Type]))
-        {
-            $adModuleStub = (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\Microsoft.ActiveDirectory.Management.cs')
-            Add-Type -Path $adModuleStub
-        }
-
-        # If one type does not exist, it's assumed the other ones does not exist either.
-        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
-        {
-            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
-        }
+        # Load stub cmdlets and classes.
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ADDSDeployment_2019.psm1') -Force
 
         #region Pester Test Variable Initialization
         $correctDomainName = 'present.com'
@@ -87,64 +75,7 @@ try
             ReadOnlyReplica               = $true
             SiteName                      = $correctSiteName
         }
-
-        #Fake function because it is only available on Windows Server
-        function Install-ADDSDomainController
-        {
-            [CmdletBinding()]
-            param
-            (
-                [Parameter()]
-                $DomainName,
-
-                [Parameter()]
-                [System.Management.Automation.PSCredential]
-                $SafeModeAdministratorPassword,
-
-                [Parameter()]
-                [System.Management.Automation.PSCredential]
-                $Credential,
-
-                [Parameter()]
-                $NoRebootOnCompletion,
-
-                [Parameter()]
-                $Force,
-
-                [Parameter()]
-                $DatabasePath,
-
-                [Parameter()]
-                $LogPath,
-
-                [Parameter()]
-                $SysvolPath,
-
-                [Parameter()]
-                $SiteName,
-
-                [Parameter()]
-                $InstallationMediaPath,
-
-                [Parameter()]
-                $NoGlobalCatalog,
-
-                [Parameter()]
-                [System.Boolean]
-                $ReadOnlyReplica,
-
-                [Parameter()]
-                [System.String[]]
-                $AllowPasswordReplicationAccountName,
-
-                [Parameter()]
-                [System.String[]]
-                $DenyPasswordReplicationAccountName
-            )
-
-            throw [exception] 'Not Implemented'
-        }
-        #endregion Pester Test Initialization
+        #endregion Pester Test Variable Initialization
 
         #region Function Get-TargetResource
         Describe 'ADDomainController\Get-TargetResource' -Tag 'Get' {
@@ -967,7 +898,7 @@ try
                         Mock -CommandName Get-ADDomain
                         Mock -CommandName Get-ADForest -MockWith {
                             return @{
-                                RIDMaster = 'dc.contoso.com'
+                                SchemaMaster = 'dc.contoso.com'
                             }
                         }
 

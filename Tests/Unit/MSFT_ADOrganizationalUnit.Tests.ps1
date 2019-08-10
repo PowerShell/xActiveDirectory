@@ -43,47 +43,8 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        # If one type does not exist, it's assumed the other ones does not exist either.
-        if (-not ('Microsoft.ActiveDirectory.Management.ADComputer' -as [Type]))
-        {
-            $adModuleStub = (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\Microsoft.ActiveDirectory.Management.cs')
-            Add-Type -Path $adModuleStub
-        }
-
-        function Get-ADOrganizationalUnit
-        {
-            param
-            (
-                $Name
-            )
-        }
-
-        function Set-ADOrganizationalUnit
-        {
-            param
-            (
-                $Identity,
-                $Credential
-            )
-        }
-
-        function Remove-ADOrganizationalUnit
-        {
-            param
-            (
-                $Name,
-                $Credential
-            )
-        }
-
-        function New-ADOrganizationalUnit
-        {
-            param
-            (
-                $Name,
-                $Credential
-            )
-        }
+        # Load stub cmdlets and classes.
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
         $testCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
             'DummyUser',

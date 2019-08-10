@@ -43,8 +43,8 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
-        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+        # Load stub cmdlets and classes.
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
         #region Pester Test Initialization
         $testDefaultParameters = @{

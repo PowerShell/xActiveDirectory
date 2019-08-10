@@ -22,20 +22,9 @@ $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPat
 Import-Module -Name (Join-Path -Path $script:modulesFolderPath -ChildPath 'ActiveDirectoryDsc.Common.psm1') -Force
 
 InModuleScope 'ActiveDirectoryDsc.Common' {
-    #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
-    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
-
-    # If one type does not exist, it's assumed the other ones does not exist either.
-    if (-not ('Microsoft.DirectoryServices.Deployment.Types.ForestMode' -as [Type]))
-    {
-        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.DirectoryServices.Deployment.Types.cs')
-    }
-
-    # If one type does not exist, it's assumed the other ones does not exist either.
-    if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
-    {
-        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
-    }
+    # Load stub cmdlets and classes.
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ADDSDeployment_2019.psm1') -Force
 
     Describe 'ActiveDirectoryDsc.Common\Test-DscParameterState' -Tag TestDscParameterState {
         Context 'When passing values' {
@@ -1258,10 +1247,6 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
             ObjectGUID        = 'd3c8b8c1-c42b-4533-af7d-3aa73ecd2216'
         }
 
-        function Restore-ADObject
-        {
-        }
-
         $getAdCommonParameterReturnValue = @{Identity = 'something'}
         $restoreIdentity = 'SomeObjectName'
         $restoreObjectClass = 'user'
@@ -2173,21 +2158,21 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                 Assert-MockCalled -CommandName New-PSDrive -Exactly -Times 0 -Scope Context
             }
         }
-
     }
 
     Describe 'ActiveDirectoryDsc.Common\Test-ADReplicationSite' {
         BeforeAll {
-            function Get-ADDomainController
-            {
-            }
-
-            function Get-ADReplicationSite
-            {
-            }
+            $mockAdministratorUser = 'admin@contoso.com'
+            $mockAdministratorPassword = 'P@ssw0rd-12P@ssw0rd-12'
+            $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+                $mockAdministratorUser,
+                ($mockAdministratorPassword | ConvertTo-SecureString -AsPlainText -Force)
+            )
 
             Mock -CommandName Get-ADDomainController -MockWith {
-                return $env:COMPUTERNAME
+                return @{
+                    HostName = $env:COMPUTERNAME
+                }
             }
         }
 
@@ -2199,7 +2184,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
             }
 
             It 'Should return $false' {
-                $testADReplicationSiteResult = Test-ADReplicationSite -SiteName 'TestSite' -DomainName 'contoso.com'
+                $testADReplicationSiteResult = Test-ADReplicationSite -SiteName 'TestSite' -DomainName 'contoso.com' -Credential $mockAdministratorCredential
                 $testADReplicationSiteResult | Should -BeFalse
 
                 Assert-MockCalled -CommandName Get-ADDomainController -Exactly -Times 1 -Scope It
@@ -2215,7 +2200,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
             }
 
             It 'Should return $true' {
-                $testADReplicationSiteResult = Test-ADReplicationSite -SiteName 'TestSite' -DomainName 'contoso.com'
+                $testADReplicationSiteResult = Test-ADReplicationSite -SiteName 'TestSite' -DomainName 'contoso.com' -Credential $mockAdministratorCredential
                 $testADReplicationSiteResult | Should -BeTrue
 
                 Assert-MockCalled -CommandName Get-ADDomainController -Exactly -Times 1 -Scope It

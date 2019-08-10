@@ -1145,7 +1145,7 @@ function Test-ADReplicationSite
         [System.String]
         $DomainName,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $Credential
     )
