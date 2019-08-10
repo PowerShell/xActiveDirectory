@@ -1,3 +1,10 @@
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceName = 'MSFT_ADObjectPermissionEntry'
 
@@ -36,6 +43,9 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
+        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+
         #region Pester Test Initialization
         $testDefaultParameters = @{
             Path                               = 'CN=PC01,CN=Computers,DC=contoso,DC=com'

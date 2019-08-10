@@ -152,7 +152,16 @@ function Get-TargetResource
 
     try
     {
-        $adGroup = Get-ADGroup @adGroupParams -Property Name, GroupScope, GroupCategory, DistinguishedName, Description, DisplayName, ManagedBy, Info
+        $adGroup = Get-ADGroup @adGroupParams -Properties @(
+            'Name',
+            'GroupScope',
+            'GroupCategory',
+            'DistinguishedName',
+            'Description',
+            'DisplayName',
+            'ManagedBy',
+            'Info'
+        )
 
         Write-Verbose -Message ($script:localizedData.RetrievingGroupMembers -f $MembershipAttribute)
 
@@ -595,7 +604,16 @@ function Set-TargetResource
             }
         }
 
-        $adGroup = Get-ADGroup @adGroupParams -Property Name, GroupScope, GroupCategory, DistinguishedName, Description, DisplayName, ManagedBy, Info
+        $adGroup = Get-ADGroup @adGroupParams -Properties @(
+            'Name',
+            'GroupScope',
+            'GroupCategory',
+            'DistinguishedName',
+            'Description',
+            'DisplayName',
+            'ManagedBy',
+            'Info'
+        )
 
         if ($Ensure -eq 'Present')
         {

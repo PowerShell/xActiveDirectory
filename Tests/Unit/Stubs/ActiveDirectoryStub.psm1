@@ -86,7 +86,7 @@ function Add-ADComputerServiceAccount
         $Server,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount[]]
+        [System.Object[]]
         $ServiceAccount
     )
 
@@ -204,7 +204,7 @@ function Add-ADGroupMember
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true)]
@@ -468,7 +468,7 @@ function Disable-ADOptionalFeature
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADOptionalFeature]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -476,7 +476,7 @@ function Disable-ADOptionalFeature
         $PassThru,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADOptionalFeatureScope]
+        [System.Object]
         $Scope,
 
         [Parameter()]
@@ -484,7 +484,7 @@ function Disable-ADOptionalFeature
         $Server,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADEntity]
+        [System.Object]
         $Target
     )
 
@@ -556,7 +556,7 @@ function Enable-ADOptionalFeature
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADOptionalFeature]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -564,7 +564,7 @@ function Enable-ADOptionalFeature
         $PassThru,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADOptionalFeatureScope]
+        [System.Object]
         $Scope,
 
         [Parameter()]
@@ -572,7 +572,7 @@ function Enable-ADOptionalFeature
         $Server,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADEntity]
+        [System.Object]
         $Target
     )
 
@@ -1150,7 +1150,7 @@ function Get-ADDefaultDomainPasswordPolicy
         $Current,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADDefaultDomainPasswordPolicy]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -1188,7 +1188,7 @@ function Get-ADDomain
         $Current,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADDomain]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -1524,7 +1524,7 @@ function Get-ADGroup
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LdapFilter')]
@@ -1590,7 +1590,7 @@ function Get-ADGroupMember
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -1636,7 +1636,7 @@ function Get-ADObject
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADObject]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -1710,7 +1710,7 @@ function Get-ADOptionalFeature
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADOptionalFeature]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LdapFilter')]
@@ -2158,7 +2158,7 @@ function Get-ADReplicationSiteLink
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -2242,7 +2242,7 @@ function Get-ADReplicationSubnet
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSubnet]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -2523,7 +2523,7 @@ function Get-ADServiceAccount
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LdapFilter')]
@@ -2643,7 +2643,7 @@ function Get-ADUser
         $Filter,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LdapFilter')]
@@ -2793,7 +2793,7 @@ function Install-ADServiceAccount
         $Force,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -2857,7 +2857,7 @@ function Move-ADDirectoryServerOperationMasterRole
     param
     (
         [Parameter()]
-        [PSObject]
+        [System.Object]
         $AuthType,
 
         [Parameter()]
@@ -2869,7 +2869,7 @@ function Move-ADDirectoryServerOperationMasterRole
         $Force,
 
         [Parameter(Mandatory = $true)]
-        [PSObject]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true)]
@@ -3751,11 +3751,11 @@ function New-ADGroup
         $DisplayName,
 
         [Parameter()]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADGroupCategory]]
+        [System.Object]
         $GroupCategory,
 
         [Parameter(Mandatory = $true)]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADGroupScope]]
+        [System.Object]
         $GroupScope,
 
         [Parameter()]
@@ -3763,7 +3763,7 @@ function New-ADGroup
         $HomePage,
 
         [Parameter()]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Instance,
 
         [Parameter()]
@@ -4103,11 +4103,11 @@ function New-ADReplicationSiteLink
         $Description,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADInterSiteTransportProtocolType]]
+        [System.Object]
         $InterSiteTransportProtocol,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
@@ -4173,7 +4173,7 @@ function New-ADReplicationSiteLinkBridge
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADInterSiteTransportProtocolType]]
+        [System.Object]
         $InterSiteTransportProtocol,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
@@ -4193,7 +4193,7 @@ function New-ADReplicationSiteLinkBridge
         $Server,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink[]]
+        [System.Object[]]
         $SiteLinksIncluded
     )
 
@@ -4227,7 +4227,7 @@ function New-ADReplicationSubnet
         $Description,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSubnet]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -4461,7 +4461,7 @@ function New-ADServiceAccount
         $HomePage,
 
         [Parameter()]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Instance,
 
         [Parameter()]
@@ -4659,7 +4659,7 @@ function New-ADUser
         $Initials,
 
         [Parameter()]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Instance,
 
         [Parameter()]
@@ -4671,7 +4671,7 @@ function New-ADUser
         $LogonWorkstations,
 
         [Parameter()]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Manager,
 
         [Parameter()]
@@ -5117,7 +5117,7 @@ function Remove-ADComputerServiceAccount
         $Server,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount[]]
+        [System.Object[]]
         $ServiceAccount
     )
 
@@ -5261,7 +5261,7 @@ function Remove-ADFineGrainedPasswordPolicySubject
 #>
 function Remove-ADGroup
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5273,7 +5273,7 @@ function Remove-ADGroup
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -5299,7 +5299,7 @@ function Remove-ADGroup
 #>
 function Remove-ADGroupMember
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5311,7 +5311,7 @@ function Remove-ADGroupMember
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true)]
@@ -5345,7 +5345,7 @@ function Remove-ADGroupMember
 #>
 function Remove-ADObject
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5479,7 +5479,7 @@ function Remove-ADPrincipalGroupMembership
 #>
 function Remove-ADReplicationSite
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(ParameterSetName = 'Identity')]
@@ -5525,7 +5525,7 @@ function Remove-ADReplicationSiteLink
         $Credential,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink]
+        [System.Object]
         $Identity,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -5581,7 +5581,7 @@ function Remove-ADReplicationSiteLinkBridge
 #>
 function Remove-ADReplicationSubnet
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5593,7 +5593,7 @@ function Remove-ADReplicationSubnet
         $Credential,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSubnet]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -5725,7 +5725,7 @@ function Remove-ADResourcePropertyListMember
 #>
 function Remove-ADServiceAccount
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5737,7 +5737,7 @@ function Remove-ADServiceAccount
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -5763,7 +5763,7 @@ function Remove-ADServiceAccount
 #>
 function Remove-ADUser
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter()]
@@ -5775,7 +5775,7 @@ function Remove-ADUser
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -5855,7 +5855,7 @@ function Reset-ADServiceAccountPassword
         $AuthType,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -6259,7 +6259,7 @@ function Set-ADAccountPassword
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADAccount]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -7112,7 +7112,7 @@ function Set-ADDefaultDomainPasswordPolicy
         $Credential,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADDefaultDomainPasswordPolicy]
+        [System.Object]
         $Identity,
 
         [Parameter()]
@@ -7508,11 +7508,11 @@ function Set-ADGroup
         $DisplayName,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADGroupCategory]]
+        [System.Object]
         $GroupCategory,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [System.Nullable[Microsoft.ActiveDirectory.Management.ADGroupScope]]
+        [System.Object]
         $GroupScope,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -7520,11 +7520,11 @@ function Set-ADGroup
         $HomePage,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADGroup]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -7597,12 +7597,12 @@ function Set-ADObject
         [string]
         $DisplayName,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADObject]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Identity', ValueFromPipeline = $true)]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADObject]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -7970,11 +7970,11 @@ function Set-ADReplicationSiteLink
         $Description,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink]
+        [System.Object]
         $Identity,
 
         [Parameter(ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSiteLink]
+        [System.Object]
         $Instance,
 
         [Parameter()]
@@ -8110,11 +8110,11 @@ function Set-ADReplicationSubnet
         $Description,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSubnet]
+        [System.Object]
         $Identity,
 
         [Parameter(ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADReplicationSubnet]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -8372,11 +8372,11 @@ function Set-ADServiceAccount
         $HomePage,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -8562,7 +8562,7 @@ function Set-ADUser
         $HomePhone,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Identity,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -8570,7 +8570,7 @@ function Set-ADUser
         $Initials,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Instance')]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Instance,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -8582,7 +8582,7 @@ function Set-ADUser
         $LogonWorkstations,
 
         [Parameter(ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADUser]
+        [System.Object]
         $Manager,
 
         [Parameter(ParameterSetName = 'Identity')]
@@ -8805,7 +8805,7 @@ function Test-ADServiceAccount
         $AuthType,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Identity')]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity
     )
 
@@ -8835,7 +8835,7 @@ function Uninstall-ADServiceAccount
         $ForceRemoveLocal,
 
         [Parameter(Mandatory = $true)]
-        [Microsoft.ActiveDirectory.Management.ADServiceAccount]
+        [System.Object]
         $Identity
     )
 

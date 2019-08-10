@@ -1,3 +1,10 @@
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceName = 'MSFT_ADReplicationSite'
 
@@ -36,7 +43,15 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
-        #region Pester Test Initialization
+        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+
+        # If one type does not exist, it's assumed the other ones does not exist either.
+        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+        {
+            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
+        }
+
         $presentSiteName = 'DemoSite'
         $absentSiteName  = 'MissingSite'
 
@@ -73,14 +88,13 @@ try
             Name                       = $presentSiteName
             RenameDefaultFirstSiteName = $true
         }
-        # #endregion
 
         #region Function Get-TargetResource
         Describe 'ADReplicationSite\Get-TargetResource' {
             It 'Should return a "System.Collections.Hashtable" object type' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
 
                 # Act
                 $targetResource = Get-TargetResource -Name $presentSiteName
@@ -92,7 +106,7 @@ try
             It 'Should return present if the site exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
 
                 # Act
                 $targetResource = Get-TargetResource -Name $presentSiteName
@@ -105,7 +119,7 @@ try
             It 'Should return absent if the site does not exist' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite'
+                Mock -CommandName Get-ADReplicationSite
 
                 # Act
                 $targetResource = Get-TargetResource -Name $absentSiteName
@@ -122,7 +136,7 @@ try
             It 'Should return a "System.Boolean" object type' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
 
                 # Act
                 $targetResourceState = Test-TargetResource @presentSiteTestPresent
@@ -134,7 +148,7 @@ try
             It 'Should return true if the site should exists and does exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
 
                 # Act
                 $targetResourceState = Test-TargetResource @presentSiteTestPresent
@@ -146,7 +160,7 @@ try
             It 'Should return false if the site should exists but does not exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite'
+                Mock -CommandName Get-ADReplicationSite
 
                 # Act
                 $targetResourceState = Test-TargetResource @absentSiteTestPresent
@@ -158,7 +172,7 @@ try
             It 'Should return false if the site should not exists but does exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
 
                 # Act
                 $targetResourceState = Test-TargetResource @presentSiteTestAbsent
@@ -170,7 +184,7 @@ try
             It 'Should return true if the site should not exists and does not exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite'
+                Mock -CommandName Get-ADReplicationSite
 
                 # Act
                 $targetResourceState = Test-TargetResource @absentSiteTestAbsent
@@ -187,7 +201,7 @@ try
             It 'Should add a new site' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite'
+                Mock -CommandName Get-ADReplicationSite
                 Mock -CommandName 'New-ADReplicationSite' -Verifiable
 
                 # Act
@@ -200,7 +214,7 @@ try
             It 'Should rename the Default-First-Site-Name if it exists' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $defaultFirstSiteNameSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $defaultFirstSiteNameSiteMock }
                 Mock -CommandName 'Rename-ADObject' -Verifiable
                 Mock -CommandName 'New-ADReplicationSite' -Verifiable
 
@@ -215,7 +229,7 @@ try
             It 'Should add a new site if the Default-First-Site-Name does not exist' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite'
+                Mock -CommandName Get-ADReplicationSite
                 Mock -CommandName 'Rename-ADObject' -Verifiable
                 Mock -CommandName 'New-ADReplicationSite' -Verifiable
 
@@ -230,7 +244,7 @@ try
             It 'Should remove an existing site' {
 
                 # Arrange
-                Mock -CommandName 'Get-ADReplicationSite' -MockWith { $presentSiteMock }
+                Mock -CommandName Get-ADReplicationSite -MockWith { $presentSiteMock }
                 Mock -CommandName 'Remove-ADReplicationSite' -Verifiable
 
                 # Act

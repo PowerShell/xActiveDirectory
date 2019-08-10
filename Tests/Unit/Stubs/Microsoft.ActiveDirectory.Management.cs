@@ -94,9 +94,19 @@ namespace Microsoft.ActiveDirectory.Management
         public ADDirectoryServer(System.String Identity):base(){}
     }
 
+    public class ADException : System.Exception
+    {
+        public ADException():base(){}
+    }
+
     public class ADIdentityNotFoundException : System.Exception
     {
         public ADIdentityNotFoundException():base(){}
+    }
+
+    public class ADServerDownException : System.Exception
+    {
+        public ADServerDownException():base(){}
     }
 
     public class ADObject

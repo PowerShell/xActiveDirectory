@@ -238,6 +238,32 @@ try
                             Assert-MockCalled -CommandName Set-ADDomainMode -Exactly -Times 1 -Scope It
                         }
                     }
+
+                    Context 'When desired domain mode should be ''Windows2016Domain''' {
+                        BeforeAll {
+                            Mock -CommandName Set-ADDomainMode
+                            Mock -CommandName Compare-TargetResourceState -MockWith {
+                                return @(
+                                    @{
+                                        ParameterName  = 'DomainMode'
+                                        Actual  = 'Windows2012R2Domain'
+                                        Expected  = 'Windows2016Domain'
+                                        InDesiredState = $false
+                                    }
+                                )
+                            }
+
+                            $setTargetResourceParameters = $mockDefaultParameters.Clone()
+                            $setTargetResourceParameters['DomainMode'] = 'Windows2016Domain'
+                        }
+
+                        It 'Should not throw and call the correct mocks' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+
+                            Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Set-ADDomainMode -Exactly -Times 1 -Scope It
+                        }
+                    }
                 }
             }
         }

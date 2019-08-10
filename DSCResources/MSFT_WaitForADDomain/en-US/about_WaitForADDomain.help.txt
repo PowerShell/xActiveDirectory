@@ -201,7 +201,7 @@ Configuration WaitForADDomain_WaitForDomainControllerWithReboot_Config
         {
             DomainName   = 'contoso.com'
             RestartCount = 2
-
+            
             PsDscRunAsCredential = $Credential
         }
     }

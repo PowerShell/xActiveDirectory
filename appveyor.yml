@@ -2,10 +2,18 @@
 #      environment configuration  #
 #---------------------------------#
 
-version: 2.16.{build}.0
+version: 4.0.{build}
 environment:
   gallery_api:
     secure: 9ekJzfsPCDBkyLrfmov83XbbhZ6E2N3z+B/Io8NbDetbHc6hWS19zsDmy7t0Vvxv
+  DeployInJobNumber: 2
+
+# The configuration that will be used when building the job matrix.
+# Meta = Test Framework Common Test
+# Tests = Module Unit Tests and Integration Tests.
+configuration:
+  - Meta
+  - Tests
 
 install:
     - git clone https://github.com/PowerShell/DscResource.Tests
@@ -13,7 +21,6 @@ install:
         Write-Verbose -Message "PowerShell version $($PSVersionTable.PSVersion)" -Verbose
         Import-Module -Name "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
         Invoke-AppveyorInstallTask
-        Add-WindowsFeature RSAT-AD-PowerShell
 
 #---------------------------------#
 #      build configuration        #
@@ -25,21 +32,50 @@ build: false
 #      test configuration         #
 #---------------------------------#
 
-test_script:
+# This will build the job matrix:
+#
+# Job 1: Run meta test (common tests) on default build worker image.
+# Job 2: Run unit tests and integration tests on default build worker image,
+#        including Codecov report.
+
+for:
+-
+  matrix:
+    only:
+      - configuration: Meta
+
+  test_script:
+    - ps: |
+        Invoke-AppveyorTestScriptTask
+-
+  matrix:
+    only:
+      - configuration: Tests
+  environment:
+    SkipAllCommonTests: True
+
+  test_script:
     - ps: |
         Invoke-AppveyorTestScriptTask -CodeCoverage -CodeCovIo
 
-# scripts to run before deployment
+# Runs for all jobs.
 after_test:
-    - ps: |
+  - ps: |
         Import-Module -Name "$env:APPVEYOR_BUILD_FOLDER\DscResource.Tests\AppVeyor.psm1"
-        Invoke-AppveyorAfterTestTask `
-            -Type 'Wiki'
+        Invoke-AppveyorAfterTestTask -Type 'Wiki'
 
 #---------------------------------#
 #      deployment configuration   #
 #---------------------------------#
 
+# Runs only in a branch (not in PR).
 deploy_script:
   - ps: |
-        Invoke-AppVeyorDeployTask
+      if ($env:APPVEYOR_JOB_NUMBER -eq $env:DeployInJobNumber)
+      {
+          Invoke-AppVeyorDeployTask
+      }
+      else
+      {
+          Write-Verbose -Message ('Skipping deploy step. Deploy step was requested to run in job number {0}. Current job number is {1}.' -f $env:DeployInJobNumber, $env:APPVEYOR_JOB_NUMBER) -Verbose
+      }

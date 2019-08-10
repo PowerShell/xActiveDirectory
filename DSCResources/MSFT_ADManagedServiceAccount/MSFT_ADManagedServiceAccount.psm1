@@ -87,7 +87,7 @@ function Get-TargetResource
     {
         Write-Verbose -Message ($script:localizedData.RetrievingServiceAccount -f $ServiceAccountName)
 
-        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParameters -Property @(
+        $adServiceAccount = Get-ADServiceAccount @adServiceAccountParameters -Properties @(
             'Name'
             'DistinguishedName'
             'Description'
@@ -117,7 +117,7 @@ function Get-TargetResource
             Write-Verbose -Message ($script:localizedData.RetrievingPrincipalMembers -f $MembershipAttribute)
             $adServiceAccount.PrincipalsAllowedToRetrieveManagedPassword |
                 ForEach-Object {
-                    $member = (Get-ADObject -Identity $_ -Property $MembershipAttribute).$MembershipAttribute
+                    $member = (Get-ADObject -Identity $_ -Properties $MembershipAttribute).$MembershipAttribute
                     $targetResource['Members'] += $member
                 }
 

@@ -75,6 +75,7 @@ function Get-TargetResource
         [System.Management.Automation.CredentialAttribute()]
         $Credential
     )
+
     Assert-Module -ModuleName 'ActiveDirectory'
 
     $PSBoundParameters['Identity'] = $DomainName

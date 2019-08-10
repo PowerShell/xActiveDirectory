@@ -1,6 +1,13 @@
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
 param ()
 
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 #region HEADER
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceName = 'MSFT_ADDomainController'
@@ -141,6 +148,10 @@ try
 
         #region Function Get-TargetResource
         Describe 'ADDomainController\Get-TargetResource' -Tag 'Get' {
+            BeforeAll {
+                Mock -CommandName Assert-Module
+            }
+
             Context 'When the domain name is not available' {
                 BeforeAll {
                     Mock -CommandName Get-ADDomain -MockWith {

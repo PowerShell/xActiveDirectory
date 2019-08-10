@@ -8,25 +8,35 @@
 #>
 Get-Module -Name 'ActiveDirectoryDsc.Common' -All | Remove-Module -Force
 
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 # Import the ActiveDirectoryDsc.Common module to test
 $script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules\ActiveDirectoryDsc.Common'
 
 Import-Module -Name (Join-Path -Path $script:modulesFolderPath -ChildPath 'ActiveDirectoryDsc.Common.psm1') -Force
 
-# If one type does not exist, it's assumed the other ones does not exist either.
-if (-not ('Microsoft.DirectoryServices.Deployment.Types.ForestMode' -as [Type]))
-{
-    Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.DirectoryServices.Deployment.Types.cs')
-}
-
-# If one type does not exist, it's assumed the other ones does not exist either.
-if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
-{
-    Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
-}
-
 InModuleScope 'ActiveDirectoryDsc.Common' {
+    #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+
+    # If one type does not exist, it's assumed the other ones does not exist either.
+    if (-not ('Microsoft.DirectoryServices.Deployment.Types.ForestMode' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.DirectoryServices.Deployment.Types.cs')
+    }
+
+    # If one type does not exist, it's assumed the other ones does not exist either.
+    if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+    {
+        Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
+    }
+
     Describe 'ActiveDirectoryDsc.Common\Test-DscParameterState' -Tag TestDscParameterState {
         Context 'When passing values' {
             It 'Should return true for two identical tables' {

@@ -15,6 +15,8 @@
     ## Requirements
 
     * Target machine must be running Windows Server 2008 R2 or later.
+    * Target machine must be running the minimum required operating system
+      version for the forest functional level to set.
 
 .PARAMETER ForestIdentity
     Key - String
@@ -23,20 +25,20 @@
 .PARAMETER ForestMode
     Required - String
     Allowed values: Windows2008R2Forest,  Windows2012Forest,  Windows2012R2Forest,  Windows2016Forest
-    Specifies the the functional level for the Active Directory forest..
+    Specifies the the functional level for the Active Directory forest.
 
 .EXAMPLE 1
 
 This configuration will change the forest functional level to
 a Windows Server 2012 R2 Forest.
 
-Configuration ADDomainControllerProperties_SetContentFreshness_Config
+Configuration ADForestFunctionalLevel_SetLevel_Config
 {
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
     node localhost
     {
-        ADDomainControllerProperties 'ChangeForestFunctionalLevel'
+        ADForestFunctionalLevel 'ChangeForestFunctionalLevel'
         {
             ForestIdentity          = 'contoso.com'
             ForestMode              = 'Windows2012R2Forest'

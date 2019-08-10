@@ -1,3 +1,10 @@
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceName = 'MSFT_ADUser'
 
@@ -36,6 +43,15 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
+        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+
+        # If one type does not exist, it's assumed the other ones does not exist either.
+        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+        {
+            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
+        }
+
         $testPresentParams = @{
             DomainName = 'contoso.com'
             UserName   = 'TestUser'
@@ -191,6 +207,10 @@ try
 
         #region Function Get-TargetResource
         Describe 'ADUser\Get-TargetResource' {
+            BeforeAll {
+                Mock -CommandName Assert-Module
+            }
+
             It "Returns a 'System.Collections.Hashtable' object type" {
                 Mock -CommandName Get-ADUser -MockWith { return [PSCustomObject] $fakeADUser }
 
@@ -758,6 +778,10 @@ try
 
         #region Function Set-TargetResource
         Describe 'ADUser\Set-TargetResource' {
+            BeforeAll {
+                Mock -CommandName Assert-Module
+            }
+
             Context 'When running unit tests that need refactor' {
                 It "Calls 'New-ADUser' when 'Ensure' is 'Present' and the account does not exist" {
                     $newUserName = 'NewUser'

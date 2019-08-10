@@ -1,3 +1,10 @@
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
+
+if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
+{
+    return
+}
+
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceName = 'MSFT_ADDomain'
 
@@ -47,6 +54,15 @@ try
     Invoke-TestSetup
 
     InModuleScope $script:dscResourceName {
+        #Load the AD Module Stub, so we can mock the cmdlets, then load the AD types
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectoryStub.psm1') -Force
+
+        # If one type does not exist, it's assumed the other ones does not exist either.
+        if (-not ('Microsoft.ActiveDirectory.Management.ADForestMode' -as [Type]))
+        {
+            Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
+        }
+
         $correctDomainName = 'present.com'
         $incorrectDomainName = 'incorrect.com'
         $missingDomainName = 'missing.com'
@@ -148,7 +164,7 @@ try
 
             It 'Throws "Invalid credentials" when domain is available but authentication fails' {
                 Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
-                    throw New-Object System.Security.Authentication.AuthenticationException
+                    throw New-Object -TypeName 'System.Security.Authentication.AuthenticationException'
                 }
 
                 # Match operator is case-sensitive!
@@ -157,7 +173,7 @@ try
 
             It 'Throws "Computer is already a domain member" when is already a domain member' {
                 Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
-                    throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException
+                    throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException'
                 }
 
                 { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw ($script:localizedData.ExistingDomainMemberError -f $incorrectDomainName)
@@ -165,7 +181,7 @@ try
 
             It 'Does not throw when domain cannot be located' {
                 Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $missingDomainName } -MockWith {
-                    throw New-Object Microsoft.ActiveDirectory.Management.ADServerDownException
+                    throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADServerDownException'
                 }
 
                 { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should -Not -Throw
