@@ -53,9 +53,9 @@ New-StubModule -FromModule 'ADDSDeployment' -Path $destinationFolder -FunctionBo
 ```
 
 Some types that is referenced by the code is not automatically create with
-the cmdlet `New-StubModule`. These classes should be copied into the ActiveDirectory
-stub module that was generated above, inside the namespace
-`Microsoft.ActiveDirectory.Management`.
+the cmdlet `New-StubModule`. Run the following, then the stub classes that
+are outputted should be copied into the ActiveDirectory stub module that
+was generated above, inside the namespace `Microsoft.ActiveDirectory.Management`.
 
 ```powershell
 Import-Module ActiveDirectory
