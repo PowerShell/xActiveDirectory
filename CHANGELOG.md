@@ -14,8 +14,17 @@
     will no longer be an ActiveDirectory module installed. This is
     to make sure that if the unit tests work locally they should also work
     in the CI pipeline.
-  - Added stubs for the modules ActiveDirectory and ADDSDeployment to be
-    used with unit tests ([issue #245](https://github.com/PowerShell/ActiveDirectoryDsc/issues/245)).
+  - Added new stubs for the cmdlets and classes to be used with unit tests.
+    The new stubs are based on the modules ActiveDirectory and ADDSDeployment
+    in Windows Server 2019. The stubs are generated using the PowerShell
+    module *Indented.StubCommand*. Instructions how to generate stubs
+    (for example for a new operating system) has been added to the README.md
+    in the `Tests/Unit/Stubs` folder ([issue #245](https://github.com/PowerShell/ActiveDirectoryDsc/issues/245)).
+  - Update all unit tests removing all local stub functions in favor of
+    the new stub modules.
+  - Changes to ActiveDirectoryDsc.Common.
+    - Updated the function `Test-ADReplicationSite` to make the parameter
+      `Credential` mandatory.
 - Changes to WaitForADDomain
   - Correct grammar issues in example descriptions.
 
@@ -57,7 +66,7 @@
     descriptions in the schema.mof (so that Wiki will be updated)
     ([issue #426](https://github.com/PowerShell/ActiveDirectoryDsc/issues/426)).
   - Removed unnecessary Script Analyzer rule overrides from tests.
-  - Added new helper functions in xActiveDirectory.Common.
+  - Added new helper functions in ActiveDirectoryDsc.Common.
     - New-CimCredentialInstance
     - Add-TypeAssembly
     - New-ADDirectoryContext
