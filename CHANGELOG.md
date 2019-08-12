@@ -14,8 +14,10 @@
     will no longer be an ActiveDirectory module installed. This is
     to make sure that if the unit tests work locally they should also work
     in the CI pipeline.
-- Changes to xWaitForADDomain
-  - Correct Grammar Issues in Example Descriptions.
+  - Added stubs for the modules ActiveDirectory and ADDSDeployment to be
+    used with unit tests ([issue #245](https://github.com/PowerShell/ActiveDirectoryDsc/issues/245)).
+- Changes to WaitForADDomain
+  - Correct grammar issues in example descriptions.
 
 ## 4.0.0.0
 
