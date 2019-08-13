@@ -10,13 +10,13 @@
 
 .PARAMETER DomainName
     Key - String
-    The fully qualified domain name (FQDN) of the new domain.
+    The fully qualified domain name (FQDN) of a new domain. If setting up a child domain this must be set to a single-label DNS name.
 
 .PARAMETER Credential
     Required - String
-    Specifies the user name and password that corresponds to the account used to install the domain controller.
+    Specifies the user name and password that corresponds to the account used to install the domain controller. When adding a child domain these credentials need the correct permission in the parent domain. The credentials will also be used to query for the existence of the domain or child domain. This will not be a user name and password in a new domain, the password of the new domain Administrator will be the same as the password of the local Administrator of this computer.
 
-.PARAMETER SafemodeAdministratorPassword
+.PARAMETER SafeModeAdministratorPassword
     Required - String
     Password for the administrator account when the computer is started in Safe Mode.
 
@@ -24,7 +24,7 @@
     Write - String
     Fully qualified domain name (FQDN) of the parent domain.
 
-.PARAMETER DomainNetbiosName
+.PARAMETER DomainNetBiosName
     Write - String
     NetBIOS name for the new domain.
 
@@ -53,6 +53,18 @@
     Write - String
     Allowed values: Win2008,  Win2008R2,  Win2012,  Win2012R2,  WinThreshold
     The Domain Functional Level for the entire domain.
+
+.PARAMETER DomainExist
+    Read - Boolean
+    Returns $true if the domain is available, or $false if the domain could not be found.
+
+.PARAMETER DnsRoot
+    Read - String
+    Returns the fully qualified domain name (FQDN) DNS root of the domain.
+
+.PARAMETER Forest
+    Read - String
+    Returns the fully qualified domain name (FQDN) of the forest.
 
 .EXAMPLE 1
 
