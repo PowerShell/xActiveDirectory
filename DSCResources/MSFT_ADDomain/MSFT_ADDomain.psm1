@@ -43,7 +43,7 @@ function Get-TrackingFilename
         $DomainName
     )
 
-    return Join-Path -Path ($env:temp) -ChildPath ('{0}.ADDomain.completed' -f $DomainName)
+    return Join-Path -Path ($env:TEMP) -ChildPath ('{0}.ADDomain.completed' -f $DomainName)
 }
 
 <#
@@ -51,19 +51,25 @@ function Get-TrackingFilename
         Get the current state of the Domain.
 
     .PARAMETER DomainName
-        The fully qualified domain name (FQDN) of the new domain.
+        The fully qualified domain name (FQDN) of a new domain. If setting up a
+        child domain this must be set to a single-label DNS name.
 
     .PARAMETER Credential
-        Specifies the user name and password that corresponds to the account
-        used to install the domain controller.
+        Specifies the user name and password that corresponds to the account used
+        to install the domain controller. When adding a child domain these credentials
+        need the correct permission in the parent domain. The credentials will also
+        be used to query for the existence of the domain or child domain. This will
+        not be a user name and password in a new domain, the password of the new
+        domain Administrator will be the same as the password of the local
+        Administrator of this computer.
 
-    .PARAMETER SafemodeAdministratorPassword
+    .PARAMETER SafeModeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
 
     .PARAMETER ParentDomainName
         Fully qualified domain name (FQDN) of the parent domain.
 
-    .PARAMETER DomainNetBIOSName
+    .PARAMETER DomainNetBiosName
         NetBIOS name for the new domain.
 
     .PARAMETER DnsDelegationCredential
@@ -84,6 +90,11 @@ function Get-TrackingFilename
     .PARAMETER DomainMode
         The Domain Functional Level for the entire domain.
 
+    .NOTES
+        No need to check whether the node is actually a domain controller.
+        Domain controller functionality should be checked by the
+        ADDomainController resource.
+
 #>
 function Get-TargetResource
 {
@@ -100,7 +111,7 @@ function Get-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorPassword,
+        $SafeModeAdministratorPassword,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -110,7 +121,7 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainNetBIOSName,
+        $DomainNetBiosName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -144,47 +155,78 @@ function Get-TargetResource
     )
 
     Assert-Module -ModuleName 'ADDSDeployment' -ImportModule
+
+    $returnValue = @{
+        DomainName = $DomainName
+        Credential = $Credential
+        SafeModeAdministratorPassword = $SafeModeAdministratorPassword
+        ParentDomainName = $null
+        DomainNetBiosName = $null
+        DnsDelegationCredential = $null
+        DatabasePath = $null
+        LogPath = $null
+        SysvolPath = $null
+        ForestMode = $null
+        DomainMode = $null
+        DomainExist = $false
+    }
+
     $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
-    $isDomainMember = Test-DomainMember
 
     $retries = 0
     $maxRetries = 5
     $retryIntervalInSeconds = 30
-    $domainShouldExist = (Test-Path (Get-TrackingFilename -DomainName $DomainName))
+
+    <#
+        If the domain was create on this node, then the tracking file will be
+        present which mean we should wait for the domain to be available.
+    #>
+    $domainShouldExist = Test-Path -Path (Get-TrackingFilename -DomainName $DomainName)
+    $domainFound = $false
+
     do
     {
         try
         {
-            if ($isDomainMember)
+            if (Test-DomainMember)
             {
                 # We're already a domain member, so take the credentials out of the equation
                 Write-Verbose ($script:localizedData.QueryDomainWithLocalCredential -f $domainFQDN)
+
                 $domain = Get-ADDomain -Identity $domainFQDN -ErrorAction Stop
                 $forest = Get-ADForest -Identity $domain.Forest -ErrorAction Stop
             }
             else
             {
                 Write-Verbose ($script:localizedData.QueryDomainWithCredential -f $domainFQDN)
+
                 $domain = Get-ADDomain -Identity $domainFQDN -Credential $Credential -ErrorAction Stop
                 $forest = Get-ADForest -Identity $domain.Forest -Credential $Credential -ErrorAction Stop
             }
 
             <#
-                No need to check whether the node is actually a domain controller. If we don't throw an exception,
-                the domain is already UP - and this resource shouldn't run. Domain controller functionality
-                should be checked by the ADDomainController resource?
+                If we don't throw an exception, the domain is already UP (on this
+                node or some other domain controller that responded) and this
+                resource shouldn't run.
             #>
             Write-Verbose ($script:localizedData.DomainFound -f $domain.DnsRoot)
 
-            $targetResource = @{
-                DomainName = $domain.DnsRoot
-                ParentDomainName = $domain.ParentDomain
-                DomainNetBIOSName = $domain.NetBIOSName
-                ForestMode = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [System.String]
-                DomainMode = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [System.String]
-            }
+            $returnValue['DnsRoot'] = $domain.DnsRoot
+            $returnValue['Forest'] = $forest.Name
+            $returnValue['ParentDomainName'] = $domain.ParentDomain
+            $returnValue['DomainNetBiosName'] = $domain.NetBIOSName
+            $returnValue['ForestMode'] = (ConvertTo-DeploymentForestMode -Mode $forest.ForestMode) -as [System.String]
+            $returnValue['DomainMode'] = (ConvertTo-DeploymentDomainMode -Mode $domain.DomainMode) -as [System.String]
+            $returnValue['DomainExist'] = $true
 
-            return $targetResource
+            $domainFound = $true
+
+            if (-not $domainShouldExist)
+            {
+                Write-Warning -Message (
+                    $script:localizedData.MissingTrackingFile -f (Get-TrackingFilename -DomainName $DomainName)
+                )
+            }
         }
         catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
         {
@@ -194,8 +236,8 @@ function Get-TargetResource
         catch [Microsoft.ActiveDirectory.Management.ADServerDownException]
         {
             Write-Verbose ($script:localizedData.DomainNotFound -f $domainFQDN)
-            $domain = @{ }
-            # will fall into retry mechanism
+
+            # will fall into retry mechanism if the domain should exist.
         }
         catch [System.Security.Authentication.AuthenticationException]
         {
@@ -210,7 +252,8 @@ function Get-TargetResource
             if ($domainShouldExist -and ($_.Exception.InnerException -is [System.ServiceModel.FaultException]))
             {
                 Write-Verbose $script:localizedData.FaultExceptionAndDomainShouldExist
-                # will fall into retry mechanism
+
+                # will fall into retry mechanism if the domain should exist.
             }
             else
             {
@@ -219,16 +262,19 @@ function Get-TargetResource
             }
         }
 
-        if ($domainShouldExist)
+        if (-not $domainFound -and $domainShouldExist)
         {
             $retries++
 
-            Write-Verbose ($script:localizedData.RetryingGetADDomain -f $retries, $maxRetries, $retryIntervalInSeconds)
+            $waitSeconds = $retries * $retryIntervalInSeconds
 
-            Start-Sleep -Seconds ($retries * $retryIntervalInSeconds)
+            Write-Verbose ($script:localizedData.RetryingGetADDomain -f $retries, $maxRetries, $waitSeconds)
+
+            Start-Sleep -Seconds $waitSeconds
         }
-    } while ($domainShouldExist -and ($retries -le $maxRetries))
+    } while ((-not $domainFound -and $domainShouldExist) -and $retries -lt $maxRetries)
 
+    return $returnValue
 } #end function Get-TargetResource
 
 <#
@@ -236,19 +282,25 @@ function Get-TargetResource
         Tests the current state of the Domain.
 
     .PARAMETER DomainName
-        The fully qualified domain name (FQDN) of the new domain.
+        The fully qualified domain name (FQDN) of a new domain. If setting up a
+        child domain this must be set to a single-label DNS name.
 
     .PARAMETER Credential
-        Specifies the user name and password that corresponds to the account
-        used to install the domain controller.
+        Specifies the user name and password that corresponds to the account used
+        to install the domain controller. When adding a child domain these credentials
+        need the correct permission in the parent domain. The credentials will also
+        be used to query for the existence of the domain or child domain. This will
+        not be a user name and password in a new domain, the password of the new
+        domain Administrator will be the same as the password of the local
+        Administrator of this computer.
 
-    .PARAMETER SafemodeAdministratorPassword
+    .PARAMETER SafeModeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
 
     .PARAMETER ParentDomainName
         Fully qualified domain name (FQDN) of the parent domain.
 
-    .PARAMETER DomainNetBIOSName
+    .PARAMETER DomainNetBiosName
         NetBIOS name for the new domain.
 
     .PARAMETER DnsDelegationCredential
@@ -268,7 +320,6 @@ function Get-TargetResource
 
     .PARAMETER DomainMode
         The Domain Functional Level for the entire domain.
-
 #>
 function Test-TargetResource
 {
@@ -285,7 +336,7 @@ function Test-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorPassword,
+        $SafeModeAdministratorPassword,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -295,7 +346,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainNetBIOSName,
+        $DomainNetBiosName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -329,21 +380,29 @@ function Test-TargetResource
     )
 
     $targetResource = Get-TargetResource @PSBoundParameters
+
     $isCompliant = $true
 
     <#
-        The Get-Target resource returns .DomainName as the domain's FQDN. Therefore, we
+        The Get-Target resource returns DomainName as the domain's FQDN. Therefore, we
         need to resolve this before comparison.
     #>
     $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
-    if ($domainFQDN -ne $targetResource.DomainName)
+
+    if ($domainFQDN -ne $targetResource.DnsRoot)
     {
-        $message = $script:localizedData.ResourcePropertyValueIncorrect -f 'DomainName', $domainFQDN, $targetResource.DomainName
-        Write-Verbose -Message $message
+        Write-Verbose -Message (
+            $script:localizedData.ExpectedDomain -f $domainFQDN
+        )
+
         $isCompliant = $false
     }
 
-    $propertyNames = @('ParentDomainName','DomainNetBIOSName')
+    $propertyNames = @(
+        'ParentDomainName',
+        'DomainNetBiosName'
+    )
+
     foreach ($propertyName in $propertyNames)
     {
         if ($PSBoundParameters.ContainsKey($propertyName))
@@ -352,8 +411,11 @@ function Test-TargetResource
 
             if ($targetResource.$propertyName -ne $propertyValue)
             {
-                $message = $script:localizedData.ResourcePropertyValueIncorrect -f $propertyName, $propertyValue, $targetResource.$propertyName
-                Write-Verbose -Message $message
+                Write-Verbose -Message (
+                    $script:localizedData.PropertyValueIncorrect `
+                        -f $propertyName, $propertyValue, $targetResource.$propertyName
+                )
+
                 $isCompliant = $false
             }
         }
@@ -361,14 +423,18 @@ function Test-TargetResource
 
     if ($isCompliant)
     {
-        Write-Verbose -Message ($script:localizedData.ResourceInDesiredState -f $domainFQDN)
-        return $true
+        Write-Verbose -Message (
+            $script:localizedData.DomainInDesiredState -f $domainFQDN
+        )
     }
     else
     {
-        Write-Verbose -Message ($script:localizedData.ResourceNotInDesiredState -f $domainFQDN)
-        return $false
+        Write-Verbose -Message (
+            $script:localizedData.DomainNotInDesiredState -f $domainFQDN
+        )
     }
+
+    return $isCompliant
 } #end function Test-TargetResource
 
 <#
@@ -376,19 +442,25 @@ function Test-TargetResource
         Sets the state of the Domain.
 
     .PARAMETER DomainName
-        The fully qualified domain name (FQDN) of the new domain.
+        The fully qualified domain name (FQDN) of a new domain. If setting up a
+        child domain this must be set to a single-label DNS name.
 
     .PARAMETER Credential
-        Specifies the user name and password that corresponds to the account
-        used to install the domain controller.
+        Specifies the user name and password that corresponds to the account used
+        to install the domain controller. When adding a child domain these credentials
+        need the correct permission in the parent domain. The credentials will also
+        be used to query for the existence of the domain or child domain. This will
+        not be a user name and password in a new domain, the password of the new
+        domain Administrator will be the same as the password of the local
+        Administrator of this computer.
 
-    .PARAMETER SafemodeAdministratorPassword
+    .PARAMETER SafeModeAdministratorPassword
         Password for the administrator account when the computer is started in Safe Mode.
 
     .PARAMETER ParentDomainName
         Fully qualified domain name (FQDN) of the parent domain.
 
-    .PARAMETER DomainNetBIOSName
+    .PARAMETER DomainNetBiosName
         NetBIOS name for the new domain.
 
     .PARAMETER DnsDelegationCredential
@@ -408,7 +480,6 @@ function Test-TargetResource
 
     .PARAMETER DomainMode
         The Domain Functional Level for the entire domain.
-
 #>
 function Set-TargetResource
 {
@@ -436,7 +507,7 @@ function Set-TargetResource
 
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
-        $SafemodeAdministratorPassword,
+        $SafeModeAdministratorPassword,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -446,7 +517,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainNetBIOSName,
+        $DomainNetBiosName,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -485,82 +556,85 @@ function Set-TargetResource
     # Not entirely necessary, but run Get-TargetResource to ensure we raise any pre-flight errors.
     $targetResource = Get-TargetResource @PSBoundParameters
 
-    $installADDSParams = @{
-        SafeModeAdministratorPassword = $SafemodeAdministratorPassword.Password
-        NoRebootOnCompletion = $true
-        Force = $true
-    }
-
-    if ($PSBoundParameters.ContainsKey('DnsDelegationCredential'))
+    if (-not $targetResource.DomainExist)
     {
-        $installADDSParams['DnsDelegationCredential'] = $DnsDelegationCredential
-        $installADDSParams['CreateDnsDelegation'] = $true
-    }
-
-    if ($PSBoundParameters.ContainsKey('DatabasePath'))
-    {
-        $installADDSParams['DatabasePath'] = $DatabasePath
-    }
-
-    if ($PSBoundParameters.ContainsKey('LogPath'))
-    {
-        $installADDSParams['LogPath'] = $LogPath
-    }
-
-    if ($PSBoundParameters.ContainsKey('SysvolPath'))
-    {
-        $installADDSParams['SysvolPath'] = $SysvolPath
-    }
-
-    if ($PSBoundParameters.ContainsKey('DomainMode'))
-    {
-        $installADDSParams['DomainMode'] = $DomainMode
-    }
-
-    if ($PSBoundParameters.ContainsKey('ParentDomainName'))
-    {
-        Write-Verbose -Message ($script:localizedData.CreatingChildDomain -f $DomainName, $ParentDomainName)
-        $installADDSParams['Credential'] = $Credential
-        $installADDSParams['NewDomainName'] = $DomainName
-        $installADDSParams['ParentDomainName'] = $ParentDomainName
-        $installADDSParams['DomainType'] = 'ChildDomain'
-
-        if ($PSBoundParameters.ContainsKey('DomainNetBIOSName'))
-        {
-            $installADDSParams['NewDomainNetbiosName'] = $DomainNetBIOSName
+        $installADDSParameters = @{
+            SafeModeAdministratorPassword = $SafeModeAdministratorPassword.Password
+            NoRebootOnCompletion = $true
+            Force = $true
         }
 
-        Install-ADDSDomain @installADDSParams
-
-        Write-Verbose -Message ($script:localizedData.CreatedChildDomain)
-    }
-    else
-    {
-        Write-Verbose -Message ($script:localizedData.CreatingForest -f $DomainName)
-        $installADDSParams['DomainName'] = $DomainName
-
-        if ($PSBoundParameters.ContainsKey('DomainNetbiosName'))
+        if ($PSBoundParameters.ContainsKey('DnsDelegationCredential'))
         {
-            $installADDSParams['DomainNetbiosName'] = $DomainNetBIOSName
+            $installADDSParameters['DnsDelegationCredential'] = $DnsDelegationCredential
+            $installADDSParameters['CreateDnsDelegation'] = $true
         }
 
-        if ($PSBoundParameters.ContainsKey('ForestMode'))
+        if ($PSBoundParameters.ContainsKey('DatabasePath'))
         {
-            $installADDSParams['ForestMode'] = $ForestMode
+            $installADDSParameters['DatabasePath'] = $DatabasePath
         }
 
-        Install-ADDSForest @installADDSParams
+        if ($PSBoundParameters.ContainsKey('LogPath'))
+        {
+            $installADDSParameters['LogPath'] = $LogPath
+        }
 
-        Write-Verbose -Message ($script:localizedData.CreatedForest -f $DomainName)
+        if ($PSBoundParameters.ContainsKey('SysvolPath'))
+        {
+            $installADDSParameters['SysvolPath'] = $SysvolPath
+        }
+
+        if ($PSBoundParameters.ContainsKey('DomainMode'))
+        {
+            $installADDSParameters['DomainMode'] = $DomainMode
+        }
+
+        if ($PSBoundParameters.ContainsKey('ParentDomainName'))
+        {
+            Write-Verbose -Message ($script:localizedData.CreatingChildDomain -f $DomainName, $ParentDomainName)
+            $installADDSParameters['Credential'] = $Credential
+            $installADDSParameters['NewDomainName'] = $DomainName
+            $installADDSParameters['ParentDomainName'] = $ParentDomainName
+            $installADDSParameters['DomainType'] = 'ChildDomain'
+
+            if ($PSBoundParameters.ContainsKey('DomainNetBiosName'))
+            {
+                $installADDSParameters['NewDomainNetBiosName'] = $DomainNetBiosName
+            }
+
+            Install-ADDSDomain @installADDSParameters -ErrorAction 'Stop'
+
+            Write-Verbose -Message ($script:localizedData.CreatedChildDomain)
+        }
+        else
+        {
+            Write-Verbose -Message ($script:localizedData.CreatingForest -f $DomainName)
+            $installADDSParameters['DomainName'] = $DomainName
+
+            if ($PSBoundParameters.ContainsKey('DomainNetBiosName'))
+            {
+                $installADDSParameters['DomainNetBiosName'] = $DomainNetBiosName
+            }
+
+            if ($PSBoundParameters.ContainsKey('ForestMode'))
+            {
+                $installADDSParameters['ForestMode'] = $ForestMode
+            }
+
+            Install-ADDSForest @installADDSParameters -ErrorAction 'Stop'
+
+            Write-Verbose -Message ($script:localizedData.CreatedForest -f $DomainName)
+        }
+
+        'Finished' | Out-File -FilePath (Get-TrackingFilename -DomainName $DomainName) -Force
+
+        <#
+            Signal to the LCM to reboot the node to compensate for the one we
+            suppressed from Install-ADDSForest/Install-ADDSDomain.
+        #>
+        $global:DSCMachineStatus = 1
     }
-
-    'Finished' | Out-File -FilePath (Get-TrackingFilename -DomainName $DomainName) -Force
-
-    <#
-        Signal to the LCM to reboot the node to compensate for the one we
-        suppressed from Install-ADDSForest/Install-ADDSDomain.
-    #>
-    $global:DSCMachineStatus = 1
 } #end function Set-TargetResource
 
 Export-ModuleMember -Function *-TargetResource
