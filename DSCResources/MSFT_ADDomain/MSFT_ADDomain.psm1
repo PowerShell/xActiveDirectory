@@ -169,6 +169,8 @@ function Get-TargetResource
         ForestMode = $null
         DomainMode = $null
         DomainExist = $false
+        Forest = $null
+        DnsRoot = $null
     }
 
     $domainFQDN = Resolve-DomainFQDN -DomainName $DomainName -ParentDomainName $ParentDomainName
@@ -230,6 +232,13 @@ function Get-TargetResource
         }
         catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
         {
+            <#
+                This is thrown when the node is a domain member, mening the node
+                is able to evaluate if there is a domain controller managing the
+                domain name (which is different that its own domain).
+                That means this node cannot be provisioned to a domain controller
+                for another domain name.
+            #>
             $errorMessage = $script:localizedData.ExistingDomainMemberError -f $DomainName
             New-ObjectNotFoundException -Message $errorMessage -ErrorRecord $_
         }

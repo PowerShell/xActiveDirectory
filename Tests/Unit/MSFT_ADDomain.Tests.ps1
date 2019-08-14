@@ -63,239 +63,420 @@ try
             Add-Type -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'Unit\Stubs\Microsoft.ActiveDirectory.Management.cs')
         }
 
-        $correctDomainName = 'present.com'
-        $incorrectDomainName = 'incorrect.com'
-        $missingDomainName = 'missing.com'
+        $mockDomainName = 'contoso.com'
+        $mockNetBiosName = 'CONTOSO'
+        $mockDnsRoot = $mockDomainName
         $forestMode = [Microsoft.DirectoryServices.Deployment.Types.ForestMode]::Win2012R2
         $mgmtForestMode = [Microsoft.ActiveDirectory.Management.ADForestMode]::Windows2012R2Forest
         $domainMode = [Microsoft.DirectoryServices.Deployment.Types.DomainMode]::Win2012R2
         $mgmtDomainMode = [Microsoft.ActiveDirectory.Management.ADDomainMode]::Windows2012R2Domain
 
-        $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+        $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
             'DummyUser',
             (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
         )
 
-        $invalidCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
-            'Invalid',
-            (ConvertTo-SecureString -String 'InvalidPassword' -AsPlainText -Force)
-        )
-
-        $testDefaultParams = @{
-            Credential = $testAdminCredential
-            SafeModeAdministratorPassword = $testAdminCredential
+        $mockDefaultParameters = @{
+            DomainName = $mockDomainName
+            Credential = $mockAdministratorCredential
+            SafeModeAdministratorPassword = $mockAdministratorCredential
+            Verbose = $true
         }
 
         #region Function Get-TargetResource
         Describe 'ADDomain\Get-TargetResource' {
-            Mock -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' }
-
-            It 'Calls "Assert-Module" to check "ADDSDeployment" module is installed' {
-                Mock -CommandName Get-ADDomain -MockWith {
-                    [PSObject] @{
-                        Forest     = $correctDomainName
-                        DomainMode = $mgmtDomainMode
-                    }
-                }
-
-                Mock -CommandName Get-ADForest -MockWith {
-                    [PSObject] @{
-                        ForestMode = $mgmtForestMode
-                    }
-                }
-
-                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
-
-                Assert-MockCalled -CommandName Assert-Module -ParameterFilter { $ModuleName -eq 'ADDSDeployment' } -Scope It
+            BeforeEach {
+                Mock -CommandName Assert-Module
             }
 
-            It 'Returns "System.Collections.Hashtable" object type' {
-                Mock -CommandName Get-ADDomain {
-                    [PSObject] @{
-                        Forest     = $correctDomainName
-                        DomainMode = $mgmtDomainMode
+            Context 'When there is an authentication error' {
+                BeforeAll {
+                    Mock -CommandName Get-ADDomain -MockWith {
+                        throw New-Object -TypeName 'System.Security.Authentication.AuthenticationException'
                     }
+
+                    Mock -CommandName Test-Path -MockWith {
+                        return $false
+                    }
+
+                    Mock -CommandName Test-DomainMember -MockWith {
+                        return $false
+                    }
+
+                    $getTargetResourceParameters = $mockDefaultParameters.Clone()
                 }
 
-                Mock -CommandName Get-ADForest -MockWith {
-                    [PSObject] @{
-                        ForestMode = $mgmtForestMode
-                    }
+                It 'Should throw the correct error' {
+                    { Get-TargetResource @getTargetResourceParameters } | Should -Throw ($script:localizedData.InvalidCredentialError -f $mockDomainName)
                 }
-
-                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
-
-                $result -is [System.Collections.Hashtable] | Should -BeTrue
             }
 
-            It 'Calls "Get-ADDomain" without credentials if domain member' {
-                Mock -CommandName Test-DomainMember -MockWith { $true; }
-                Mock -CommandName Get-ADDomain -ParameterFilter { $Credential -eq $null } -MockWith {
-                    [PSObject] @{
-                        Forest = $correctDomainName
-                        DomainMode = $mgmtDomainMode
+            Context 'When an exception other than the known is thrown' {
+                BeforeAll {
+                    Mock -CommandName Get-ADDomain -MockWith {
+                        throw New-Object -TypeName 'System.Management.Automation.RunTimeException' -ArgumentList @('mocked error')
                     }
+
+                    Mock -CommandName Test-Path -MockWith {
+                        return $false
+                    }
+
+                    Mock -CommandName Test-DomainMember -MockWith {
+                        return $true
+                    }
+
+                    $getTargetResourceParameters = $mockDefaultParameters.Clone()
                 }
 
-                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
-
-                Assert-MockCalled -CommandName Get-ADDomain -ParameterFilter { $Credential -eq $null } -Scope It
+                It 'Should throw the correct error' {
+                    { Get-TargetResource @getTargetResourceParameters } | Should -Throw 'mocked error'
+                }
             }
 
-            It 'Calls "Get-ADForest" without credentials if domain member' {
-                Mock -CommandName Test-DomainMember -MockWith { $true; }
-                Mock -CommandName Get-ADDomain -ParameterFilter { $Credential -eq $null } -MockWith {
-                    [PSObject] @{
-                        Forest = $correctDomainName
-                        DomainMode = $mgmtDomainMode
+            Context 'When the node is already a domain member and cannot be provisioned as a domain controller for another domain' {
+                BeforeAll {
+                    Mock -CommandName Get-ADDomain -MockWith {
+                        throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException'
                     }
+
+                    Mock -CommandName Test-Path -MockWith {
+                        return $false
+                    }
+
+                    Mock -CommandName Test-DomainMember -MockWith {
+                        return $true
+                    }
+
+                    $getTargetResourceParameters = $mockDefaultParameters.Clone()
                 }
 
-                Mock -CommandName Get-ADForest -ParameterFilter { $Credential -eq $null } -MockWith {
-                    [PSObject] @{
-                        ForestMode = $mgmtForestMode
-                    }
+                It 'Should throw the correct error' {
+                    { Get-TargetResource @getTargetResourceParameters } | Should -Throw ($script:localizedData.ExistingDomainMemberError -f $mockDomainName)
                 }
-
-                $result = Get-TargetResource @testDefaultParams -DomainName $correctDomainName
-
-                Assert-MockCalled -CommandName Get-ADForest -ParameterFilter { $Credential -eq $null } -Scope It
             }
 
-            It 'Throws "Invalid credentials" when domain is available but authentication fails' {
-                Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
-                    throw New-Object -TypeName 'System.Security.Authentication.AuthenticationException'
-                }
+            Context 'When the system is in the desired state' {
+                BeforeAll {
+                    Mock -CommandName Get-ADDomain -MockWith {
+                        [PSObject] @{
+                            Forest     = $mockDomainName
+                            DomainMode = $mgmtDomainMode
+                            ParentDomain = $mockDomainName
+                            NetBIOSName = $mockNetBiosName
+                            DnsRoot = $mockDnsRoot
+                        }
+                    }
 
-                # Match operator is case-sensitive!
-                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw ($script:localizedData.InvalidCredentialError -f $incorrectDomainName)
-            }
-
-            It 'Throws "Computer is already a domain member" when is already a domain member' {
-                Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $incorrectDomainName } -MockWith {
-                    throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException'
-                }
-
-                { Get-TargetResource @testDefaultParams -DomainName $incorrectDomainName } | Should -Throw ($script:localizedData.ExistingDomainMemberError -f $incorrectDomainName)
-            }
-
-            It 'Does not throw when domain cannot be located' {
-                Mock -CommandName Get-ADDomain -ParameterFilter { $Identity.ToString() -eq $missingDomainName } -MockWith {
-                    throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADServerDownException'
-                }
-
-                { Get-TargetResource @testDefaultParams -DomainName $missingDomainName } | Should -Not -Throw
-            }
-
-            It 'Returns the correct domain mode' {
-                Mock -CommandName Get-ADDomain -MockWith {
-                    [PSObject] @{
-                        Forest     = $correctDomainName
-                        DomainMode = $mgmtDomainMode
+                    Mock -CommandName Get-ADForest -MockWith {
+                        [PSObject] @{
+                            Name = $mockDomainName
+                            ForestMode = $mgmtForestMode
+                        }
                     }
                 }
 
-                Mock -CommandName Get-ADForest -MockWith {
-                    [PSObject] @{
-                        ForestMode = $mgmtForestMode
+                Context 'When the domain exist' {
+                    Context 'When the node is a domain member' {
+                        BeforeAll {
+                            Mock -CommandName Test-Path -MockWith {
+                                return $true
+                            }
+
+                            Mock -CommandName Test-DomainMember -MockWith {
+                                return $true
+                            }
+
+                            $getTargetResourceParameters = $mockDefaultParameters.Clone()
+                        }
+
+                        It 'Should call the correct mocks' {
+                            $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                            Assert-MockCalled -CommandName Test-DomainMember -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Get-ADDomain -ParameterFilter {
+                                -not $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+
+                            Assert-MockCalled -CommandName Get-ADForest -ParameterFilter {
+                                -not $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+                        }
+
+                        It 'Should return the same values as passed as parameters' {
+                            $result = Get-TargetResource @getTargetResourceParameters
+                            $result.DomainName | Should -Be $getTargetResourceParameters.DomainName
+                            $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
+                            $result.SafeModeAdministratorPassword.UserName | Should -Be $getTargetResourceParameters.SafeModeAdministratorPassword.UserName
+                        }
+
+                        It 'Should return $null for the rest of the properties' {
+                            $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+                            $getTargetResourceResult.DnsRoot | Should -Be $mockDomainName
+                            $getTargetResourceResult.ParentDomainName | Should -Be $mockDomainName
+                            $getTargetResourceResult.DomainNetBiosName | Should -Be $mockNetBiosName
+                            $getTargetResourceResult.DnsDelegationCredential | Should -BeNullOrEmpty
+                            $getTargetResourceResult.DatabasePath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.LogPath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.SysvolPath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.ForestMode | Should -Be 'Win2012R2'
+                            $getTargetResourceResult.DomainMode | Should -Be 'Win2012R2'
+                            $getTargetResourceResult.DomainExist | Should -BeTrue
+                        }
+                    }
+
+                    Context 'When no tracking file was found' {
+                        BeforeAll {
+                            Mock -CommandName Write-Warning
+                            Mock -CommandName Test-Path -MockWith {
+                                return $false
+                            }
+
+                            Mock -CommandName Test-DomainMember -MockWith {
+                                return $true
+                            }
+
+                            $getTargetResourceParameters = $mockDefaultParameters.Clone()
+                        }
+
+                        It 'Should call the correct mocks' {
+                            $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                            Assert-MockCalled -CommandName Write-Warning -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Test-DomainMember -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Get-ADDomain -ParameterFilter {
+                                -not $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+
+                            Assert-MockCalled -CommandName Get-ADForest -ParameterFilter {
+                                -not $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+                        }
+                    }
+
+                    Context 'When the node is not a domain member' {
+                        BeforeAll {
+                            Mock -CommandName Test-Path -MockWith {
+                                return $true
+                            }
+
+                            Mock -CommandName Test-DomainMember -MockWith {
+                                return $false
+                            }
+
+                            $getTargetResourceParameters = $mockDefaultParameters.Clone()
+                        }
+
+                        It 'Should call the correct mocks' {
+                            $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                            Assert-MockCalled -CommandName Test-DomainMember -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Get-ADDomain -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+
+                            Assert-MockCalled -CommandName Get-ADForest -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('Credential')
+                            } -Exactly -Times 1 -Scope It
+                        }
+
+                        It 'Should return the same values as passed as parameters' {
+                            $result = Get-TargetResource @getTargetResourceParameters
+                            $result.DomainName | Should -Be $getTargetResourceParameters.DomainName
+                            $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
+                            $result.SafeModeAdministratorPassword.UserName | Should -Be $getTargetResourceParameters.SafeModeAdministratorPassword.UserName
+                        }
+
+                        It 'Should return $null for the rest of the properties' {
+                            $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+                            $getTargetResourceResult.DnsRoot | Should -Be $mockDomainName
+                            $getTargetResourceResult.ParentDomainName | Should -Be $mockDomainName
+                            $getTargetResourceResult.DomainNetBiosName | Should -Be $mockNetBiosName
+                            $getTargetResourceResult.DnsDelegationCredential | Should -BeNullOrEmpty
+                            $getTargetResourceResult.DatabasePath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.LogPath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.SysvolPath | Should -BeNullOrEmpty
+                            $getTargetResourceResult.ForestMode | Should -Be 'Win2012R2'
+                            $getTargetResourceResult.DomainMode | Should -Be 'Win2012R2'
+                            $getTargetResourceResult.DomainExist | Should -BeTrue
+                        }
                     }
                 }
-
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).DomainMode | Should -Be $domainMode
             }
 
-            It 'Returns the correct forest mode' {
-                Mock -CommandName Get-ADDomain -MockWith {
-                    [PSObject] @{
-                        Forest     = $correctDomainName
-                        DomainMode = $mgmtDomainMode
+            Context 'When the system is not in the desired state' {
+                BeforeAll {
+                    Mock -CommandName Get-ADForest
+                    Mock -CommandName Get-ADDomain -MockWith {
+                        throw New-Object -TypeName 'Microsoft.ActiveDirectory.Management.ADServerDownException'
                     }
                 }
 
-                Mock -CommandName Get-ADForest -MockWith {
-                    [PSObject] @{
-                        ForestMode = $mgmtForestMode
+                Context 'When the domain does not exist' {
+                    BeforeAll {
+                        Mock -CommandName Test-Path -MockWith {
+                            return $false
+                        }
+
+                        Mock -CommandName Test-DomainMember -MockWith {
+                            return $false
+                        }
+
+                        $getTargetResourceParameters = $mockDefaultParameters.Clone()
+                    }
+
+                    It 'Should call the correct mocks' {
+                        $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                        Assert-MockCalled -CommandName Test-DomainMember -Exactly -Times 1 -Scope It
+                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Get-ADDomain -ParameterFilter {
+                            $PSBoundParameters.ContainsKey('Credential')
+                        } -Exactly -Times 1 -Scope It
+                    }
+
+                    It 'Should return the same values as passed as parameters' {
+                        $result = Get-TargetResource @getTargetResourceParameters
+                        $result.DomainName | Should -Be $getTargetResourceParameters.DomainName
+                        $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
+                        $result.SafeModeAdministratorPassword.UserName | Should -Be $getTargetResourceParameters.SafeModeAdministratorPassword.UserName
+                    }
+
+                    It 'Should return $null for the rest of the properties' {
+                        $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+                        $getTargetResourceResult.DnsRoot | Should -BeNullOrEmpty
+                        $getTargetResourceResult.ParentDomainName | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainNetBiosName | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DnsDelegationCredential | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DatabasePath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.LogPath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.SysvolPath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.ForestMode | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainMode | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainExist | Should -BeFalse
                     }
                 }
 
-                (Get-TargetResource @testDefaultParams -DomainName $correctDomainName).ForestMode | Should -Be $forestMode
+                Context 'When the domain cannot be found, but should exist (tracking file exist)' {
+                    BeforeAll {
+                        Mock -CommandName Start-Sleep
+                        Mock -CommandName Test-Path -MockWith {
+                            return $true
+                        }
+
+                        Mock -CommandName Test-DomainMember -MockWith {
+                            return $true
+                        }
+
+                        $getTargetResourceParameters = $mockDefaultParameters.Clone()
+                    }
+
+                    It 'Should call the correct mocks the correct number of times' {
+                        $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+                        Assert-MockCalled -CommandName Test-DomainMember -Exactly -Times 5 -Scope It
+                        Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 0 -Scope It
+                        Assert-MockCalled -CommandName Start-Sleep -Exactly -Times 5 -Scope It
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 5 -Scope It
+                    }
+
+                    It 'Should return the same values as passed as parameters' {
+                        $result = Get-TargetResource @getTargetResourceParameters
+                        $result.DomainName | Should -Be $getTargetResourceParameters.DomainName
+                        $result.Credential.UserName | Should -Be $getTargetResourceParameters.Credential.UserName
+                        $result.SafeModeAdministratorPassword.UserName | Should -Be $getTargetResourceParameters.SafeModeAdministratorPassword.UserName
+                    }
+
+                    It 'Should return $null for the rest of the properties' {
+                        $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+                        $getTargetResourceResult.DnsRoot | Should -BeNullOrEmpty
+                        $getTargetResourceResult.ParentDomainName | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainNetBiosName | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DnsDelegationCredential | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DatabasePath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.LogPath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.SysvolPath | Should -BeNullOrEmpty
+                        $getTargetResourceResult.ForestMode | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainMode | Should -BeNullOrEmpty
+                        $getTargetResourceResult.DomainExist | Should -BeFalse
+                    }
+                }
             }
         }
         #endregion
 
         #region Function Test-TargetResource
         Describe 'ADDomain\Test-TargetResource' {
-            $correctDomainName = 'present.com'
+            $mockDomainName = 'present.com'
             $correctChildDomainName = 'present'
             $correctDomainNetBIOSName = 'PRESENT'
             $incorrectDomainName = 'incorrect.com'
             $parentDomainName = 'parent.com'
-            $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
                 'DummyUser',
                 (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
             )
 
-            $testDefaultParams = @{
-                Credential = $testAdminCredential
-                SafeModeAdministratorPassword = $testAdminCredential
+            $mockDefaultParameters = @{
+                Credential = $mockAdministratorCredential
+                SafeModeAdministratorPassword = $mockAdministratorCredential
             }
 
             $stubDomain = @{
-                DomainName = $correctDomainName
+                DnsRoot = $mockDomainName
                 DomainNetBIOSName = $correctDomainNetBIOSName
             }
 
             # Get-TargetResource returns the domain FQDN for .DomainName
             $stubChildDomain = @{
-                DomainName = "$correctChildDomainName.$parentDomainName"
+                DnsRoot = "$correctChildDomainName.$parentDomainName"
                 ParentDomainName = $parentDomainName
                 DomainNetBIOSName = $correctDomainNetBIOSName
             }
 
             It 'Returns "True" when "DomainName" matches' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $mockDomainName
 
                 $result | Should -BeTrue
             }
 
             It 'Returns "False" when "DomainName" does not match' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $incorrectDomainName
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $incorrectDomainName
 
                 $result | Should -BeFalse
             }
 
             It 'Returns "True" when "DomainNetBIOSName" matches' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DomainNetBIOSName $correctDomainNetBIOSName
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $mockDomainName -DomainNetBIOSName $correctDomainNetBIOSName
 
                 $result | Should -BeTrue
             }
 
             It 'Returns "False" when "DomainNetBIOSName" does not match' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -DomainNetBIOSName 'INCORRECT'
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $mockDomainName -DomainNetBIOSName 'INCORRECT'
 
                 $result | Should -BeFalse
             }
 
             It 'Returns "True" when "ParentDomainName" matches' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubChildDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubChildDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $correctChildDomainName -ParentDomainName $parentDomainName
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $correctChildDomainName -ParentDomainName $parentDomainName
 
                 $result | Should -BeTrue
             }
 
             It 'Returns "False" when "ParentDomainName" does not match' {
-                Mock -CommandName Get-TargetResource -MockWith { return $stubChildDomain; }
+                Mock -CommandName Get-TargetResource -MockWith { return $stubChildDomain }
 
-                $result = Test-TargetResource @testDefaultParams -DomainName $correctChildDomainName -ParentDomainName 'incorrect.com'
+                $result = Test-TargetResource @mockDefaultParameters -DomainName $correctChildDomainName -ParentDomainName 'incorrect.com'
 
                 $result | Should -BeFalse
             }
@@ -350,7 +531,7 @@ try
             $testDomainNetBIOSNameName = 'PRESENT'
             $testDomainForestMode = 'WinThreshold'
 
-            $testAdminCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+            $mockAdministratorCredential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
                 'Admin',
                 (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
             )
@@ -368,14 +549,14 @@ try
 
             $newForestParams = @{
                 DomainName = $testDomainName
-                Credential = $testAdminCredential
+                Credential = $mockAdministratorCredential
                 SafeModeAdministratorPassword = $testSafemodeCredential
             }
 
             $newDomainParams = @{
                 DomainName = $testDomainName
                 ParentDomainName = $testParentDomainName
-                Credential = $testAdminCredential
+                Credential = $mockAdministratorCredential
                 SafeModeAdministratorPassword = $testSafemodeCredential
             }
 
@@ -386,8 +567,11 @@ try
                 ForestName = $testParentDomainName
                 ForestMode = $testDomainForestMode
                 DomainMode = $testDomainForestMode
+                DomainExist = $false
             }
-            Mock -CommandName Get-TargetResource -MockWith { return $stubTargetResource; }
+
+            Mock -CommandName Get-TargetResource -MockWith { return $stubTargetResource }
+            Mock -CommandName Out-File
 
             It 'Calls "Install-ADDSForest" with "DomainName" when creating forest' {
                 Mock -CommandName Install-ADDSForest -ParameterFilter { $DomainName -eq $testDomainName }

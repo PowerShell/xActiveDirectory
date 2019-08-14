@@ -1,6 +1,6 @@
 # culture="en-US"
 ConvertFrom-StringData @'
-    ExistingDomainMemberError            = Computer is already a domain member. Cannot create a new '{0}' domain. (ADD0001)
+    ExistingDomainMemberError            = Computer is already a domain member. Cannot create a new '{0}' domain on this computer. (ADD0001)
     InvalidCredentialError               = Domain '{0}' is available, but invalid credentials were supplied. (ADD0002)
     QueryDomainWithLocalCredential       = Computer is a domain member; querying domain '{0}' using local credential. (ADD0003)
     QueryDomainWithCredential            = Computer is a workgroup member; querying for domain '{0}' using supplied credential. (ADD0004)
