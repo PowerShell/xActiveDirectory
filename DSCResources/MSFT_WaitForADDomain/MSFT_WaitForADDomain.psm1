@@ -15,7 +15,8 @@ $script:waitForDomainControllerScriptBlock = {
     (
         # Only used for unit tests, and debug purpose.
         [Parameter()]
-        $RunOnce = $false,
+        [System.Boolean]
+        $RunOnce,
 
         [Parameter(Mandatory = $true)]
         [System.String]
@@ -354,6 +355,7 @@ function Set-TargetResource
         $startJobParameters = @{
             ScriptBlock = $script:waitForDomainControllerScriptBlock
             ArgumentList = @(
+                $false
                 $DomainName
                 $SiteName
                 $Credential

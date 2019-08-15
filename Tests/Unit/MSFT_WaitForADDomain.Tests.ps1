@@ -505,17 +505,112 @@ try
                         }
                     }
 
-                    It 'Should not throw and call the correct mocks' {
-                        { Set-TargetResource @mockDefaultParameters } | Should -Not -Throw
+                    BeforeEach {
+                        $setTargetResourceParameters = $mockDefaultParameters.Clone()
+                    }
 
-                        $global:DSCMachineStatus | Should -Be 0
+                    Context 'When only specifying the default parameter' {
+                        It 'Should not throw and call the correct mocks' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
 
-                        Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Receive-Job -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Start-Job -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Wait-Job -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Remove-Job -Exactly -Times 1 -Scope It
-                        Assert-MockCalled -CommandName Remove-RestartLogFile -Exactly -Times 0 -Scope It
+                            $global:DSCMachineStatus | Should -Be 0
+
+                            Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Receive-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Wait-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-RestartLogFile -Exactly -Times 0 -Scope It
+
+                            Assert-MockCalled -CommandName Start-Job -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('ArgumentList') `
+                                -and $ArgumentList[0] -eq $false `
+                                -and $ArgumentList[1] -eq $setTargetResourceParameters.DomainName `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[2]) `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[3]) `
+                                -and $ArgumentList[4] -eq $false
+                            } -Exactly -Times 1 -Scope It
+                        }
+                    }
+
+                    Context 'When specifying a site name' {
+                        BeforeEach {
+                            $setTargetResourceParameters['SiteName'] = $mockSiteName
+                        }
+
+                        It 'Should not throw and call the correct mocks' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+
+                            $global:DSCMachineStatus | Should -Be 0
+
+                            Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Receive-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Wait-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-RestartLogFile -Exactly -Times 0 -Scope It
+
+                            Assert-MockCalled -CommandName Start-Job -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('ArgumentList') `
+                                -and $ArgumentList[0] -eq $false `
+                                -and $ArgumentList[1] -eq $setTargetResourceParameters.DomainName `
+                                -and $ArgumentList[2] -eq $setTargetResourceParameters.SiteName `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[3]) `
+                                -and $ArgumentList[4] -eq $false
+                            } -Exactly -Times 1 -Scope It
+                        }
+                    }
+
+                    Context 'When specifying credentials' {
+                        BeforeEach {
+                            $setTargetResourceParameters['Credential'] = $mockDomainUserCredential
+                        }
+
+                        It 'Should not throw and call the correct mocks' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+
+                            $global:DSCMachineStatus | Should -Be 0
+
+                            Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Receive-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Wait-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-RestartLogFile -Exactly -Times 0 -Scope It
+
+                            Assert-MockCalled -CommandName Start-Job -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('ArgumentList') `
+                                -and $ArgumentList[0] -eq $false `
+                                -and $ArgumentList[1] -eq $setTargetResourceParameters.DomainName `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[2]) `
+                                -and $ArgumentList[3].UserName -eq $setTargetResourceParameters.Credential.UserName `
+                                -and $ArgumentList[4] -eq $false
+                            } -Exactly -Times 1 -Scope It
+                        }
+                    }
+
+                    Context 'When specifying that credentials errors should be ignored' {
+                        BeforeEach {
+                            $setTargetResourceParameters['IgnoreAuthenticationErrors'] = $true
+                        }
+
+                        It 'Should not throw and call the correct mocks' {
+                            { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
+
+                            $global:DSCMachineStatus | Should -Be 0
+
+                            Assert-MockCalled -CommandName Compare-TargetResourceState -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Receive-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Wait-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-Job -Exactly -Times 1 -Scope It
+                            Assert-MockCalled -CommandName Remove-RestartLogFile -Exactly -Times 0 -Scope It
+
+                            Assert-MockCalled -CommandName Start-Job -ParameterFilter {
+                                $PSBoundParameters.ContainsKey('ArgumentList') `
+                                -and $ArgumentList[0] -eq $false `
+                                -and $ArgumentList[1] -eq $setTargetResourceParameters.DomainName `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[2]) `
+                                -and [System.String]::IsNullOrEmpty($ArgumentList[2]) `
+                                -and $ArgumentList[4] -eq $true
+                            } -Exactly -Times 1 -Scope It
+                        }
                     }
 
                     Context 'When a restart was requested' {
