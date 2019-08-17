@@ -39,10 +39,10 @@ Configuration WaitForADDomain_WaitForDomainControllerIgnoringAuthenticationError
     {
         WaitForADDomain 'contoso.com'
         {
-            DomainName                 = 'contoso.com'
-            IgnoreAuthenticationErrors = $true
+            DomainName             = 'contoso.com'
+            WaitForValidCredential = $true
 
-            PsDscRunAsCredential       = $Credential
+            PsDscRunAsCredential   = $Credential
         }
     }
 }

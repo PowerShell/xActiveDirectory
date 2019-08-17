@@ -13,9 +13,9 @@
     >In all other scenarios use either the built-in parameter
     >`PsDscRunAsCredential`, or the parameter `Credential`.
 
-    Using the parameter `IgnoreAuthenticationErrors` ignores authentication
+    Using the parameter `WaitForValidCredential` ignores authentication
     errors a let the resource wait until time timeout is reached. If the
-    parameter `IgnoreAuthenticationErrors` is not specified and the resource
+    parameter `WaitForValidCredential` is not specified and the resource
     throws an authentication error, then the resource will fail. But the
     Local Configuration Manger (LCM) will automatically run the configuration
     again to try to get the node in desired state. If and when the LCM retries
@@ -45,7 +45,7 @@
     Write - UInt32
     Specifies the number of times the node will be reboot in an effort to connect to the domain.
 
-.PARAMETER IgnoreAuthenticationErrors
+.PARAMETER WaitForValidCredential
     Write - Boolean
     Specifies that the resource will not throw an error if authentication fails using the provided credentials and continue wait for the timeout. This can be used if the credentials are known to eventually exist but there are a potential timing issue before they are accessible.
 
@@ -201,7 +201,7 @@ Configuration WaitForADDomain_WaitForDomainControllerWithReboot_Config
         {
             DomainName   = 'contoso.com'
             RestartCount = 2
-            
+
             PsDscRunAsCredential = $Credential
         }
     }
@@ -263,7 +263,7 @@ Configuration WaitForADDomain_WaitForDomainControllerIgnoringAuthenticationError
         WaitForADDomain 'contoso.com'
         {
             DomainName                 = 'contoso.com'
-            IgnoreAuthenticationErrors = $true
+            WaitForValidCredential = $true
 
             PsDscRunAsCredential       = $Credential
         }

@@ -197,15 +197,15 @@ try
                     $getTargetResourceParameters['Credential'] = $mockDomainUserCredential
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is not specified' {
+                Context 'When the parameter WaitForValidCredential is not specified' {
                     It 'Should throw the correct error' {
                         { Get-TargetResource @getTargetResourceParameters } | Should -Throw 'The user name or password is incorrect.'
                     }
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is set to $false' {
+                Context 'When the parameter WaitForValidCredential is set to $false' {
                     BeforeEach {
-                        $getTargetResourceParameters['IgnoreAuthenticationErrors'] = $false
+                        $getTargetResourceParameters['WaitForValidCredential'] = $false
                     }
 
                     It 'Should throw the correct error' {
@@ -213,13 +213,13 @@ try
                     }
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is set to $true' {
+                Context 'When the parameter WaitForValidCredential is set to $true' {
                     BeforeAll {
                         Mock -CommandName Write-Warning
                     }
 
                     BeforeEach {
-                        $getTargetResourceParameters['IgnoreAuthenticationErrors'] = $true
+                        $getTargetResourceParameters['WaitForValidCredential'] = $true
                     }
 
                     It 'Should return the same values as passed as parameters' {
@@ -588,7 +588,7 @@ try
 
                     Context 'When specifying that credentials errors should be ignored' {
                         BeforeEach {
-                            $setTargetResourceParameters['IgnoreAuthenticationErrors'] = $true
+                            $setTargetResourceParameters['WaitForValidCredential'] = $true
                         }
 
                         It 'Should not throw and call the correct mocks' {
@@ -796,7 +796,7 @@ try
                     }
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is not specified' {
+                Context 'When the parameter WaitForValidCredential is not specified' {
                     It 'Should throw the correct error' {
                         {
                             Invoke-Command -ScriptBlock $script:waitForDomainControllerScriptBlock -ArgumentList @(
@@ -809,7 +809,7 @@ try
                     }
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is set to $false' {
+                Context 'When the parameter WaitForValidCredential is set to $false' {
                     It 'Should throw the correct error' {
                         {
                             Invoke-Command -ScriptBlock $script:waitForDomainControllerScriptBlock -ArgumentList @(
@@ -823,7 +823,7 @@ try
                     }
                 }
 
-                Context 'When the parameter IgnoreAuthenticationErrors is set to $true' {
+                Context 'When the parameter WaitForValidCredential is set to $true' {
                     BeforeAll {
                         Mock -CommandName Write-Warning
                     }
