@@ -2329,7 +2329,7 @@ function Get-MD5HashString
         $md5 = [System.Security.Cryptography.MD5]::Create()
         $hashBytes = $md5.ComputeHash($Bytes)
 
-        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-', '')
+        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-','')
     }
 
     return $md5ReturnValue
