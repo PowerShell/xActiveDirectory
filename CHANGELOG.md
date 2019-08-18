@@ -23,6 +23,8 @@
 - Changes to WaitForADDomain
   - An optional parameter `WaitForValidCredentials` can be set to $true
     to tell the resource to ignore authentication errors ([issue #478](https://github.com/PowerShell/ActiveDirectoryDsc/issues/478)).
+- Changes to ADUser
+  - Remove unused non-mandatory parameters from the Get-TargetResource ([issue #293](https://github.com/PowerShell/ActiveDirectoryDsc/issues/293)).
 
 ## 4.0.0.0
 
