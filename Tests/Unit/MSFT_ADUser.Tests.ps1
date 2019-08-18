@@ -209,6 +209,7 @@ try
         Describe 'ADUser\Get-TargetResource' {
             BeforeAll {
                 Mock -CommandName Assert-Module
+                $testPresentParams.Remove('Ensure')
             }
 
             It "Returns a 'System.Collections.Hashtable' object type" {
@@ -260,29 +261,25 @@ try
             It "Should return the correct value for an Array property" {
                 Mock -CommandName Get-ADUser -MockWith { return [PSCustomObject] $fakeADUser }
 
-                $adUser = Get-TargetResource @testPresentParams -ServicePrincipalNames ''
+                $adUser = Get-TargetResource @testPresentParams
                 $adUser.ServicePrincipalNames | Should -Be $fakeADUser.ServicePrincipalName
             }
 
             It "Should return the correct value of 'ChangePassswordAtLogon' if it is true" {
                 $mockADUser = $fakeADUser.Clone()
                 $mockADUser['pwdLastSet'] = 0
-                $mockPresentParams = $testPresentParams.Clone()
-                $mockPresentParams['ChangePasswordAtLogon'] = $true
                 Mock -CommandName Get-ADUser -MockWith { return [PSCustomObject] $mockADUser }
 
-                $adUser = Get-TargetResource @mockPresentParams
+                $adUser = Get-TargetResource @testPresentParams
                 $adUser.ChangePasswordAtLogon | Should -BeTrue
             }
 
             It "Should return the correct value of 'ChangePassswordAtLogon' if it is false" {
                 $mockADUser = $fakeADUser.Clone()
                 $mockADUser['pwdLastSet'] = 12345678
-                $mockPresentParams = $testPresentParams.Clone()
-                $mockPresentParams['ChangePasswordAtLogon'] = $true
                 Mock -CommandName Get-ADUser -MockWith { return [PSCustomObject] $mockADUser }
 
-                $adUser = Get-TargetResource @mockPresentParams
+                $adUser = Get-TargetResource @testPresentParams
                 $adUser.ChangePasswordAtLogon | Should -BeFalse
             }
 
@@ -292,13 +289,11 @@ try
                 # This a mock of a real thumbnail-photo (the DSC logo).
                 $mockADUser['ThumbnailPhoto'] = $mockThumbnailPhotoByteArray
 
-                $mockPresentParams = $testPresentParams.Clone()
-
                 Mock -CommandName Get-ADUser -MockWith {
                     return [PSCustomObject] $mockADUser
                 }
 
-                $adUser = Get-TargetResource @mockPresentParams
+                $adUser = Get-TargetResource @testPresentParams
                 $adUser.ThumbnailPhoto | Should -Be $mockThumbnailPhotoBase64
                 $adUser.ThumbnailPhotoHash | Should -Be $mockThumbnailPhotoHash
             }
@@ -307,6 +302,9 @@ try
 
         #region Function Test-TargetResource
         Describe 'ADUser\Test-TargetResource' {
+            BeforeAll {
+                $testPresentParams['Ensure'] = 'Present'
+            }
             It "Passes when user account does not exist and 'Ensure' is 'Absent'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testAbsentParams }
 

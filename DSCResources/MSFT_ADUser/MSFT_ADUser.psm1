@@ -143,7 +143,7 @@ $adPropertyMap = @(
         Parameter = 'OtherName'
     }
     @{
-        Parameter = 'ThumbnailPhoto'
+        Parameter  = 'ThumbnailPhoto'
         ADProperty = 'thumbnailPhoto'
     }
     @{
@@ -458,254 +458,8 @@ function Get-TargetResource
 
         [Parameter()]
         [ValidateNotNull()]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
-        $Password,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present',
-
-        [Parameter()]
-        [ValidateNotNull()]
         [System.String]
         $CommonName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $UserPrincipalName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $DisplayName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Path,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $GivenName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Initials,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Surname,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Description,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $StreetAddress,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $POBox,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $City,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $State,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $PostalCode,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Country,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Department,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Division,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Company,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Office,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $JobTitle,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $EmailAddress,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $EmployeeID,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $EmployeeNumber,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $HomeDirectory,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $HomeDrive,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $HomePage,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $ProfilePath,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $LogonScript,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Notes,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $OfficePhone,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $MobilePhone,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Fax,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $HomePhone,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Pager,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $IPPhone,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Manager,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $LogonWorkstations,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $Organization,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
-        $OtherName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $Enabled = $true,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $CannotChangePassword,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $ChangePasswordAtLogon,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $PasswordNeverExpires,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $TrustedForDelegation,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $AccountNotDelegated,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $AllowReversiblePasswordEncryption,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $CompoundIdentitySupported,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $PasswordNotRequired,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $SmartcardLogonRequired,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -716,36 +470,7 @@ function Get-TargetResource
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.CredentialAttribute()]
-        $Credential,
-
-        [Parameter()]
-        [ValidateSet('Default', 'Negotiate')]
-        [System.String]
-        $PasswordAuthentication = 'Default',
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $PasswordNeverResets = $false,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Boolean]
-        $RestoreFromRecycleBin,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String[]]
-        $ServicePrincipalNames,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String[]]
-        $ProxyAddresses,
-
-        [Parameter()]
-        [System.String]
-        $ThumbnailPhoto
+        $Credential
     )
 
     <#
@@ -1435,10 +1160,30 @@ function Test-TargetResource
     {
         $CommonName = $UserName
     }
-
     Assert-Parameters @PSBoundParameters
 
-    $targetResource = Get-TargetResource @PSBoundParameters
+    $getParameters = @{ }
+    if ($PSBoundParameters.ContainsKey('DomainName'))
+    {
+        $getParameters['DomainName'] = $PSBoundParameters['DomainName']
+    }
+    if ($PSBoundParameters.ContainsKey('UserName'))
+    {
+        $getParameters['UserName'] = $PSBoundParameters['UserName']
+    }
+    if ($PSBoundParameters.ContainsKey('CommonName'))
+    {
+        $getParameters['CommonName'] = $PSBoundParameters['CommonName']
+    }
+    if ($PSBoundParameters.ContainsKey('DomainController'))
+    {
+        $getParameters['DomainController'] = $PSBoundParameters['DomainController']
+    }
+    if ($PSBoundParameters.ContainsKey('Credential'))
+    {
+        $getParameters['Credential'] = $PSBoundParameters['Credential']
+    }
+    $targetResource = Get-TargetResource @getParameters
 
     $isCompliant = $true
 
@@ -2091,7 +1836,28 @@ function Set-TargetResource
 
     Assert-Parameters @PSBoundParameters
 
-    $targetResource = Get-TargetResource @PSBoundParameters
+    $getParameters = @{ }
+    if ($PSBoundParameters.ContainsKey('DomainName'))
+    {
+        $getParameters['DomainName'] = $PSBoundParameters['DomainName']
+    }
+    if ($PSBoundParameters.ContainsKey('UserName'))
+    {
+        $getParameters['UserName'] = $PSBoundParameters['UserName']
+    }
+    if ($PSBoundParameters.ContainsKey('CommonName'))
+    {
+        $getParameters['CommonName'] = $PSBoundParameters['CommonName']
+    }
+    if ($PSBoundParameters.ContainsKey('DomainController'))
+    {
+        $getParameters['DomainController'] = $PSBoundParameters['DomainController']
+    }
+    if ($PSBoundParameters.ContainsKey('Credential'))
+    {
+        $getParameters['Credential'] = $PSBoundParameters['Credential']
+    }
+    $targetResource = Get-TargetResource @getParameters
 
     # Add common name, ensure and enabled as they may not be explicitly passed
     $PSBoundParameters['Ensure'] = $Ensure
@@ -2131,7 +1897,7 @@ function Set-TargetResource
                 New-ADUser @newADUserParams -SamAccountName $UserName
 
                 # Now retrieve the newly created user
-                $targetResource = Get-TargetResource @PSBoundParameters
+                $targetResource = Get-TargetResource @getParameters
 
                 $newADUser = $true
             }
@@ -2152,9 +1918,9 @@ function Set-TargetResource
             {
                 # Find the associated AD property
                 $adProperty = $adPropertyMap |
-                    Where-Object -FilterScript {
-                        $_.Parameter -eq $parameter
-                    }
+                Where-Object -FilterScript {
+                    $_.Parameter -eq $parameter
+                }
 
                 if ($parameter -eq 'Path' -and ($PSBoundParameters.Path -ne $targetResource.Path))
                 {
@@ -2563,7 +2329,7 @@ function Get-MD5HashString
         $md5 = [System.Security.Cryptography.MD5]::Create()
         $hashBytes = $md5.ComputeHash($Bytes)
 
-        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-','')
+        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-', '')
     }
 
     return $md5ReturnValue
@@ -2660,11 +2426,11 @@ function Compare-ThumbnailPhoto
         compare empty values correctly.
     #>
     if ($desiredThumbnailPhotoHash -eq $CurrentThumbnailPhotoHash `
-        -or (
+            -or (
             [System.String]::IsNullOrEmpty($desiredThumbnailPhotoHash) `
-            -and [System.String]::IsNullOrEmpty($CurrentThumbnailPhotoHash)
-            )
+                -and [System.String]::IsNullOrEmpty($CurrentThumbnailPhotoHash)
         )
+    )
     {
         $returnValue = $null
     }
