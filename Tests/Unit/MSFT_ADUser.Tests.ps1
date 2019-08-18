@@ -303,7 +303,6 @@ try
 
         #region Function Test-TargetResource
         Describe 'ADUser\Test-TargetResource' {
-
             It "Passes when user account does not exist and 'Ensure' is 'Absent'" {
                 Mock -CommandName Get-TargetResource -MockWith { return $testAbsentParams }
 
