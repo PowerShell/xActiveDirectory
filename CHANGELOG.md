@@ -50,6 +50,8 @@
     domain name (FQDN) of the forest that the domain belongs to.
   - Added read-only property `DomainExist` that will return `$true` if
     the domain was found, or `$false` if it was not.
+- Changes to ADUser
+  - Remove unused non-mandatory parameters from the Get-TargetResource ([issue #293](https://github.com/PowerShell/ActiveDirectoryDsc/issues/293)).
 
 ## 4.0.0.0
 
