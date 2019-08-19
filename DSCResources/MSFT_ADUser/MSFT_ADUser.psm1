@@ -206,241 +206,12 @@ $adPropertyMap = @(
         Specifies the Security Account Manager (SAM) account name of the user
         (ldapDisplayName 'sAMAccountName').
 
-    .PARAMETER Password
-        Specifies a new password value for the account.
-
-    .PARAMETER Ensure
-        Specifies whether the user account should be present or absent. Default
-        value is 'Present'.
-
-    .PARAMETER CommonName
-        Specifies the common name assigned to the user account (ldapDisplayName
-        'cn'). If not specified the default value will be the same value
-        provided in parameter UserName.
-
-    .PARAMETER UserPrincipalName
-        Specifies the User Principal Name (UPN) assigned to the user account
-        (ldapDisplayName 'userPrincipalName').
-
-    .PARAMETER DisplayName
-        Specifies the display name of the object (ldapDisplayName
-        'displayName').
-
-    .PARAMETER Path
-        Specifies the X.500 path of the Organizational Unit (OU) or container
-        where the new object is created.
-
-    .PARAMETER GivenName
-        Specifies the user's given name (ldapDisplayName 'givenName').
-
-    .PARAMETER Initials
-        Specifies the initials that represent part of a user's name
-        (ldapDisplayName 'initials').
-
-    .PARAMETER Surname
-        Specifies the user's last name or surname (ldapDisplayName 'sn').
-
-    .PARAMETER Description
-        Specifies a description of the object (ldapDisplayName 'description').
-
-    .PARAMETER StreetAddress
-        Specifies the user's street address (ldapDisplayName 'streetAddress').
-
-    .PARAMETER POBox
-        Specifies the user's post office box number (ldapDisplayName
-        'postOfficeBox').
-
-    .PARAMETER City
-        Specifies the user's town or city (ldapDisplayName 'l').
-
-    .PARAMETER State
-        Specifies the user's or Organizational Unit's state or province
-        (ldapDisplayName 'st').
-
-    .PARAMETER PostalCode
-        Specifies the user's postal code or zip code (ldapDisplayName
-        'postalCode').
-
-    .PARAMETER Country
-        Specifies the country or region code for the user's language of choice
-        (ldapDisplayName 'c').
-
-    .PARAMETER Department
-        Specifies the user's department (ldapDisplayName 'department').
-
-    .PARAMETER Division
-        Specifies the user's division (ldapDisplayName 'division').
-
-    .PARAMETER Company
-        Specifies the user's company (ldapDisplayName 'company').
-
-    .PARAMETER Office
-        Specifies the location of the user's office or place of business
-        (ldapDisplayName 'physicalDeliveryOfficeName').
-
-    .PARAMETER JobTitle
-        Specifies the user's title (ldapDisplayName 'title').
-
-    .PARAMETER EmailAddress
-        Specifies the user's e-mail address (ldapDisplayName 'mail').
-
-    .PARAMETER EmployeeID
-        Specifies the user's employee ID (ldapDisplayName 'employeeID').
-
-    .PARAMETER EmployeeNumber
-        Specifies the user's employee number (ldapDisplayName 'employeeNumber').
-
-    .PARAMETER HomeDirectory
-        Specifies a user's home directory path (ldapDisplayName
-        'homeDirectory').
-
-    .PARAMETER HomeDrive
-        Specifies a drive that is associated with the UNC path defined by the
-        HomeDirectory property (ldapDisplayName 'homeDrive').
-
-    .PARAMETER HomePage
-        Specifies the URL of the home page of the object (ldapDisplayName
-        'wWWHomePage').
-
-    .PARAMETER ProfilePath
-        Specifies a path to the user's profile (ldapDisplayName 'profilePath').
-
-    .PARAMETER LogonScript
-        Specifies a path to the user's log on script (ldapDisplayName
-        'scriptPath').
-
-    .PARAMETER Notes
-        Specifies the notes attached to the user's accoutn (ldapDisplayName
-        'info').
-
-    .PARAMETER OfficePhone
-        Specifies the user's office telephone number (ldapDisplayName
-        'telephoneNumber').
-
-    .PARAMETER MobilePhone
-        Specifies the user's mobile phone number (ldapDisplayName 'mobile').
-
-    .PARAMETER Fax
-        Specifies the user's fax phone number (ldapDisplayName
-        'facsimileTelephoneNumber').
-
-    .PARAMETER HomePhone
-        Specifies the user's home telephone number (ldapDisplayName
-        'homePhone').
-
-    .PARAMETER Pager
-        Specifies the user's pager number (ldapDisplayName 'pager').
-
-    .PARAMETER IPPhone
-        Specifies the user's IP telephony phone number (ldapDisplayName
-        'ipPhone').
-
-    .PARAMETER Manager
-        Specifies the user's manager specified as a Distinguished Name
-        (ldapDisplayName 'manager').
-
-    .PARAMETER LogonWorkstations
-        Specifies the computers that the user can access. To specify more than
-        one computer, create a single comma-separated list. You can identify a
-        computer by using the Security Account Manager (SAM) account name
-        (sAMAccountName) or the DNS host name of the computer. The SAM account
-        name is the same as the NetBIOS name of the computer. The LDAP display
-        name (ldapDisplayName) for this property is userWorkStations.
-
-    .PARAMETER Organization
-        Specifies the user's organization. This parameter sets the Organization
-        property of a user object. The LDAP display name (ldapDisplayName) of
-        this property is 'o'.
-
-    .PARAMETER OtherName
-        Specifies a name in addition to a user's given name and surname, such as
-        the user's middle name. This parameter sets the OtherName property of a
-        user object. The LDAP display name (ldapDisplayName) of this property is
-        'middleName'.
-
-    .PARAMETER Enabled
-        Specifies if the account is enabled. Default value is $true.
-
-    .PARAMETER CannotChangePassword
-        Specifies whether the account password can be changed.
-
-    .PARAMETER ChangePasswordAtLogon
-        Specifies whether the account password must be changed during the next
-        logon attempt. This will only be enabled when the user is initially
-        created. This parameter cannot be set to $true if the parameter
-        PasswordNeverExpires is also set to $true.
-
-    .PARAMETER PasswordNeverExpires
-        Specifies whether the password of an account can expire.
-
-    .PARAMETER TrustedForDelegation
-        Specifies whether an account is trusted for Kerberos delegation. Default
-        value is $false.
-
-    .PARAMETER AccountNotDelegated
-        Indicates whether the security context of the user is delegated to a
-        service.  When this parameter is set to true, the security context of
-        the account is not delegated to a service even when the service account
-        is set as trusted for Kerberos delegation. This parameter sets the
-        AccountNotDelegated property for an Active Directory account. This
-        parameter also sets the ADS_UF_NOT_DELEGATED flag of the Active
-        Directory User Account Control (UAC) attribute.
-
-    .PARAMETER AllowReversiblePasswordEncryption
-        Indicates whether reversible password encryption is allowed for the
-        account. This parameter sets the AllowReversiblePasswordEncryption
-        property of the account. This parameter also sets the
-        ADS_UF_ENCRYPTED_TEXT_PASSWORD_ALLOWED flag of the Active Directory User
-        Account Control (UAC) attribute.
-
-    .PARAMETER CompoundIdentitySupported
-        Specifies whether an account supports Kerberos service tickets which
-        includes the authorization data for the user's device. This value sets
-        the compound identity supported flag of the Active Directory
-        msDS-SupportedEncryptionTypes attribute.
-
-    .PARAMETER PasswordNotRequired
-        Specifies whether the account requires a password. A password is not
-        required for a new account. This parameter sets the PasswordNotRequired
-        property of an account object.
-
-    .PARAMETER SmartcardLogonRequired
-        Specifies whether a smart card is required to logon. This parameter sets
-        the SmartCardLoginRequired property for a user object. This parameter
-        also sets the ADS_UF_SMARTCARD_REQUIRED flag of the Active Directory
-        User Account Control attribute.
-
     .PARAMETER DomainController
         Specifies the Active Directory Domain Services instance to use to
         perform the task.
 
     .PARAMETER Credential
         Specifies the user account credentials to use to perform this task.
-
-    .PARAMETER PasswordAuthentication
-        Specifies the authentication context type used when testing passwords.
-        Default value is 'Default'.
-
-    .PARAMETER PasswordNeverResets
-        Specifies whether existing user's password should be reset. Default
-        value is $false.
-
-    .PARAMETER RestoreFromRecycleBin
-        Try to restore the user object from the recycle bin before creating a
-        new one.
-
-    .PARAMETER ServicePrincipalNames
-        Specifies the service principal names for the user account.
-
-    .PARAMETER ProxyAddresses
-        Specifies the proxy addresses for the user account.
-
-    .PARAMETER ThumbnailPhoto
-        Specifies the thumbnail photo to be used for the user object. Can be set
-        either to a path pointing to a .jpg-file, or to a Base64-encoded jpeg
-        image. If set to an empty string ('') the current thumbnail photo will be
-        removed. The property ThumbnailPhoto will always return the image as a
-        Base64-encoded string even if the configuration specified a file path.
 #>
 function Get-TargetResource
 {
@@ -459,11 +230,6 @@ function Get-TargetResource
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $CommonName,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.String]
         $DomainController,
 
         [Parameter()]
@@ -472,15 +238,6 @@ function Get-TargetResource
         [System.Management.Automation.CredentialAttribute()]
         $Credential
     )
-
-    <#
-        This is a workaround to make the resource able to enter debug mode.
-        For more information see issue https://github.com/PowerShell/ActiveDirectoryDsc/issues/427.
-    #>
-    if (-not $PSBoundParameters.ContainsKey('CommonName'))
-    {
-        $CommonName = $UserName
-    }
 
     Assert-Module -ModuleName 'ActiveDirectory'
 
@@ -509,13 +266,13 @@ function Get-TargetResource
 
         Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName)
 
-        $Ensure = 'Present'
+        $ensure = 'Present'
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
         Write-Verbose -Message ($script:localizedData.ADUserNotPresent -f $UserName, $DomainName)
 
-        $Ensure = 'Absent'
+        $ensure = 'Absent'
     }
     catch
     {
@@ -525,10 +282,10 @@ function Get-TargetResource
 
     $targetResource = @{
         DomainName        = $DomainName
-        Password          = $Password
         UserName          = $UserName
+        Password          = $null
         DistinguishedName = $adUser.DistinguishedName; # Read-only property
-        Ensure            = $Ensure
+        Ensure            = $ensure
         DomainController  = $DomainController
     }
 
@@ -869,7 +626,7 @@ function Test-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present',
+        $ensure = 'Present',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -1163,31 +920,25 @@ function Test-TargetResource
     Assert-Parameters @PSBoundParameters
 
     $getParameters = @{ }
-    if ($PSBoundParameters.ContainsKey('DomainName'))
-    {
-        $getParameters['DomainName'] = $PSBoundParameters['DomainName']
-    }
-    if ($PSBoundParameters.ContainsKey('UserName'))
-    {
-        $getParameters['UserName'] = $PSBoundParameters['UserName']
-    }
-    if ($PSBoundParameters.ContainsKey('CommonName'))
-    {
-        $getParameters['CommonName'] = $PSBoundParameters['CommonName']
-    }
+
+    $getParameters['DomainName'] = $PSBoundParameters['DomainName']
+    $getParameters['UserName'] = $PSBoundParameters['UserName']
+
     if ($PSBoundParameters.ContainsKey('DomainController'))
     {
         $getParameters['DomainController'] = $PSBoundParameters['DomainController']
     }
+
     if ($PSBoundParameters.ContainsKey('Credential'))
     {
         $getParameters['Credential'] = $PSBoundParameters['Credential']
     }
+
     $targetResource = Get-TargetResource @getParameters
 
     $isCompliant = $true
 
-    if ($Ensure -eq 'Absent')
+    if ($ensure -eq 'Absent')
     {
         if ($targetResource.Ensure -eq 'Present')
         {
@@ -1198,7 +949,7 @@ function Test-TargetResource
     else
     {
         # Add common name, ensure and enabled as they may not be explicitly passed and we want to enumerate them
-        $PSBoundParameters['Ensure'] = $Ensure
+        $PSBoundParameters['Ensure'] = $ensure
         $PSBoundParameters['Enabled'] = $Enabled
 
         foreach ($parameter in $PSBoundParameters.Keys)
@@ -1542,7 +1293,7 @@ function Set-TargetResource
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
-        $Ensure = 'Present',
+        $ensure = 'Present',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -1837,34 +1588,28 @@ function Set-TargetResource
     Assert-Parameters @PSBoundParameters
 
     $getParameters = @{ }
-    if ($PSBoundParameters.ContainsKey('DomainName'))
-    {
-        $getParameters['DomainName'] = $PSBoundParameters['DomainName']
-    }
-    if ($PSBoundParameters.ContainsKey('UserName'))
-    {
-        $getParameters['UserName'] = $PSBoundParameters['UserName']
-    }
-    if ($PSBoundParameters.ContainsKey('CommonName'))
-    {
-        $getParameters['CommonName'] = $PSBoundParameters['CommonName']
-    }
+
+    $getParameters['DomainName'] = $PSBoundParameters['DomainName']
+    $getParameters['UserName'] = $PSBoundParameters['UserName']
+
     if ($PSBoundParameters.ContainsKey('DomainController'))
     {
         $getParameters['DomainController'] = $PSBoundParameters['DomainController']
     }
+
     if ($PSBoundParameters.ContainsKey('Credential'))
     {
         $getParameters['Credential'] = $PSBoundParameters['Credential']
     }
+
     $targetResource = Get-TargetResource @getParameters
 
     # Add common name, ensure and enabled as they may not be explicitly passed
-    $PSBoundParameters['Ensure'] = $Ensure
+    $PSBoundParameters['Ensure'] = $ensure
     $PSBoundParameters['Enabled'] = $Enabled
     $newADUser = $false
 
-    if ($Ensure -eq 'Present')
+    if ($ensure -eq 'Present')
     {
         if ($targetResource.Ensure -eq 'Absent')
         {
@@ -2102,7 +1847,7 @@ function Set-TargetResource
             Rename-ADObject @renameAdObjectParameters -NewName $PSBoundParameters.CommonName
         }
     }
-    elseif (($Ensure -eq 'Absent') -and ($targetResource.Ensure -eq 'Present'))
+    elseif (($ensure -eq 'Absent') -and ($targetResource.Ensure -eq 'Present'))
     {
         # User exists and needs removing
         Write-Verbose ($script:localizedData.RemovingADUser -f $UserName)
@@ -2329,7 +2074,7 @@ function Get-MD5HashString
         $md5 = [System.Security.Cryptography.MD5]::Create()
         $hashBytes = $md5.ComputeHash($Bytes)
 
-        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-','')
+        $md5ReturnValue = [System.BitConverter]::ToString($hashBytes).Replace('-', '')
     }
 
     return $md5ReturnValue

@@ -17,7 +17,7 @@
 - Changes to xWaitForADDomain
   - Correct Grammar Issues in Example Descriptions.
 - Changes to ADUser
-  - Remove unused non-mandatory parameters from the Get-TargetResource([issue #293](https://github.com/PowerShell/ActiveDirectoryDsc/issues/293)).
+  - Remove unused non-mandatory parameters from the Get-TargetResource ([issue #293](https://github.com/PowerShell/ActiveDirectoryDsc/issues/293)).
 
 ## 4.0.0.0
 
