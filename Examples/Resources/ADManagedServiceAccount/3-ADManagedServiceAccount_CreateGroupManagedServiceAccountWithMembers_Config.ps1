@@ -29,18 +29,18 @@ Configuration ADManagedServiceAccount_CreateGroupManagedServiceAccountWithMember
     {
         ADManagedServiceAccount 'AddingMembersUsingSamAccountName'
         {
-            Ensure             = 'Present'
-            ServiceAccountName = 'Service01'
-            AccountType        = 'Group'
-            Members            = 'User01', 'Computer01$'
+            Ensure                    = 'Present'
+            ServiceAccountName        = 'Service01'
+            AccountType               = 'Group'
+            ManagedPasswordPrincipals = 'User01', 'Computer01$'
         }
 
         ADManagedServiceAccount 'AddingMembersUsingDN'
         {
-            Ensure             = 'Present'
-            ServiceAccountName = 'Service02'
-            AccountType        = 'Group'
-            Members            = 'CN=User01,OU=Users,DC=contoso,DC=com', 'CN=Computer01,OU=Computers,DC=contoso,DC=com'
+            Ensure                    = 'Present'
+            ServiceAccountName        = 'Service02'
+            AccountType               = 'Group'
+            ManagedPasswordPrincipals = 'CN=User01,OU=Users,DC=contoso,DC=com', 'CN=Computer01,OU=Computers,DC=contoso,DC=com'
         }
     }
 }
