@@ -1,3 +1,47 @@
+<#
+.PARAMETER ServiceAccountName
+    Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
+    To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
+    the user's SamAccountName and CN cannot be changed.
+
+.PARAMETER AccountType
+    The type of managed service account. Standalone will create a Standalone Managed Service Account (sMSA) and Group will
+    create a Group Managed Service Account (gMSA).
+
+.PARAMETER Credential
+    Specifies the user account credentials to use to perform this task.
+    This is only required if not executing the task on a domain controller or using the -DomainController parameter.
+
+.PARAMETER Description
+    Specifies the description of the account (ldapDisplayName 'description').
+
+.PARAMETER DisplayName
+    Specifies the display name of the account (ldapDisplayName 'displayName').
+
+.PARAMETER DomainController
+    Specifies the Active Directory Domain Controller instance to use to perform the task.
+    This is only required if not executing the task on a domain controller.
+
+.PARAMETER Ensure
+    Specifies whether the user account is created or deleted. If not specified, this value defaults to Present.
+
+.PARAMETER KerberosEncryptionType
+    Specifies which Kerberos encryption types the account supports when creating service tickets.
+    This value sets the encryption types supported flags of the Active Directory msDS-SupportedEncryptionTypes attribute.
+
+.PARAMETER ManagedPasswordPrincipals
+    Specifies the membership policy for systems which can use a group managed service account. (ldapDisplayName 'msDS-GroupMSAMembership').
+    Only used when 'Group' is selected for 'AccountType'.
+
+.PARAMETER MembershipAttribute
+    Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
+    If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'.
+
+.PARAMETER Path
+    Specifies the X.500 path of the Organizational Unit (OU) or container where the new account is created.
+    Specified as a Distinguished Name (DN).
+#>
+
 $script:resourceModulePath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
 $script:modulesFolderPath = Join-Path -Path $script:resourceModulePath -ChildPath 'Modules'
 
@@ -6,31 +50,6 @@ Import-Module -Name (Join-Path -Path $script:localizationModulePath -ChildPath '
 
 $script:localizedData = Get-LocalizedData -ResourceName 'MSFT_ADManagedServiceAccount'
 
-<#
-    .SYNOPSIS
-        Gets the specified managed service account.
-
-    .PARAMETER ServiceAccountName
-        Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
-        To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
-        the user's SamAccountName and CN cannot be changed.
-
-    .PARAMETER MembershipAttribute
-        Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
-        If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'
-
-    .PARAMETER AccountTypeForce
-        Specifies whether or not to remove the service account and recreate it when going from single MSA to
-        group MSA and vice-versa. If not specified, this value defaults to False.
-
-    .PARAMETER Credential
-        Specifies the user account credentials to use to perform this task.
-        This is only required if not executing the task on a domain controller or using the -DomainController parameter.
-
-    .PARAMETER DomainController
-        Specifies the Active Directory Domain Controller instance to use to perform the task.
-        This is only required if not executing the task on a domain controller.
-#>
 function Get-TargetResource
 {
     [CmdletBinding()]
@@ -42,15 +61,15 @@ function Get-TargetResource
         [System.String]
         $ServiceAccountName,
 
-        [Parameter()]
-        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Group', 'Standalone')]
         [System.String]
-        $MembershipAttribute = 'SamAccountName',
+        $AccountType,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.Boolean]
-        $AccountTypeForce = $false,
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'ObjectSid', 'ObjectGUID')]
+        [System.String]
+        $MembershipAttribute = 'SamAccountName',
 
         [Parameter()]
         [ValidateNotNull()]
@@ -67,126 +86,105 @@ function Get-TargetResource
     Assert-Module -ModuleName 'ActiveDirectory'
     $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters
 
-    $targetResource = @{
-        ServiceAccountName  = $ServiceAccountName
-        DistinguishedName   = $null
-        Path                = $null
-        Description         = $null
-        DisplayName         = $null
-        AccountType         = $null
-        AccountTypeForce    = $AccountTypeForce
-        Ensure              = $null
-        Enabled             = $false
-        Members             = @()
-        MembershipAttribute = $MembershipAttribute
-        Credential          = $Credential
-        DomainController    = $DomainController
-    }
+    Write-Verbose -Message ($script:localizedData.RetrievingManagedServiceAccountMessage -f `
+            $ServiceAccountName)
 
     try
     {
-        Write-Verbose -Message ($script:localizedData.RetrievingServiceAccount -f $ServiceAccountName)
-
         $adServiceAccount = Get-ADServiceAccount @adServiceAccountParameters -Properties @(
-            'Name'
             'DistinguishedName'
             'Description'
             'DisplayName'
             'ObjectClass'
             'Enabled'
             'PrincipalsAllowedToRetrieveManagedPassword'
-            'SamAccountName'
-            'DistinguishedName'
-            'SID'
-            'ObjectGUID'
+            'KerberosEncryptionType'
         )
-
-        $targetResource['Ensure'] = 'Present'
-        $targetResource['Path'] = Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName
-        $targetResource['Description'] = $adServiceAccount.Description
-        $targetResource['DisplayName'] = $adServiceAccount.DisplayName
-        $targetResource['Enabled'] = [System.Boolean] $adServiceAccount.Enabled
-        $targetResource['DistinguishedName'] = $adServiceAccount.DistinguishedName
-
-        if ( $adServiceAccount.ObjectClass -eq 'msDS-ManagedServiceAccount' )
-        {
-            $targetResource['AccountType'] = 'Single'
-        }
-        elseif ( $adServiceAccount.ObjectClass -eq 'msDS-GroupManagedServiceAccount' )
-        {
-            Write-Verbose -Message ($script:localizedData.RetrievingPrincipalMembers -f $MembershipAttribute)
-            $adServiceAccount.PrincipalsAllowedToRetrieveManagedPassword |
-                ForEach-Object {
-                    $member = (Get-ADObject -Identity $_ -Properties $MembershipAttribute).$MembershipAttribute
-                    $targetResource['Members'] += $member
-                }
-
-            $targetResource['AccountType'] = 'Group'
-        }
     }
+
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
-        Write-Verbose -Message ($script:localizedData.ManagedServiceAccountNotFound -f $ServiceAccountName)
-        $targetResource['Ensure'] = 'Absent'
+        Write-Verbose -Message ($script:localizedData.ManagedServiceAccountNotFoundMessage -f `
+                $AccountType, $ServiceAccountName)
     }
     catch
     {
-        $errorMessage = $script:localizedData.RetrievingServiceAccountError -f $ServiceAccountName
+        $errorMessage = $script:localizedData.RetrievingManagedServiceAccountError -f $ServiceAccountName
         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+    }
+
+    if ($adServiceAccount)
+    {
+        # Resource exists
+        if ($adServiceAccount.ObjectClass -eq 'msDS-ManagedServiceAccount')
+        {
+            $accountType = 'Standalone'
+        }
+        else
+        {
+            $accountType = 'Group'
+
+            Write-Verbose -Message ($script:localizedData.RetrievingManagedPasswordPrincipalsMessage -f $MembershipAttribute)
+            $managedPasswordPrincipals = @()
+            foreach ($identity in $adServiceAccount.PrincipalsAllowedToRetrieveManagedPassword)
+            {
+                try
+                {
+                    $principal = (Get-ADObject -Identity $identity -Properties $MembershipAttribute).$MembershipAttribute
+                }
+                catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+                {
+                    $principal = $identity
+                }
+                catch
+                {
+                    $errorMessage = $script:localizedData.RetrievingManagedPasswordPrincipalsError -f $identity
+                    New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                }
+                $managedPasswordPrincipals += $principal
+            }
+        }
+
+        $targetResource = @{
+            ServiceAccountName        = $ServiceAccountName
+            AccountType               = $AccountType
+            Path                      = Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName
+            Description               = $adServiceAccount.Description
+            DisplayName               = $adServiceAccount.DisplayName
+            DistinguishedName         = $adServiceAccount.DistinguishedName
+            Enabled                   = $adServiceAccount.Enabled
+            KerberosEncryptionType    = $adServiceAccount.KerberosEncryptionType -split (', ')
+            ManagedPasswordPrincipals = $managedPasswordPrincipals
+            MembershipAttribute       = $MembershipAttribute
+            Ensure                    = 'Present'
+        }
+    }
+    else
+    {
+        # Resource does not exist
+        $targetResource = @{
+            ServiceAccountName        = $ServiceAccountName
+            AccountType               = $AccountType
+            Path                      = $null
+            Description               = $null
+            DisplayName               = $null
+            DistinguishedName         = $null
+            Enabled                   = $false
+            KerberosEncryptionType    = @()
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = $MembershipAttribute
+            Ensure                    = 'Absent'
+        }
     }
 
     return $targetResource
 } #end function Get-TargetResource
 
 
-<#
-    .SYNOPSIS
-        Tests the state of the managed service account.
-
-    .PARAMETER ServiceAccountName
-        Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
-        To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
-        the user's SamAccountName and CN cannot be changed.
-
-    .PARAMETER AccountType
-        The type of managed service account. Single will create a Single Managed Service Account (sMSA) and Group will
-        create a Group Managed Service Account (gMSA). If not specified, this vaule defaults to Single.
-
-    .PARAMETER AccountTypeForce
-        Specifies whether or not to remove the service account and recreate it when going from single MSA to
-        group MSA and vice-versa. If not specified, this value defaults to False.
-
-    .PARAMETER Path
-        Specifies the X.500 path of the Organizational Unit (OU) or container where the new object is created.
-        Specified as a Distinguished Name (DN).
-
-    .PARAMETER Ensure
-        Specifies whether the user account is created or deleted. If not specified, this value defaults to Present.
-
-    .PARAMETER Description
-        Specifies a description of the object (ldapDisplayName 'description').
-
-    .PARAMETER DisplayName
-        Specifies the display name of the object (ldapDisplayName 'displayName').
-
-    .PARAMETER Members
-        Specifies the members of the object (ldapDisplayName 'PrincipalsAllowedToRetrieveManagedPassword').
-        Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER MembershipAttribute
-        Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
-        If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER Credential
-        Specifies the user account credentials to use to perform this task.
-        This is only required if not executing the task on a domain controller or using the -DomainController parameter.
-
-    .PARAMETER DomainController
-        Specifies the Active Directory Domain Controller instance to use to perform the task.
-        This is only required if not executing the task on a domain controller.
-#>
 function Test-TargetResource
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', "",
+        Justification = 'False positive on ManagedPasswordPrincipals')]
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -196,557 +194,16 @@ function Test-TargetResource
         [System.String]
         $ServiceAccountName,
 
-        [Parameter()]
-        [ValidateSet('Group', 'Single')]
-        [System.String]
-        $AccountType = 'Single',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.Boolean]
-        $AccountTypeForce = $false,
-
-        [Parameter()]
-        [System.String]
-        $Path,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present',
-
-        [Parameter()]
-        [System.String]
-        $Description,
-
-        [Parameter()]
-        [System.String]
-        $DisplayName,
-
-        [Parameter()]
-        [System.String[]]
-        $Members,
-
-        [Parameter()]
-        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
-        [System.String]
-        $MembershipAttribute = 'SamAccountName',
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
-        $Credential,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $DomainController
-    )
-
-    # Need to set these parameters to compare if users are using the default parameter values
-    $PSBoundParameters['Ensure'] = $Ensure
-    $PSBoundParameters['AccountType'] = $AccountType
-    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
-
-    $compareTargetResourceNonCompliant = Compare-TargetResourceState @PSBoundParameters |
-        Where-Object -FilterScript { $_.Pass -eq $false }
-
-    # Check if Absent, if so then we don't need to propagate any other parameters
-    if ($Ensure -eq 'Absent')
-    {
-        $ensureState = $compareTargetResourceNonCompliant |
-            Where-Object -FilterScript { $_.Parameter -eq 'Ensure' }
-
-        if ($ensureState)
-        {
-            Write-Verbose -Message ($script:localizedData.NotDesiredPropertyState -f `
-                    'Ensure', $ensureState.Expected, $ensureState.Actual)
-        }
-        else
-        {
-            Write-Verbose -Message ($script:localizedData.MSAInDesiredState -f $ServiceAccountName)
-            return $true
-        }
-    }
-    else
-    {
-        $compareTargetResourceNonCompliant |
-            ForEach-Object {
-                Write-Verbose -Message ($script:localizedData.NotDesiredPropertyState -f `
-                        $_.Parameter, $_.Expected, $_.Actual)
-            }
-    }
-
-    if ($compareTargetResourceNonCompliant)
-    {
-        Write-Verbose -Message ($script:localizedData.MSANotInDesiredState -f $ServiceAccountName)
-        return $false
-    }
-    else
-    {
-        Write-Verbose -Message ($script:localizedData.MSAInDesiredState -f $ServiceAccountName)
-        return $true
-    }
-
-} #end function Test-TargetResource
-
-<#
-    .SYNOPSIS
-        Sets the state of the managed service account.
-
-    .PARAMETER ServiceAccountName
-        Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
-        To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
-        the user's SamAccountName and CN cannot be changed.
-
-    .PARAMETER AccountType
-        The type of managed service account. Single will create a Single Managed Service Account (sMSA) and Group will
-        create a Group Managed Service Account (gMSA). If not specified, this vaule defaults to Single.
-
-    .PARAMETER AccountTypeForce
-        Specifies whether or not to remove the service account and recreate it when going from single MSA to
-        group MSA and vice-versa. If not specified, this value defaults to False.
-
-    .PARAMETER Path
-        Specifies the X.500 path of the Organizational Unit (OU) or container where the new object is created.
-        Specified as a Distinguished Name (DN).
-
-    .PARAMETER Ensure
-        Specifies whether the user account is created or deleted. If not specified, this value defaults to Present.
-
-    .PARAMETER Description
-        Specifies a description of the object (ldapDisplayName 'description').
-
-    .PARAMETER DisplayName
-        Specifies the display name of the object (ldapDisplayName 'displayName').
-
-    .PARAMETER Members
-        Specifies the members of the object (ldapDisplayName 'PrincipalsAllowedToRetrieveManagedPassword').
-        Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER MembershipAttribute
-        Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
-        If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER Credential
-        Specifies the user account credentials to use to perform this task.
-        This is only required if not executing the task on a domain controller or using the -DomainController parameter.
-
-    .PARAMETER DomainController
-        Specifies the Active Directory Domain Controller instance to use to perform the task.
-        This is only required if not executing the task on a domain controller.
-#>
-function Set-TargetResource
-{
-    [CmdletBinding()]
-    param
-    (
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ServiceAccountName,
-
-        [Parameter()]
-        [ValidateSet('Group', 'Single')]
-        [System.String]
-        $AccountType = 'Single',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.Boolean]
-        $AccountTypeForce = $false,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Path,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present',
-
-        [Parameter()]
-        [System.String]
-        $Description,
-
-        [Parameter()]
-        [System.String]
-        $DisplayName,
-
-        [Parameter()]
-        [System.String[]]
-        $Members,
-
-        [Parameter()]
-        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
-        [System.String]
-        $MembershipAttribute = 'SamAccountName',
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
-        $Credential,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $DomainController
-    )
-
-    # Need to set these to compare if not specified since user is using defaults
-    $PSBoundParameters['Ensure'] = $Ensure
-    $PSBoundParameters['AccountType'] = $AccountType
-    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
-
-    $compareTargetResource = Compare-TargetResourceState @PSBoundParameters
-    $compareTargetResourceNonCompliant = @($compareTargetResource |
-            Where-Object -FilterScript { $_.Pass -eq $false })
-
-    $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters
-    $setServiceAccountParameters = $adServiceAccountParameters.Clone()
-    $moveADObjectParameters = $adServiceAccountParameters.Clone()
-
-    try
-    {
-        if ($Ensure -eq 'Present')
-        {
-            $isEnsureNonCompliant = $false
-
-            if ($compareTargetResourceNonCompliant |
-                    Where-Object -FilterScript { $_.Parameter -eq 'Ensure' })
-            {
-                $isEnsureNonCompliant = $true
-            }
-
-            # We want the account to be present, but it currently does not exist
-            if ($isEnsureNonCompliant)
-            {
-                $null = $PSBoundParameters.Remove('AccountTypeForce')
-                New-ADServiceAccountHelper @PSBoundParameters
-            }
-            else
-            {
-                #region Check if AccountType is compliant
-                $accountTypeState = $compareTargetResourceNonCompliant |
-                    Where-Object -FilterScript { $_.Parameter -eq 'AccountType' }
-
-                # Account already exist, need to update parameters that are not in compliance
-                if ($accountTypeState)
-                {
-                    if ($AccountTypeForce)
-                    {
-                        # We need to recreate account first before we can update any properties
-                        Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountProperty -f 'AccountType', $AccountType)
-                        Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false
-                        $null = $PSBoundParameters.Remove('AccountTypeForce')
-                        New-ADServiceAccountHelper @PSBoundParameters
-                    }
-                    else
-                    {
-                        Write-Warning -Message ($script:localizedData.AccountTypeForceNotTrue -f $accountTypeState.Actual, $accountTypeState.Expected)
-                    }
-                }
-
-                # Remove AccountType since we don't want to enumerate down below
-                $compareTargetResourceNonCompliant = @($compareTargetResourceNonCompliant |
-                        Where-Object -FilterScript { $_.Parameter -ne 'AccountType' })
-                #endregion Check if AccountType is compliant
-
-                #region Check if Path is compliant
-                $isPathNonCompliant = $false
-                if ($compareTargetResourceNonCompliant |
-                        Where-Object -FilterScript { $_.Parameter -eq 'Path' })
-                {
-                    $isPathNonCompliant = $true
-                }
-
-                if ($isPathNonCompliant)
-                {
-                    Write-Verbose -Message ($script:localizedData.MovingManagedServiceAccount -f $ServiceAccountName, $Path)
-                    $distinguishedNameObject = $compareTargetResource |
-                        Where-Object -FilterScript { $_.Parameter -eq 'DistinguishedName' }
-
-                    $moveADObjectParameters['Identity'] = $distinguishedNameObject.Actual
-
-                    Move-ADObject @moveADObjectParameters -TargetPath $Path
-                }
-
-                $compareTargetResourceNonCompliant = @($compareTargetResourceNonCompliant |
-                        Where-Object -FilterScript { $_.Parameter -ne 'Path' })
-                #endregion Check if Path is compliant
-
-                #region Check if other parameters are compliant
-                $updateProperties = $false
-                $compareTargetResourceNonCompliant |
-                    ForEach-Object {
-                        $updateProperties = $true
-                        $parameter = $_.Parameter
-                        if ($parameter -eq 'Members' -and $AccountType -eq 'Group')
-                        {
-                            if ([system.string]::IsNullOrEmpty($Members))
-                            {
-                                $Members = @()
-                            }
-                            $listMembers = $Members -join ','
-
-                            Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountProperty -f 'Members', $listMembers)
-                            $setServiceAccountParameters['PrincipalsAllowedToRetrieveManagedPassword'] = $Members
-                        }
-                        else
-                        {
-                            Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountProperty -f $parameter, $PSBoundParameters.$parameter)
-                            $setServiceAccountParameters[$parameter] = $PSBoundParameters.$parameter
-                        }
-                    }
-
-                if ($compareTargetResourceNonCompliant.Count -gt 0)
-                {
-                    Set-ADServiceAccount @setServiceAccountParameters
-                }
-                #endregion Check if other parameters are compliant
-            }
-        }
-        elseif ($Ensure -eq 'Absent')
-        {
-            $isEnsureNonCompliant = $false
-            if ($compareTargetResourceNonCompliant |
-                    Where-Object -FilterScript { $_.Parameter -eq 'Ensure' })
-            {
-                $isEnsureNonCompliant = $true
-            }
-
-            # We want the account to be Absent, but it is Present
-            if ($isEnsureNonCompliant)
-            {
-                Write-Verbose -Message ($script:localizedData.RemovingManagedServiceAccount -f $ServiceAccountName)
-                Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false
-            }
-        }
-    }
-    catch
-    {
-        $errorMessage = $script:localizedData.AddingManagedServiceAccountError -f $ServiceAccountName
-        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
-    }
-} #end function Set-TargetResource
-
-<#
-    .SYNOPSIS
-        Adds the managed service account.
-
-    .PARAMETER ServiceAccountName
-        Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
-        To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
-        the user's SamAccountName and CN cannot be changed.
-
-    .PARAMETER AccountType
-        The type of managed service account. Single will create a Single Managed Service Account (sMSA) and Group will
-        create a Group Managed Service Account (gMSA). If not specified, this vaule defaults to Single.
-
-    .PARAMETER AccountTypeForce
-        Specifies whether or not to remove the service account and recreate it when going from single MSA to
-        group MSA and vice-versa. If not specified, this value defaults to False.
-
-    .PARAMETER Path
-        Specifies the X.500 path of the Organizational Unit (OU) or container where the new object is created.
-        Specified as a Distinguished Name (DN).
-
-    .PARAMETER Ensure
-        Specifies whether the user account is created or deleted. If not specified, this value defaults to Present.
-
-    .PARAMETER Description
-        Specifies a description of the object (ldapDisplayName 'description').
-
-    .PARAMETER DisplayName
-        Specifies the display name of the object (ldapDisplayName 'displayName').
-
-    .PARAMETER Members
-        Specifies the members of the object (ldapDisplayName 'PrincipalsAllowedToRetrieveManagedPassword').
-        Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER MembershipAttribute
-        Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
-        If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER Credential
-        Specifies the user account credentials to use to perform this task.
-        This is only required if not executing the task on a domain controller or using the -DomainController parameter.
-
-    .PARAMETER DomainController
-        Specifies the Active Directory Domain Controller instance to use to perform the task.
-        This is only required if not executing the task on a domain controller.
-#>
-function New-ADServiceAccountHelper
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ServiceAccountName,
-
-        [Parameter()]
-        [ValidateSet('Group', 'Single')]
-        [System.String]
-        $AccountType = 'Single',
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Path,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure = 'Present',
-
-        [Parameter()]
-        [System.String]
-        $Description,
-
-        [Parameter()]
-        [System.String]
-        $DisplayName,
-
-        [Parameter()]
-        [System.String[]]
-        $Members,
-
-        [Parameter()]
-        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
-        [System.String]
-        $MembershipAttribute = 'SamAccountName',
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
-        $Credential,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $DomainController
-    )
-
-    Write-Verbose -Message ($script:localizedData.AddingManagedServiceAccount -f $ServiceAccountName)
-
-    $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
-
-    if ($Description)
-    {
-        $adServiceAccountParameters['Description'] = $Description
-    }
-
-    if ($DisplayName)
-    {
-        $adServiceAccountParameters['DisplayName'] = $DisplayName
-    }
-
-    if ($Path)
-    {
-        $adServiceAccountParameters['Path'] = $Path
-    }
-
-
-    # Create service account
-    if ( $AccountType -eq 'Single' )
-    {
-        New-ADServiceAccount @adServiceAccountParameters -RestrictToSingleComputer -PassThru
-    }
-    elseif ( $AccountType -eq 'Group' )
-    {
-        if ($Members)
-        {
-            $adServiceAccountParameters['PrincipalsAllowedToRetrieveManagedPassword'] = $Members
-        }
-
-        $dnsHostName = '{0}.{1}' -f $ServiceAccountName, $(Get-DomainName)
-        $adServiceAccountParameters['DNSHostName'] = $dnsHostName
-
-        New-ADServiceAccount @adServiceAccountParameters -PassThru
-    }
-} #end function New-ADServiceAccountHelper
-
-<#
-    .SYNOPSIS
-        Compares the state of the managed service account.
-
-    .PARAMETER ServiceAccountName
-        Specifies the Security Account Manager (SAM) account name of the managed service account (ldapDisplayName 'sAMAccountName').
-        To be compatible with older operating systems, create a SAM account name that is 20 characters or less. Once created,
-        the user's SamAccountName and CN cannot be changed.
-
-    .PARAMETER AccountType
-        The type of managed service account. Single will create a Single Managed Service Account (sMSA) and Group will
-        create a Group Managed Service Account (gMSA). If not specified, this vaule defaults to Single.
-
-    .PARAMETER AccountTypeForce
-        Specifies whether or not to remove the service account and recreate it when going from single MSA to
-        group MSA and vice-versa. If not specified, this value defaults to False.
-
-    .PARAMETER Path
-        Specifies the X.500 path of the Organizational Unit (OU) or container where the new object is created.
-        Specified as a Distinguished Name (DN).
-
-    .PARAMETER Ensure
-        Specifies whether the user account is created or deleted. If not specified, this value defaults to Present.
-
-    .PARAMETER Description
-        Specifies a description of the object (ldapDisplayName 'description').
-
-    .PARAMETER DisplayName
-        Specifies the display name of the object (ldapDisplayName 'displayName').
-
-    .PARAMETER Members
-        Specifies the members of the object (ldapDisplayName 'PrincipalsAllowedToRetrieveManagedPassword').
-        Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER MembershipAttribute
-        Active Directory attribute used to perform membership operations for Group Managed Service Accounts (gMSAs).
-        If not specified, this value defaults to SamAccountName. Only used when 'Group' is selected for 'AccountType'.
-
-    .PARAMETER Credential
-        Specifies the user account credentials to use to perform this task.
-        This is only required if not executing the task on a domain controller or using the -DomainController parameter.
-
-    .PARAMETER DomainController
-        Specifies the Active Directory Domain Controller instance to use to perform the task.
-        This is only required if not executing the task on a domain controller.
-#>
-function Compare-TargetResourceState
-{
-    [CmdletBinding()]
-    [OutputType([System.Array])]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ServiceAccountName,
-
-        [Parameter()]
-        [ValidateSet('Group', 'Single')]
+        [ValidateSet('Group', 'Standalone')]
         [System.String]
         $AccountType,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [System.Boolean]
-        $AccountTypeForce,
-
-        [Parameter()]
-        [System.String]
-        $Path,
-
-        [Parameter()]
-        [ValidateSet('Present', 'Absent')]
-        [System.String]
-        $Ensure,
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.CredentialAttribute()]
+        $Credential,
 
         [Parameter()]
         [System.String]
@@ -757,32 +214,42 @@ function Compare-TargetResourceState
         $DisplayName,
 
         [Parameter()]
-        [System.String[]]
-        $Members,
-
-        [Parameter()]
-        [ValidateSet('SamAccountName', 'DistinguishedName', 'SID', 'ObjectGUID')]
-        [System.String]
-        $MembershipAttribute,
-
-        [Parameter()]
-        [ValidateNotNull()]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.CredentialAttribute()]
-        $Credential,
-
-        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String]
-        $DomainController
+        $DomainController,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateSet('None', 'RC4', 'AES128', 'AES256')]
+        [System.String[]]
+        $KerberosEncryptionType,
+
+        [Parameter()]
+        [System.String[]]
+        $ManagedPasswordPrincipals,
+
+        [Parameter()]
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'ObjectSid', 'ObjectGUID')]
+        [System.String]
+        $MembershipAttribute = 'SamAccountName',
+
+        [Parameter()]
+        [System.String]
+        $Path
     )
+
+    # Need to set these parameters to compare if users are using the default parameter values
+    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
 
     $getTargetResourceParameters = @{
         ServiceAccountName  = $ServiceAccountName
-        Credential          = $Credential
+        AccountType         = $AccountType
         DomainController    = $DomainController
         MembershipAttribute = $MembershipAttribute
-        AccountTypeForce    = $AccountTypeForce
     }
 
     @($getTargetResourceParameters.Keys) |
@@ -792,86 +259,330 @@ function Compare-TargetResourceState
                 $getTargetResourceParameters.Remove($_)
             }
         }
+    $targetResource = Get-TargetResource @getTargetResourceParameters
 
-    $getTargetResource = Get-TargetResource @getTargetResourceParameters
-    $compareTargetResource = @()
-
-    # Add DistinguishedName as it won't be passed as an argument, but we want to get the DN in Set
-    $PSBoundParameters['DistinguishedName'] = $getTargetResource['DistinguishedName']
-
-    <#
-        Set MembershipAttribute as it's not required to be compliant. It's only
-        used when setting/getting members for gMSA and there is no way to check
-        if it is in compliance since whatever is passed would be compliant itself.
-    #>
-    $PSBoundParameters['MembershipAttribute'] = $getTargetResource['MembershipAttribute']
-
-    foreach ($parameter in $PSBoundParameters.Keys)
+    if ($targetResource.Ensure -eq 'Present')
     {
-        if ($PSBoundParameters.$parameter -eq $getTargetResource.$parameter)
+        # Resource exists
+        if ($Ensure -eq 'Present')
         {
-            # Check if parameter is in compliance
-            $compareTargetResource += [pscustomobject] @{
-                Parameter = $parameter
-                Expected  = $PSBoundParameters.$parameter
-                Actual    = $getTargetResource.$parameter
-                Pass      = $true
+            # Resource should exist
+            $propertiesNotInDesiredState = Compare-ResourcePropertyState `
+                -CurrentValues $targetResource -DesiredValues $PSBoundParameters -Verbose:$false | `
+                    Where-Object -Property InDesiredState -eq $false
+
+            if ($propertiesNotInDesiredState)
+            {
+                # Resource is not in desired state
+                foreach ($property in $propertiesNotInDesiredState)
+                {
+                    Write-Verbose -Message ($script:localizedData.ResourcePropertyNotInDesiredStateMessage -f `
+                            $AccountType, $ServiceAccountName, $property.ParameterName, ($property.Expected -join ', '), `
+                        ($property.Actual -join ', '))
+                }
+                $inDesiredState = $false
+            }
+            else
+            {
+                # Resource is in desired state
+                Write-Verbose -Message ($script:localizedData.ManagedServiceAccountInDesiredStateMessage -f `
+                        $AccountType, $ServiceAccountName)
+                $inDesiredState = $true
             }
         }
-        elseif ($parameter -eq 'Members')
+        else
         {
-            # Members is only for Group MSAs, if it's single computer, we can skip over this parameter
-            if ($PSBoundParameters.AccountType -eq 'Group')
+            # Resource should not exist
+            Write-Verbose -Message ($script:localizedData.ResourceExistsButShouldNotMessage -f `
+                    $AccountType, $ServiceAccountName)
+            $inDesiredState = $false
+        }
+    }
+    else
+    {
+        # Resource does not exist
+        if ($Ensure -eq 'Present')
+        {
+            # Resource should exist
+            Write-Verbose -Message ($script:localizedData.ResourceDoesNotExistButShouldMessage -f `
+                    $AccountType, $ServiceAccountName)
+            $inDesiredState = $false
+        }
+        else
+        {
+            # Resource should not exist
+            Write-Verbose -Message ($script:localizedData.ManagedServiceAccountInDesiredStateMessage -f `
+                    $AccountType, $ServiceAccountName)
+            $inDesiredState = $true
+        }
+    }
+
+    $inDesiredState
+} #end function Test-TargetResource
+
+function Set-TargetResource
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', "",
+        Justification = 'False positive on ManagedPasswordPrincipals')]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $ServiceAccountName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Group', 'Standalone')]
+        [System.String]
+        $AccountType,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.CredentialAttribute()]
+        $Credential,
+
+        [Parameter()]
+        [System.String]
+        $Description,
+
+        [Parameter()]
+        [System.String]
+        $DisplayName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $DomainController,
+
+        [Parameter()]
+        [ValidateSet('Present', 'Absent')]
+        [System.String]
+        $Ensure = 'Present',
+
+        [Parameter()]
+        [ValidateSet('None', 'RC4', 'AES128', 'AES256')]
+        [System.String[]]
+        $KerberosEncryptionType,
+
+        [Parameter()]
+        [System.String[]]
+        $ManagedPasswordPrincipals,
+
+        [Parameter()]
+        [ValidateSet('SamAccountName', 'DistinguishedName', 'ObjectSid', 'ObjectGUID')]
+        [System.String]
+        $MembershipAttribute = 'SamAccountName',
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $Path
+    )
+
+    # Need to set these to compare if not specified since user is using defaults
+    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
+    $PSBoundParameters.Remove('Ensure') | Out-Null
+
+    $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters
+
+    $getTargetResourceParameters = @{
+        ServiceAccountName  = $ServiceAccountName
+        AccountType         = $AccountType
+        DomainController    = $DomainController
+        MembershipAttribute = $MembershipAttribute
+    }
+    @($getTargetResourceParameters.Keys) |
+        ForEach-Object {
+            if (-not $PSBoundParameters.ContainsKey($_))
             {
-                $testMembersParams = @{
-                    ExistingMembers = $getTargetResource.Members -as [System.String[]]
-                    Members         = $Members
-                }
+                $getTargetResourceParameters.Remove($_)
+            }
+        }
+    $targetResource = Get-TargetResource @GetTargetResourceParameters
 
-                $expectedMembers = ($Members |
-                        Sort-Object) -join ','
-
-                $actualMembers = ($testMembersParams['ExistingMembers'] |
-                        Sort-Object) -join ','
-
-                if (-not (Test-Members @testMembersParams))
+    if ($Ensure -eq 'Present')
+    {
+        # Resource should be present
+        if ($targetResource.Ensure -eq 'Present')
+        {
+            # Resource is present
+            $CreateNewAdServiceAccount = $false
+            $propertiesNotInDesiredState = (
+                Compare-ResourcePropertyState -CurrentValues $targetResource -DesiredValues $PSBoundParameters |
+                    Where-Object -Property InDesiredState -eq $false)
+            if ($propertiesNotInDesiredState)
+            {
+                if ($propertiesNotInDesiredState.ParameterName -contains 'AccountType')
                 {
-                    $compareTargetResource += [pscustomobject] @{
-                        Parameter = $parameter
-                        Expected  = $expectedMembers
-                        Actual    = $actualMembers
-                        Pass      = $false
+                    # AccountType has changed, so the account needs recreating
+                    Write-Verbose -Message ($script:localizedData.RecreatingManagedServiceAccountMessage -f `
+                            $AccountType, $ServiceAccountName)
+                    try
+                    {
+                        Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false
                     }
+                    catch
+                    {
+                        $errorMessage = $script:localizedData.RemovingManagedServiceAccountError -f `
+                            $AccountType, $ServiceAccountName
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                    }
+
+                    $CreateNewAdServiceAccount = $true
                 }
                 else
                 {
-                    $compareTargetResource += [pscustomobject] @{
-                        Parameter = $parameter
-                        Expected  = $expectedMembers
-                        Actual    = $actualMembers
-                        Pass      = $true
+                    $PSBoundParameters.Remove('AccountType')
+                    $setServiceAccountParameters = $adServiceAccountParameters.Clone()
+                    $setAdServiceAccountRequired = $false
+                    $moveAdServiceAccountRequired = $false
+
+                    foreach ($property in $propertiesNotInDesiredState)
+                    {
+                        if ($property.ParameterName -eq 'Path')
+                        {
+                            # The path has changed, so the account needs moving, but not until after any other changes
+                            $moveAdServiceAccountRequired = $true
+                        }
+                        else
+                        {
+                            $setAdServiceAccountRequired = $true
+                            Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountPropertyMessage -f `
+                                    $AccountType, $ServiceAccountName, $property.ParameterName, ($property.Expected -join ', '))
+                            if ($property.ParameterName -eq 'ManagedPasswordPrincipals' -and $AccountType -eq 'Group')
+                            {
+                                $setServiceAccountParameters.add('PrincipalsAllowedToRetrieveManagedPassword', `
+                                        $ManagedPasswordPrincipals)
+                            }
+                            else
+                            {
+                                $SetServiceAccountParameters.add($property.ParameterName, $property.Expected)
+                            }
+                        }
+                    }
+
+                    if ($setAdServiceAccountRequired)
+                    {
+                        try
+                        {
+                            Set-ADServiceAccount @setServiceAccountParameters
+                        }
+                        catch
+                        {
+                            $errorMessage = $script:localizedData.SettingManagedServiceAccountError -f `
+                                $AccountType, $ServiceAccountName
+                            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                        }
+                    }
+
+                    if ($moveAdServiceAccountRequired)
+                    {
+                        Write-Verbose -Message ($script:localizedData.MovingManagedServiceAccountMessage -f `
+                                $AccountType, $ServiceAccountName, $targetResource.Path, $Path)
+                        $moveADObjectParameters = $adServiceAccountParameters.Clone()
+                        $moveADObjectParameters.Identity = $targetResource.DistinguishedName
+                        try
+                        {
+                            Move-ADObject @moveADObjectParameters -TargetPath $Path
+                        }
+                        catch
+                        {
+                            $errorMessage = $script:localizedData.MovingManagedServiceAccountError -f `
+                                $AccountType, $ServiceAccountName, $targetResource.Path, $Path
+                            New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                        }
                     }
                 }
             }
         }
-
-        # Need to check if parameter is part of schema, otherwise ignore all other parameters like verbose
-        elseif ($getTargetResource.ContainsKey($parameter))
+        else
         {
-            <#
-                We are out of compliance if we get here
-                $PSBoundParameters.$parameter -ne $getTargetResource.$parameter
-            #>
-            $compareTargetResource += [pscustomobject] @{
-                Parameter = $parameter
-                Expected  = $PSBoundParameters.$parameter
-                Actual    = $getTargetResource.$parameter
-                Pass      = $false
+            # Resource is absent
+            $CreateNewAdServiceAccount = $true
+        }
+
+        if ($CreateNewAdServiceAccount)
+        {
+            Write-Verbose -Message ($script:localizedData.AddingManagedServiceAccountMessage -f `
+                    $AccountType, $ServiceAccountName, $Path)
+
+            $newAdServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
+
+            if ($Description)
+            {
+                $newAdServiceAccountParameters.Description = $Description
+            }
+
+            if ($DisplayName)
+            {
+                $newAdServiceAccountParameters.DisplayName = $DisplayName
+            }
+
+            if ($Path)
+            {
+                $newAdServiceAccountParameters.Path = $Path
+            }
+
+            if ( $AccountType -eq 'Standalone' )
+            {
+                # Create standalone managed service account
+                $newAdServiceAccountParameters.RestrictToSingleComputer = $true
+            }
+            else
+            {
+                # Create group managed service account
+                $newAdServiceAccountParameters.DNSHostName = "$ServiceAccountName.$(Get-DomainName)"
+
+                if ($ManagedPasswordPrincipals)
+                {
+                    $newAdServiceAccountParameters.PrincipalsAllowedToRetrieveManagedPassword = `
+                        $ManagedPasswordPrincipals
+                }
+            }
+            try
+            {
+                New-ADServiceAccount @newAdServiceAccountParameters
+            }
+            catch
+            {
+                if ($Path -eq '')
+                {
+                    $Path = 'Managed Service Accounts'
+                }
+                $errorMessage = $script:localizedData.AddingManagedServiceAccountError -f `
+                    $AccountType, $ServiceAccountName, $Path
+                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
         }
-    } #end foreach PSBoundParameter
-
-    return $compareTargetResource
-} #end function Compare-TargetResourceState
+    }
+    else
+    {
+        # Resource should be absent
+        if ($targetResource.Ensure -eq 'Present')
+        {
+            # Resource is present
+            Write-Verbose -Message ($script:localizedData.RemovingManagedServiceAccountMessage -f `
+                    $AccountType, $ServiceAccountName)
+            try
+            {
+                Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false
+            }
+            catch
+            {
+                $errorMessage = $script:localizedData.RemovingManagedServiceAccountError -f `
+                    $AccountType, $ServiceAccountName
+                New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+            }
+        }
+        else
+        {
+            # Resource is absent
+            Write-Verbose -Message ($script:localizedData.ManagedServiceAccountInDesiredStateMessage -f `
+                    $AccountType, $ServiceAccountName)
+        }
+    }
+} #end function Set-TargetResource
 
 Export-ModuleMember -Function *-TargetResource

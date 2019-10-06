@@ -32,7 +32,6 @@ Configuration ADManagedServiceAccount_CreateGroupManagedServiceAccount_Config
             Ensure             = 'Present'
             ServiceAccountName = 'Service01'
             AccountType        = 'Group'
-            Path               = 'OU=ServiceAccounts,DC=contoso,DC=com'
         }
     }
 }

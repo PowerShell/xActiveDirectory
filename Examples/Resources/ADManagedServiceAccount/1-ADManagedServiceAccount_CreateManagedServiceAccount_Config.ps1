@@ -19,7 +19,7 @@
 
 <#
     .DESCRIPTION
-        This configuration will create a managed service account.
+        This configuration will create a standalone managed service account.
 #>
 Configuration ADManagedServiceAccount_CreateManagedServiceAccount_Config
 {
@@ -27,10 +27,11 @@ Configuration ADManagedServiceAccount_CreateManagedServiceAccount_Config
 
     Node localhost
     {
-        ADManagedServiceAccount 'ExampleSingleMSA'
+        ADManagedServiceAccount 'ExampleStandaloneMSA'
         {
             Ensure             = 'Present'
             ServiceAccountName = 'Service01'
+            AccountType        = 'Standalone'
         }
     }
 }

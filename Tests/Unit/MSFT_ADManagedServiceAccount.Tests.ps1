@@ -1,3 +1,7 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', "",
+    Justification = 'False positive on ManagedPasswordPrincipals')]
+param ()
+
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\TestHelpers\ActiveDirectoryDsc.TestHelper.psm1')
 
 if (-not (Test-RunForCITestCategory -Type 'Unit' -Category 'Tests'))
@@ -28,10 +32,6 @@ $TestEnvironment = Initialize-TestEnvironment `
 
 #endregion HEADER
 
-function Invoke-TestSetup
-{
-}
-
 function Invoke-TestCleanup
 {
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
@@ -40,1525 +40,717 @@ function Invoke-TestCleanup
 # Begin Testing
 try
 {
-    Invoke-TestSetup
-
     InModuleScope $script:dscResourceName {
         # Load stub cmdlets and classes.
         Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
-        # Need to do a deep copy of the Array of objects that compare returns
-        function Copy-ArrayObjects
-        {
-            param
-            (
-                [Parameter(Mandatory = $true)]
-                [ValidateNotNullOrEmpty()]
-                [System.Array]
-                $DeepCopyObject
-            )
+        $mockPath = 'CN=Managed Service Accounts,DC=contoso,DC=com'
+        $mockChangedPath = 'OU=Service Accounts,DC=contoso,DC=com'
+        $mockDomainController = 'MockDC'
+        $mockDomainName = 'contoso.com'
 
-            $memStream = New-Object -TypeName 'IO.MemoryStream'
-            $formatter = New-Object -TypeName 'Runtime.Serialization.Formatters.Binary.BinaryFormatter'
-            $formatter.Serialize($memStream,$DeepCopyObject)
-            $memStream.Position=0
-            $formatter.Deserialize($memStream)
-        }
-
-        $mockPath               = 'OU=Fake,DC=contoso,DC=com'
-        $mockDomainController   = 'MockDC'
-
-        $mockCredentials        = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
+        $mockCredentials = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
             'DummyUser',
             (ConvertTo-SecureString -String 'DummyPassword' -AsPlainText -Force)
         )
 
         $mockADUSer = @{
-            SamAccountName    = 'User1'
-            DistinguishedName = 'CN=User1,OU=Fake,DC=contoso,DC=com'
-            Enabled           = $true
-            SID               = 'S-1-5-21-1409167834-891301383-2860967316-1142'
-            ObjectGUID        = '91bffe90-4c84-4026-b1fc-d03671ff56ab'
-            GivenName         = ''
+            DistinguishedName = 'CN=User1,CN=Users,DC=contoso,DC=com'
             Name              = 'User1'
+            ObjectClass       = 'user'
+            ObjectGUID        = '91bffe90-4c84-4026-b1fc-d03671ff56ab'
+            ObjectSid         = 'S-1-5-21-1409167834-891301383-2860967316-1142'
+            SamAccountName    = 'User1'
         }
 
         $mockADComputer = @{
-            SamAccountName    = 'Node1$'
-            DistinguishedName = 'CN=Node1,OU=Fake,DC=contoso,DC=com'
-            Enabled           = $true
-            SID               = 'S-1-5-21-1409167834-891301383-2860967316-1143'
+            DistinguishedName = 'CN=Node1,CN=Computers,DC=contoso,DC=com'
+            Name              = 'Node1'
             ObjectClass       = 'computer'
             ObjectGUID        = '91bffe90-4c84-4026-b1fc-d03671ff56ac'
-            DnsHostName       = 'Node1.fake.contoso.com'
+            ObjectSID         = 'S-1-5-21-1409167834-891301383-2860967316-1143'
+            SamAccountName    = 'Node1$'
         }
 
-        $mockSingleServiceAccount = @{
-            Name              = 'TestSMSA'
-            DistinguishedName = "CN={0},{1}" -f ('TestSMSA', $mockPath)
-            Description       = 'Dummy single service account for unit testing'
-            DisplayName       = ''
-            ObjectClass       = 'msDS-ManagedServiceAccount'
-            Enabled           = $true
-            SamAccountName    = 'TestSMSA'
-            SID               = 'S-1-5-21-1409167834-891301383-2860967316-1144'
-            ObjectGUID        = '91bffe90-4c84-4026-b1fc-d03671ff56ad'
+        $mockAdServiceAccountStandalone = @{
+            ServiceAccountName        = 'TestSMSA'
+            AccountType               = 'Standalone'
+            DistinguishedName         = "CN=TestSMSA,$mockPath"
+            Description               = 'Dummy StandAlone service account for unit testing'
+            DisplayName               = 'TestSMSA'
+            Enabled                   = $true
+            KerberosEncryptionType    = 'RC4', 'AES128', 'AES256'
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = 'SamAccountName'
+            Ensure                    = 'Present'
         }
 
-        $mockGroupServiceAccount = @{
-            Name              = 'TestGMSA'
-            DistinguishedName = "CN={0},{1}" -f ('TestGMSA', $mockPath)
-            Description       = 'Dummy group service account for unit testing'
-            DisplayName       = ''
-            ObjectClass       = 'msDS-GroupManagedServiceAccount'
-            Enabled           = $true
-            SID               = 'S-1-5-21-1409167834-891301383-2860967316-1145'
-            ObjectGUID        = '91bffe90-4c84-4026-b1fc-d03671ff56ae'
-            PrincipalsAllowedToRetrieveManagedPassword = @($mockADUSer.SamAccountName, $mockADComputer.SamAccountName)
+        $mockAdServiceAccountStandaloneAbsent = @{
+            ServiceAccountName        = $mockAdServiceAccountStandalone.ServiceAccountName
+            AccountType               = $mockAdServiceAccountStandalone.AccountType
+            DistinguishedName         = $null
+            Description               = $null
+            DisplayName               = $null
+            Enabled                   = $false
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = $mockAdServiceAccountStandalone.MembershipAttribute
+            KerberosEncryptionType    = @()
+            Ensure                    = 'Absent'
         }
 
-        $mockGetSingleServiceAccount = @{
-            ServiceAccountName  = $mockSingleServiceAccount.Name
-            DistinguishedName   = $mockSingleServiceAccount.DistinguishedName
-            Path                = $mockPath
-            Description         = $mockSingleServiceAccount.Description
-            DisplayName         = $mockSingleServiceAccount.DisplayName
-            AccountType         = 'Single'
-            AccountTypeForce    = $false
-            Ensure              = 'Present'
-            Enabled             = $true
-            Members             = @()
-            MembershipAttribute = 'sAMAccountName'
-            Credential          = $mockCredentials
-            DomainController    = $mockDomainController
+        $mockAdServiceAccountChanged = @{
+            Description               = 'Changed description'
+            DisplayName               = 'Changed displayname'
+            KerberosEncryptionType    = 'AES128', 'AES256'
+            ManagedPasswordPrincipals = $mockADUSer.SamAccountName
         }
 
-        $mockGetGroupServiceAccount = @{
-            ServiceAccountName  = $mockGroupServiceAccount.Name
-            DistinguishedName   = $mockGroupServiceAccount.DistinguishedName
-            Path                = $mockPath
-            Description         = $mockGroupServiceAccount.Description
-            DisplayName         = $mockGroupServiceAccount.DisplayName
-            AccountType         = 'Group'
-            AccountTypeForce    = $false
-            Ensure              = 'Present'
-            Enabled             = $true
-            Members             = $mockGroupServiceAccount.PrincipalsAllowedToRetrieveManagedPassword
-            MembershipAttribute = 'sAMAccountName'
-            Credential          = $mockCredentials
-            DomainController    = $mockDomainController
+        $mockAdServiceAccountGroup = @{
+            ServiceAccountName        = 'TestGMSA'
+            AccountType               = 'Group'
+            DistinguishedName         = "CN=TestGMSA,$mockPath"
+            Description               = 'Dummy group service account for unit testing'
+            DisplayName               = 'TestGMSA'
+            Enabled                   = $true
+            KerberosEncryptionType    = 'RC4', 'AES128', 'AES256'
+            ManagedPasswordPrincipals = $mockADUSer.SamAccountName, $mockADComputer.SamAccountName
+            MembershipAttribute       = 'SamAccountName'
+            Ensure                    = 'Present'
         }
 
-        $mockCompareSingleServiceAccount = @(
-            [pscustomobject] @{
-                Parameter = 'ServiceAccountName'
-                Expected  = $mockGetSingleServiceAccount.ServiceAccountName
-                Actual    = $mockGetSingleServiceAccount.ServiceAccountName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'AccountType'
-                Expected  = $mockGetSingleServiceAccount.AccountType
-                Actual    = $mockGetSingleServiceAccount.AccountType
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'AccountTypeForce'
-                Expected  = $mockGetSingleServiceAccount.AccountTypeForce
-                Actual    = $mockGetSingleServiceAccount.AccountTypeForce
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Path'
-                Expected  = $mockGetSingleServiceAccount.Path
-                Actual    = $mockGetSingleServiceAccount.Path
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Ensure'
-                Expected  = $mockGetSingleServiceAccount.Ensure
-                Actual    = $mockGetSingleServiceAccount.Ensure
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Enabled'
-                Expected  = $mockGetSingleServiceAccount.Enabled
-                Actual    = $mockGetSingleServiceAccount.Enabled
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Description'
-                Expected  = $mockGetSingleServiceAccount.Description
-                Actual    = $mockGetSingleServiceAccount.Description
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DisplayName'
-                Expected  = $mockGetSingleServiceAccount.DisplayName
-                Actual    = $mockGetSingleServiceAccount.DisplayName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DistinguishedName'
-                Expected  = $mockGetSingleServiceAccount.DistinguishedName
-                Actual    = $mockGetSingleServiceAccount.DistinguishedName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'MembershipAttribute'
-                Expected  = $mockGetSingleServiceAccount.MembershipAttribute
-                Actual    = $mockGetSingleServiceAccount.MembershipAttribute
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Credential'
-                Expected  = $mockGetSingleServiceAccount.Credential
-                Actual    = $mockGetSingleServiceAccount.Credential
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DomainController'
-                Expected  = $mockGetSingleServiceAccount.DomainController
-                Actual    = $mockGetSingleServiceAccount.DomainController
-                Pass      = $true
-            }
-        )
+        $mockAdServiceAccountGroupAbsent = @{
+            ServiceAccountName        = $mockAdServiceAccountGroup.ServiceAccountName
+            AccountType               = $mockAdServiceAccountGroup.AccountType
+            DistinguishedName         = $null
+            Description               = $null
+            DisplayName               = $null
+            Enabled                   = $false
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = $mockAdServiceAccountGroup.MembershipAttribute
+            KerberosEncryptionType    = @()
+            Ensure                    = 'Absent'
+        }
 
-        $mockCompareGroupServiceAccount = @(
-            [pscustomobject] @{
-                Parameter = 'ServiceAccountName'
-                Expected  = $mockGetGroupServiceAccount.ServiceAccountName
-                Actual    = $mockGetGroupServiceAccount.ServiceAccountName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'AccountType'
-                Expected  = $mockGetGroupServiceAccount.AccountType
-                Actual    = $mockGetGroupServiceAccount.AccountType
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'AccountTypeForce'
-                Expected  = $mockGetGroupServiceAccount.AccountTypeForce
-                Actual    = $mockGetGroupServiceAccount.AccountTypeForce
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Path'
-                Expected  = $mockGetGroupServiceAccount.Path
-                Actual    = $mockGetGroupServiceAccount.Path
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Ensure'
-                Expected  = $mockGetGroupServiceAccount.Ensure
-                Actual    = $mockGetGroupServiceAccount.Ensure
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Enabled'
-                Expected  = $mockGetGroupServiceAccount.Enabled
-                Actual    = $mockGetGroupServiceAccount.Enabled
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Description'
-                Expected  = $mockGetGroupServiceAccount.Description
-                Actual    = $mockGetGroupServiceAccount.Description
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DisplayName'
-                Expected  = $mockGetGroupServiceAccount.DisplayName
-                Actual    = $mockGetGroupServiceAccount.DisplayName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Members'
-                Expected  = $mockGetGroupServiceAccount.Members
-                Actual    = $mockGetGroupServiceAccount.Members
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Credential'
-                Expected  = $mockGetGroupServiceAccount.MembershipAttribute
-                Actual    = $mockGetGroupServiceAccount.MembershipAttribute
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DistinguishedName'
-                Expected  = $mockGetGroupServiceAccount.DistinguishedName
-                Actual    = $mockGetGroupServiceAccount.DistinguishedName
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'Credential'
-                Expected  = $mockGetGroupServiceAccount.Credential
-                Actual    = $mockGetGroupServiceAccount.Credential
-                Pass      = $true
-            }
-            [pscustomobject] @{
-                Parameter = 'DomainController'
-                Expected  = $mockGetGroupServiceAccount.DomainController
-                Actual    = $mockGetGroupServiceAccount.DomainController
-                Pass      = $true
-            }
-        )
+        $mockGetAdServiceAccountResultsStandAlone = @{
+            Description            = $mockAdServiceAccountStandalone.Description
+            DisplayName            = $mockAdServiceAccountStandalone.DisplayName
+            DistinguishedName      = $mockAdServiceAccountStandalone.DistinguishedName
+            Enabled                = $mockAdServiceAccountStandalone.Enabled
+            KerberosEncryptionType = $mockAdServiceAccountStandalone.KerberosEncryptionType
+            Name                   = $mockAdServiceAccountStandalone.ServiceAccountName
+            ObjectClass            = 'msDS-ManagedServiceAccount'
+            ObjectGUID             = '91bffe90-4c84-4026-b1fc-d03671ff56ad'
+            SamAccountName         = $mockAdServiceAccountStandalone.ServiceAccountName
+            SID                    = 'S-1-5-21-1409167834-891301383-2860967316-1144'
+            UserPrincipalName      = ''
+        }
+
+        $mockGetAdServiceAccountResultsGroup = @{
+            Description                                = $mockAdServiceAccountGroup.Description
+            DisplayName                                = $mockAdServiceAccountGroup.DisplayName
+            DistinguishedName                          = $mockAdServiceAccountGroup.DistinguishedName
+            Enabled                                    = $mockAdServiceAccountGroup.Enabled
+            KerberosEncryptionType                     = $mockAdServiceAccountGroup.KerberosEncryptionType
+            Name                                       = $mockAdServiceAccountGroup.ServiceAccountName
+            ObjectClass                                = 'msDS-GroupManagedServiceAccount'
+            ObjectGUID                                 = '91bffe90-4c84-4026-b1fc-d03671ff56ae'
+            PrincipalsAllowedToRetrieveManagedPassword = $mockAdServiceAccountGroup.ManagedPasswordPrincipals
+            SamAccountName                             = $mockAdServiceAccountGroup.ServiceAccountName
+            SID                                        = 'S-1-5-21-1409167834-891301383-2860967316-1145'
+            UserPrincipalName                          = ''
+        }
+
+        $mockGetTargetResourceResultsStandAlone = @{
+            ServiceAccountName        = $mockGetAdServiceAccountResultsStandAlone.Name
+            DistinguishedName         = $mockGetAdServiceAccountResultsStandAlone.DistinguishedName
+            Path                      = $mockPath
+            Description               = $mockGetAdServiceAccountResultsStandAlone.Description
+            DisplayName               = $mockGetAdServiceAccountResultsStandAlone.DisplayName
+            AccountType               = 'Standalone'
+            Ensure                    = 'Present'
+            Enabled                   = $true
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = 'SamAccountName'
+            Credential                = $mockCredentials
+            DomainController          = $mockDomainController
+            KerberosEncryptionType    = 'RC4', 'AES128', 'AES256'
+        }
+
+        $mockGetTargetResourceResultsGroup = @{
+            ServiceAccountName        = $mockGetAdServiceAccountResultsGroup.Name
+            DistinguishedName         = $mockGetAdServiceAccountResultsGroup.DistinguishedName
+            Path                      = $mockPath
+            Description               = $mockGetAdServiceAccountResultsGroup.Description
+            DisplayName               = $mockGetAdServiceAccountResultsGroup.DisplayName
+            AccountType               = 'Group'
+            Ensure                    = 'Present'
+            Enabled                   = $true
+            ManagedPasswordPrincipals = $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword
+            MembershipAttribute       = 'SamAccountName'
+            Credential                = $mockCredentials
+            DomainController          = $mockDomainController
+            KerberosEncryptionType    = 'RC4', 'AES128', 'AES256'
+        }
+
+        $mockGetTargetResourceResultsStandAloneAbsent = @{
+            ServiceAccountName        = $mockGetAdServiceAccountResultsStandAlone.Name
+            DistinguishedName         = $null
+            Path                      = $null
+            Description               = $null
+            DisplayName               = $null
+            AccountType               = $null
+            Ensure                    = 'Absent'
+            Enabled                   = $false
+            ManagedPasswordPrincipals = @()
+            MembershipAttribute       = 'SamAccountName'
+            KerberosEncryptionType    = @()
+        }
 
         #region Function Get-TargetResource
         Describe -Name 'MSFT_ADManagedServiceAccount\Get-TargetResource' -Tag 'Get' {
             BeforeAll {
-                Mock -CommandName Assert-Module -ParameterFilter {
-                    $ModuleName -eq 'ActiveDirectory'
+                Mock -CommandName Assert-Module
+                Mock -CommandName Get-ADObjectParentDN
+                Mock -CommandName Get-AdObject
+            }
+
+            $getTargetResourceParametersStandalone = @{
+                ServiceAccountName = $mockAdServiceAccountStandAlone.ServiceAccountName
+                AccountType        = $mockAdServiceAccountStandAlone.AccountType
+            }
+
+            $getTargetResourceParametersGroup = @{
+                ServiceAccountName = $mockAdServiceAccountGroup.ServiceAccountName
+                AccountType        = $mockAdServiceAccountGroup.AccountType
+            }
+
+            Context 'When the resource is Present' {
+
+                Context 'When the Resouce is a StandAlone account' {
+                    Mock -CommandName Get-ADServiceAccount `
+                        -MockWith { $mockGetAdServiceAccountResultsStandAlone }
+
+                    Mock -CommandName Get-AdObjectParentDN `
+                        -MockWith { $mockPath }
+
+                    $result = Get-TargetResource @getTargetResourceParametersStandalone
+
+                    foreach ($property in $mockAdServiceAccountStandalone.Keys)
+                    {
+                        It "Should return the correct $property property" {
+                            $result.$property | Should -Be $mockAdServiceAccountStandalone.$property
+                        }
+                    }
+
+                    It 'Should return the correct Ensure property' {
+                        $result.Ensure | Should -Be 'Present'
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Assert-Module `
+                            -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-ADServiceAccount `
+                            -ParameterFilter { $Identity -eq $getTargetResourceParametersStandalone.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-AdObject `
+                            -Exactly -Times 0
+                        Assert-MockCalled -CommandName Get-ADObjectParentDN `
+                            -ParameterFilter { $DN -eq $mockAdServiceAccountStandalone.DistinguishedName } `
+                            -Exactly -Times 1
+                    }
                 }
 
-                Mock -CommandName Get-ADObjectParentDN -MockWith {
-                    return $mockPath
+                Context 'When the Resouce is a Group account' {
+                    Mock -CommandName Get-ADServiceAccount `
+                        -MockWith { $mockGetAdServiceAccountResultsGroup }
+
+                    Mock -CommandName Get-ADObject `
+                        -ParameterFilter { $mockADComputer.SamAccountName -eq $Identity } `
+                        -MockWith { $mockADComputer }
+
+                    Mock -CommandName Get-ADObject `
+                        -ParameterFilter { $mockADUser.SamAccountName -eq $Identity } `
+                        -MockWith { $mockADUser }
+
+                    Mock -CommandName Get-AdObjectParentDN `
+                        -MockWith { $mockPath }
+
+                    $result = Get-TargetResource @getTargetResourceParametersGroup
+
+                    foreach ($property in $mockAdServiceAccountGroup.Keys)
+                    {
+                        It "Should return the correct $property property" {
+                            $result.$property | Should -Be $mockAdServiceAccountGroup.$property
+                        }
+                    }
+
+                    It 'Should return the correct Ensure property' {
+                        $result.Ensure | Should -Be 'Present'
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Assert-Module `
+                            -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-ADServiceAccount `
+                            -ParameterFilter { $Identity -eq $getTargetResourceParametersGroup.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-AdObject `
+                            -ParameterFilter {
+                            $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[0] } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-AdObject `
+                            -ParameterFilter {
+                            $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[1] } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-ADObjectParentDN `
+                            -ParameterFilter { $DN -eq $mockGetAdServiceAccountResultsGroup.DistinguishedName } `
+                            -Exactly -Times 1
+                    }
+                }
+                Context 'When Get-AdServiceAccount throws an unexpected error' {
+                    Mock -CommandName Get-ADServiceAccount `
+                        -MockWith { throw 'UnexpectedError' }
+
+                    It 'Should throw the correct exception' {
+                        { Get-TargetResource  @getTargetResourceParametersStandAlone } |
+                            Should -Throw ($script:localizedData.RetrievingManagedServiceAccountError -f `
+                                    $getTargetResourceParametersStandAlone.ServiceAccountName)
+                    }
+                }
+
+                Context 'When the group service account member property contains an unknown principal' {
+                    $mockGetAdServiceAccountResultsGroupUnknownPrincipal = $mockGetAdServiceAccountResultsGroup.Clone()
+                    $mockGetAdServiceAccountResultsGroupUnknownPrincipal.PrincipalsAllowedtoRetrieveManagedPassword = `
+                        $mockADUSer.ObjectSid, $mockADComputer.ObjectSid
+
+                    Mock -CommandName Get-ADServiceAccount `
+                        -MockWith { $mockGetAdServiceAccountResultsGroupUnknownPrincipal }
+
+                    Mock -CommandName Get-ADObject `
+                        -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
+
+                    $result = Get-TargetResource  @getTargetResourceParametersGroup
+
+                    It 'Should return the correct ManagedPasswordPrincipals property`' {
+                        $result.ManagedPasswordPrincipals | Should -Be $mockADUSer.ObjectSid, $mockADComputer.ObjectSid
+                    }
+                }
+
+                Context 'When Get-AdObject throws an unexpected error' {
+                    Mock -CommandName Get-ADObject `
+                        -MockWith { throw 'UnexpectedError' }
+
+                    It 'Should throw the correct exception' {
+                        { Get-TargetResource  @getTargetResourceParametersStandAlone } |
+                            Should -Throw ($script:localizedData.RetrievingManagedServiceAccountError -f `
+                                    $getTargetResourceParametersStandAlone.ServiceAccountName)
+                    }
                 }
             }
 
-            Context 'When the system uses specific parameters' {
-                Mock -CommandName Get-ADServiceAccount -MockWith {
-                    return $mockSingleServiceAccount
-                }
+            Context 'When the resource is Absent' {
 
-                It 'Should call "Assert-Module" to check AD module is installed' {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
+                Context 'When the Resouce is a StandAlone account' {
+                    Mock -CommandName Get-AdServiceAccount `
+                        -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
+
+                    $result = Get-TargetResource @getTargetResourceParametersStandalone
+
+                    foreach ($property in $mockAdServiceAccountStandaloneAbsent.Keys)
+                    {
+                        It "Should return the correct $property property" {
+                            $result.$property | Should -Be $mockAdServiceAccountStandaloneAbsent.$property
+                        }
                     }
 
-                    { Get-TargetResource @testResourceParametersSingle } | Should -Not -Throw
-
-                    Assert-MockCalled -CommandName Assert-Module -ParameterFilter {
-                        $ModuleName -eq 'ActiveDirectory'
-                    } -Scope It -Exactly -Times 1
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Assert-Module `
+                            -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-ADServiceAccount `
+                            -ParameterFilter { $Identity -eq $getTargetResourceParametersStandalone.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-AdObject `
+                            -Exactly -Times 0
+                    }
                 }
 
-                It 'Should call "Get-ADServiceAccount" with "Server" parameter when "DomainController" specified' {
-                    $testResourceParametersWithServer = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        DomainController   = $mockDomainController
+                Context 'When the Resouce is a Group account' {
+                    Mock -CommandName Get-AdServiceAccount `
+                        -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
+
+                    $result = Get-TargetResource @getTargetResourceParametersGroup
+
+                    foreach ($property in $mockAdServiceAccountGroupAbsent.Keys)
+                    {
+                        It "Should return the correct $property property" {
+                            $result.$property | Should -Be $mockAdServiceAccountGroupAbsent.$property
+                        }
                     }
 
-                    { Get-TargetResource @testResourceParametersWithServer } | Should -Not -Throw
-
-                    Assert-MockCalled -CommandName Get-ADServiceAccount -ParameterFilter {
-                        $Server -eq $mockDomainController
-                    } -Scope It -Exactly -Times 1
-                }
-
-                It 'Should call "Get-ADServiceAccount" with "Credential" parameter when specified' {
-                    $testResourceParametersWithCredentials = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Credential         = $mockCredentials
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Assert-Module `
+                            -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-ADServiceAccount `
+                            -ParameterFilter { $Identity -eq $getTargetResourceParametersGroup.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Get-AdObject `
+                            -Exactly -Times 0
                     }
-
-                    { Get-TargetResource @testResourceParametersWithCredentials } | Should -Not -Throw
-
-                    Assert-MockCalled -CommandName Get-ADServiceAccount -ParameterFilter {
-                        $Credential -eq $mockCredentials
-                    } -Scope It -Exactly -Times 1
-                }
-            }
-
-            Context 'When system cannot connect to domain or other errors' {
-                Mock -CommandName Get-ADServiceAccount -MockWith {
-                    throw 'Microsoft.ActiveDirectory.Management.ADServerDownException'
-                }
-
-                It 'Should call "Get-ADServiceAccount" and throw an error when catching any other errors besides "Account Not Found"'{
-                    $getTargetResourceParameters = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                    }
-
-                    { Get-TargetResource  @getTargetResourceParameters -ErrorAction 'SilentlyContinue' } |
-                        Should -Throw ($script:localizedData.RetrievingServiceAccountError -f $getTargetResourceParameters.ServiceAccountName)
-                }
-            }
-
-            Context 'When the system is in desired state (sMSA)' {
-                Mock -CommandName Get-ADServiceAccount -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $Identity
-                } -MockWith {
-                    Write-Verbose "Call Get-ADServiceAccount with $($mockSingleServiceAccount.Name)"
-                    return $mockSingleServiceAccount
-                }
-
-                It 'Should mock call to Get-ADServiceAccount return identical information' {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                    }
-
-                    $getTargetResourceResult = Get-TargetResource @testResourceParametersSingle
-
-                    $getTargetResourceResult.ServiceAccountName | Should -Be $mockSingleServiceAccount.Name
-                    $getTargetResourceResult.Ensure | Should -Be 'Present'
-                    $getTargetResourceResult.AccountType | Should -Be 'Single'
-                    $getTargetResourceResult.Description | Should -Be $mockSingleServiceAccount.Description
-                    $getTargetResourceResult.DisplayName | Should -Be $mockSingleServiceAccount.DisplayName
-                    $getTargetResourceResult.Members | Should -Be @()
-                    $getTargetResourceResult.Path | Should -Be $mockPath
-                }
-            }
-
-            Context 'When the system is in desired state (gMSA)' {
-                Mock -CommandName Get-ADServiceAccount -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $Identity
-                } -MockWith {
-                    Write-Verbose "Call Get-ADServiceAccount with $($mockGroupServiceAccount.Name)"
-                    return $mockGroupServiceAccount
-                }
-
-                Mock -CommandName Get-ADObject -ParameterFilter {
-                    $mockADComputer.SamAccountName -eq $Identity
-                } -MockWith {
-                    Write-Verbose "Call Get-ADObject with $($mockADComputer.SamAccountName)"
-                    return $mockADComputer
-                }
-
-                Mock -CommandName Get-ADObject -ParameterFilter {
-                    $mockADUSer.SamAccountName -eq $Identity
-                } -MockWith {
-                    Write-Verbose "Call Get-ADObject with $($mockADUser.SamAccountName)"
-                    return $mockADUser
-                }
-
-                It 'Should mock call to Get-ADServiceAccount return identical information' {
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SamAccountName'
-                    }
-
-                    $getTargetResourceResult = Get-TargetResource @testResourceParametersGroup
-
-                    $getTargetResourceResult.ServiceAccountName | Should -Be $mockGroupServiceAccount.Name
-                    $getTargetResourceResult.Ensure | Should -Be 'Present'
-                    $getTargetResourceResult.AccountType | Should -Be 'Group'
-                    $getTargetResourceResult.Description | Should -Be $mockGroupServiceAccount.Description
-                    $getTargetResourceResult.DisplayName | Should -Be $mockGroupServiceAccount.DisplayName
-                    $getTargetResourceResult.Members | Should -Be `
-                        @($mockADUSer.($testResourceParametersGroup.MembershipAttribute), `
-                          $mockADComputer.($testResourceParametersGroup.MembershipAttribute))
-                    $getTargetResourceResult.Path | Should -Be $mockPath
-                }
-            }
-
-            Context -Name 'When the system is NOT in the desired state (Both)' {
-                Mock -CommandName Get-ADServiceAccount -MockWith {
-                    throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException
-                }
-
-                $testResourceParametersSingle = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                }
-
-                $getTargetResourceResult = Get-TargetResource @testResourceParametersSingle
-
-                It "Should return 'Ensure' is 'Absent'" {
-                    $getTargetResourceResult.Ensure | Should -Be 'Absent'
-                }
-
-                It "Should return 'ServiceAccountName' when 'Absent'" {
-                    $getTargetResourceResult.ServiceAccountName | Should -Not -BeNullOrEmpty
-                    $getTargetResourceResult.ServiceAccountName | Should -BeExactly $testResourceParametersSingle.ServiceAccountName
                 }
             }
         }
         #endregion Function Get-TargetResource
 
-        #region Function Compare-TargetResourceState
-        Describe -Name 'MSFT_ADManagedServiceAccount\Compare-TargetResourceState' -Tag 'Compare' {
-            Context -Name 'When the system is in the desired state (sMSA)' {
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Get-TargetResource with $($mockSingleServiceAccount.Name)"
-                    return $mockGetSingleServiceAccount
-                }
-
-                $testResourceParametersSingle = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                    AccountType        = 'Single'
-                    Path               = $mockPath
-                    Description        = $mockSingleServiceAccount.Description
-                    Ensure             = 'Present'
-                    DisplayName        = $mockSingleServiceAccount.DisplayName
-                }
-
-                $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersSingle
-                $testCases = @()
-                $getTargetResourceResult | ForEach-Object {
-                    $testCases += @{
-                        Parameter = $_.Parameter
-                        Expected  = $_.Expected
-                        Actual    = $_.Actual
-                        Pass      = $_.Pass
-                    }
-                }
-
-                It "Should return identical information for <Parameter>" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Expected,
-
-                        [Parameter()]
-                        $Actual,
-
-                        [Parameter()]
-                        $Pass
-                    )
-
-                    $Expected | Should -BeExactly $Actual
-                    $Pass | Should -BeTrue
-                }
-
-            }
-
-            Context -Name 'When the system is in the desired state (gMSA)' {
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'SamAccountName'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using sAMAccountName'
-                    return $mockGetGroupServiceAccount
-                }
-
-                $mockGetGroupServiceAccountDN = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountDN['MembershipAttribute'] = 'DistinguishedName'
-                $mockGetGroupServiceAccountDN['Members'] = @($mockADUSer.DistinguishedName, $mockADComputer.DistinguishedName)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'DistinguishedName'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using DistinguishedName'
-                    return $mockGetGroupServiceAccountDN
-                }
-
-                $mockGetGroupServiceAccountSID = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountSID['MembershipAttribute'] = 'SID'
-                $mockGetGroupServiceAccountSID['Members'] = @($mockADUSer.SID, $mockADComputer.SID)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'SID'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using SID'
-                    return $mockGetGroupServiceAccountSID
-                }
-
-                $mockGetGroupServiceAccountOID = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountOID['MembershipAttribute'] = 'ObjectGUID'
-                $mockGetGroupServiceAccountOID['Members'] = @($mockADUSer.ObjectGUID, $mockADComputer.ObjectGUID)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'ObjectGUID'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using ObjectGUID'
-                    return $mockGetGroupServiceAccountOID
-                }
-
-                $testResourceParametersGroup = @{
-                    ServiceAccountName  = $mockGroupServiceAccount.Name
-                    MembershipAttribute = 'SamAccountName'
-                    AccountType         = 'Group'
-                    Path                = $mockPath
-                    Description         = $mockGroupServiceAccount.Description
-                    Ensure              = 'Present'
-                    Members             = 'Node1$', 'User1'
-                    DisplayName         = $mockGroupServiceAccount.DisplayName
-                }
-
-                $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersGroup
-                $testCases = @()
-                $getTargetResourceResult | ForEach-Object {
-                    $testCases += @{
-                        Parameter = $_.Parameter
-                        Expected  = $_.Expected
-                        Actual    = $_.Actual
-                        Pass      = $_.Pass
-                    }
-                }
-
-                It "Should return identical information for <Parameter>" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Expected,
-
-                        [Parameter()]
-                        $Actual,
-
-                        [Parameter()]
-                        $Pass
-                    )
-
-                    $Expected | Should -BeExactly $Actual
-                    $Pass | Should -BeTrue
-                }
-
-                It "Should return identical information for 'Members' when using 'SamAccountName'" {
-                    $testResourceParametersGroupSAM = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SamAccountName'
-                        Members             = 'Node1$', 'User1'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultSAM  = Compare-TargetResourceState @testResourceParametersGroupSAM
-
-                    $getTargetResourceResultSAM.Expected | Should -BeExactly $getTargetResourceResultSAM.Actual
-                    $getTargetResourceResultSAM.Pass | Should -BeTrue
-                }
-
-                It "Should return identical information for 'Members' when using 'DistinguishedName'" {
-                    $testResourceParametersGroupDN = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'DistinguishedName'
-                        Members             = 'CN=Node1,OU=Fake,DC=contoso,DC=com', 'CN=User1,OU=Fake,DC=contoso,DC=com'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultDN  = Compare-TargetResourceState @testResourceParametersGroupDN
-
-                    $getTargetResourceResultDN.Expected | Should -BeExactly $getTargetResourceResultDN.Actual
-                    $getTargetResourceResultDN.Pass | Should -BeTrue
-                }
-
-                It "Should return identical information for 'Members' when using 'SID'" {
-                    $testResourceParametersGroupSID = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SID'
-                        Members             = 'S-1-5-21-1409167834-891301383-2860967316-1143', 'S-1-5-21-1409167834-891301383-2860967316-1142'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultSID  = Compare-TargetResourceState @testResourceParametersGroupSID
-
-                    $getTargetResourceResultSID.Expected | Should -BeExactly $getTargetResourceResultSID.Actual
-                    $getTargetResourceResultSID.Pass | Should -BeTrue
-                }
-
-                It "Should return identical information for 'Members' when using 'ObjectGUID'" {
-                    $testResourceParametersGroupGUID = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'ObjectGUID'
-                        Members             = '91bffe90-4c84-4026-b1fc-d03671ff56ac', '91bffe90-4c84-4026-b1fc-d03671ff56ab'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultGUID  = Compare-TargetResourceState @testResourceParametersGroupGUID
-
-                    $getTargetResourceResultGUID.Expected | Should -BeExactly $getTargetResourceResultGUID.Actual
-                    $getTargetResourceResultGUID.Pass | Should -BeTrue
-                }
-            }
-
-            Context -Name 'When the system is NOT in the desired state (sMSA)' {
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    return $mockGetSingleServiceAccount
-                }
-
-                $testResourceParametersSingleNotCompliant = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                    AccountType        = 'Group'
-                    Path               = 'OU=FakeWrong,DC=contoso,DC=com'
-                    Description        = 'Test MSA description Wrong'
-                    Ensure             = 'Absent'
-                    DisplayName        = 'WrongDisplayName'
-                }
-
-                $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersSingleNotCompliant
-                $testCases = @()
-                # Need to remove parameters that will always be true
-                $getTargetResourceResult = $getTargetResourceResult | Where-Object -FilterScript {
-                    $_.Parameter -ne 'ServiceAccountName' -and
-                    $_.Parameter -ne 'DistinguishedName' -and
-                    $_.Parameter -ne 'MembershipAttribute'
-                }
-
-                $getTargetResourceResult | ForEach-Object {
-                    $testCases += @{
-                        Parameter = $_.Parameter
-                        Expected  = $_.Expected
-                        Actual    = $_.Actual
-                        Pass      = $_.Pass
-                    }
-                }
-
-                It "Should return false for <Parameter>" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Expected,
-
-                        [Parameter()]
-                        $Actual,
-
-                        [Parameter()]
-                        $Pass
-                    )
-
-                    $Expected | Should -Not -Be $Actual
-                    $Pass | Should -BeFalse
-                }
-
-            }
-
-            Context -Name 'When the system is NOT in the desired state (gMSA)' {
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'SamAccountName'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using sAMAccountName'
-                    return $mockGetGroupServiceAccount
-                }
-
-                $mockGetGroupServiceAccountDN = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountDN['MembershipAttribute'] = 'DistinguishedName'
-                $mockGetGroupServiceAccountDN['Members'] = @($mockADUSer.DistinguishedName, $mockADComputer.DistinguishedName)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'DistinguishedName'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using DistinguishedName'
-                    return $mockGetGroupServiceAccountDN
-                }
-
-                $mockGetGroupServiceAccountSID = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountSID['MembershipAttribute'] = 'SID'
-                $mockGetGroupServiceAccountSID['Members'] = @($mockADUSer.SID, $mockADComputer.SID)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'SID'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using SID'
-                    return $mockGetGroupServiceAccountSID
-                }
-
-                $mockGetGroupServiceAccountOID = $mockGetGroupServiceAccount.Clone()
-                $mockGetGroupServiceAccountOID['MembershipAttribute'] = 'ObjectGUID'
-                $mockGetGroupServiceAccountOID['Members'] = @($mockADUSer.ObjectGUID, $mockADComputer.ObjectGUID)
-                Mock -CommandName Get-TargetResource -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $MembershipAttribute -eq 'ObjectGUID'
-                } -MockWith {
-                    Write-Verbose 'Group MSA using ObjectGUID'
-                    return $mockGetGroupServiceAccountOID
-                }
-
-                $testResourceParametersGroup = @{
-                    ServiceAccountName   = $mockGroupServiceAccount.Name
-                    AccountType          = 'Single'
-                    Path                 = 'OU=FakeWrong,DC=contoso,DC=com'
-                    Description          = 'Test MSA description Wrong'
-                    Ensure               = 'Absent'
-                    DisplayName          = 'WrongDisplayName'
-                    MembershipAttribute = 'SamAccountName'
-                }
-
-                $getTargetResourceResult = Compare-TargetResourceState @testResourceParametersGroup
-                $testCases = @()
-                # Need to remove parameters that will always be true
-                $getTargetResourceResult = $getTargetResourceResult | Where-Object -FilterScript {
-                    $_.Parameter -ne 'ServiceAccountName' -and
-                    $_.Parameter -ne 'DistinguishedName' -and
-                    $_.Parameter -ne 'MembershipAttribute'
-                }
-                $getTargetResourceResult | ForEach-Object {
-                    $testCases += @{
-                        Parameter = $_.Parameter
-                        Expected  = $_.Expected
-                        Actual    = $_.Actual
-                        Pass      = $_.Pass
-                    }
-                }
-
-                It "Should return false for <Parameter>" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Expected,
-
-                        [Parameter()]
-                        $Actual,
-
-                        [Parameter()]
-                        $Pass
-                    )
-
-                    $Expected | Should -Not -Be $Actual
-                    $Pass | Should -BeFalse
-                }
-
-                It "Should return false for 'Members' when using 'SamAccountName'" {
-                    $testResourceParametersGroupSAM = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SamAccountName'
-                        Members             = 'Node1$'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultSAM  = Compare-TargetResourceState @testResourceParametersGroupSAM
-
-                    $membersState = $getTargetResourceResultSAM | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
-                    $membersState.Expected | Should -Not -BeExactly $membersState.Actual
-                    $membersState.Pass | Should -BeFalse
-                }
-
-                It "Should return false for 'Members' when using 'DistinguishedName'" {
-                    $testResourceParametersGroupDN = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'DistinguishedName'
-                        Members             = 'CN=Node1,OU=Fake,DC=contoso,DC=com'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultDN  = Compare-TargetResourceState @testResourceParametersGroupDN
-
-                    $membersState = $getTargetResourceResultDN | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
-                    $membersState.Expected | Should -Not -BeExactly $membersState.Actual
-                    $membersState.Pass | Should -BeFalse
-                }
-
-                It "Should return false for 'Members' when using 'SID'" {
-                    $testResourceParametersGroupSID = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SID'
-                        Members             = 'S-1-5-21-1409167834-891301383-2860967316-1143'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultSID  = Compare-TargetResourceState @testResourceParametersGroupSID
-
-                    $membersState = $getTargetResourceResultSID | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
-                    $membersState.Expected | Should -Not -BeExactly $membersState.Actual
-                    $membersState.Pass | Should -BeFalse
-                }
-
-                It "Should return false for 'Members' when using 'ObjectGUID'" {
-                    $testResourceParametersGroupGUID = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'ObjectGUID'
-                        Members             = '91bffe90-4c84-4026-b1fc-d03671ff56ac'
-                        AccountType         = 'Group'
-                    }
-
-                    $getTargetResourceResultGUID  = Compare-TargetResourceState @testResourceParametersGroupGUID
-
-                    $membersState = $getTargetResourceResultGUID | Where-Object -FilterScript {$_.Parameter -eq 'Members'}
-                    $membersState.Expected | Should -Not -BeExactly $membersState.Actual
-                    $membersState.Pass | Should -BeFalse
-                }
-            }
-        }
-        #endregion Function Compare-TargetResourceState
-
         #region Function Test-TargetResource
         Describe -Name 'MSFT_ADManagedServiceAccount\Test-TargetResource' -Tag 'Test' {
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Present' (sMSA)" {
-                It "Should pass when the Parameters are properly set" {
-                    Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                        $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                    } -MockWith {
-                        Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                        return $mockCompareSingleServiceAccount
+
+            $testTargetResourceParametersStandalone = @{
+                ServiceAccountName        = $mockAdServiceAccountStandalone.ServiceAccountName
+                AccountType               = $mockAdServiceAccountStandalone.AccountType
+                Description               = $mockAdServiceAccountStandalone.Description
+                DisplayName               = $mockAdServiceAccountStandalone.DisplayName
+                KerberosEncryptionType    = $mockAdServiceAccountStandalone.KerberosEncryptionType
+                ManagedPasswordPrincipals = $mockAdServiceAccountStandalone.ManagedPasswordPrincipals
+                MembershipAttribute       = $mockAdServiceAccountStandalone.MembershipAttribute
+                Ensure                    = $mockAdServiceAccountStandalone.Ensure
+            }
+
+            $testTargetResourceParametersStandaloneAbsent = $testTargetResourceParametersStandalone.Clone()
+            $testTargetResourceParametersStandaloneAbsent.Ensure = 'Absent'
+
+            Context 'When the Resource is Present' {
+
+                Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAlone }
+
+                Context 'When the Resource should be Present' {
+
+                    It 'Should not throw' {
+                        { Test-TargetResource @testTargetResourceParametersStandalone } | Should -Not -Throw
                     }
 
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        AccountType        = 'Single'
-                        Path               = $mockPath
-                        Description        = $mockSingleServiceAccount.Description
-                        Ensure             = 'Present'
-                        DisplayName        = ''
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter { $ServiceAccountName -eq $testTargetResourceParametersStandalone.ServiceAccountName } `
+                            -Exactly -times 1
                     }
 
-                    Test-TargetResource @testResourceParametersSingle | Should -BeTrue
+                    Context 'When all the resource properties are in the desired state' {
+
+                        It 'Should return $true' {
+                            Test-TargetResource @testTargetResourceParametersStandalone | Should -Be $true
+                        }
+                    }
+
+                    foreach ($property in $mockAdServiceAccountChanged.Keys)
+                    {
+                        Context "When the $property resource property is not in the desired state" {
+
+                            It 'Should return $false' {
+                                $testTargetResourceParametersChanged = $testTargetResourceParametersStandalone.Clone()
+                                $testTargetResourceParametersChanged.$property = $mockAdServiceAccountChanged.$property
+
+                                Test-TargetResource @testTargetResourceParametersChanged | Should -Be $false
+                            }
+                        }
+                    }
+                }
+
+                Context 'When the Resource should be Absent' {
+
+                    It 'Should not throw' {
+                        { Test-TargetResource @testTargetResourceParametersStandAloneAbsent } | Should -Not -Throw
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                                $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -Exactly -times 1
+                    }
+
+                    It 'Should return $false' {
+                        Test-TargetResource @testTargetResourceParametersStandAloneAbsent | Should -Be $false
+                    }
                 }
             }
 
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Present' (gMSA)" {
-                It "Should pass when the Parameters are properly set" {
-                    Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                        $mockGroupServiceAccount.Name -eq $ServiceAccountName
-                    } -MockWith {
-                        Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name)"
-                        return $mockCompareGroupServiceAccount
+            Context 'When the Resource is Absent' {
+
+                Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAloneAbsent }
+
+                Context 'When the Resource should be Present' {
+
+                    It 'Should not throw' {
+                        { Test-TargetResource @testTargetResourceParametersStandAlone } | Should -Not -Throw
                     }
 
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SamAccountName'
-                        AccountType         = 'Group'
-                        Path                = $mockPath
-                        Description         = $mockGroupServiceAccount.Description
-                        Ensure              = 'Present'
-                        Members             = 'Node1$', 'User1'
-                        DisplayName         = ''
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                            $ServiceAccountName -eq $testTargetResourceParametersStandAlone.ServiceAccountName } `
+                            -Exactly -times 1
                     }
 
-                    Test-TargetResource @testResourceParametersGroup | Should -BeTrue
+                    It 'Should return $false' {
+                        Test-TargetResource @testTargetResourceParametersStandAlone | Should -Be $false
+                    }
                 }
-            }
 
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Absent' (Both)" {
-                It "Should pass when 'Ensure' is set to 'Absent" {
-                    $mockCompareSingleServiceAccountEnsureAbsent = $mockCompareSingleServiceAccount.Clone()
-                    $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
-                    $objectEnsure.Actual = 'Absent'
-                    $objectEnsure.Pass = $true
+                Context 'When the Resource should be Absent' {
 
-                    Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                        $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                    } -MockWith {
-                        Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                        return $mockCompareSingleServiceAccountEnsureAbsent
+                    It 'Should not throw' {
+                        { Test-TargetResource @testTargetResourceParametersStandAloneAbsent } | Should -Not -Throw
                     }
 
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Ensure             = 'Absent'
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                            $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -Exactly -times 1
                     }
 
-                    Test-TargetResource @testResourceParametersSingle | Should -BeTrue
-                }
-            }
-
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (sMSA)" {
-                $mockCompareSingleServiceAccountNotCompliant = Copy-ArrayObjects $mockCompareSingleServiceAccount
-
-                $testIncorrectParameters = @{
-                    AccountType = 'Group'
-                    Path        = 'WrongPath'
-                    Description = 'WrongDescription'
-                    Ensure      = 'Absent'
-                    DisplayName = 'DisplayNameWrong'
-                }
-
-                $testCases = @()
-                foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
-                {
-                    $objectParameter = $mockCompareSingleServiceAccountNotCompliant | Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
-                    $objectParameter.Expected = $incorrectParameter.Value
-                    $objectParameter.Pass = $false
-
-                    $testCases += @{ Parameter = $incorrectParameter.Name; Value = $incorrectParameter.Value }
-                }
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                    return $mockCompareSingleServiceAccountNotCompliant
-                }
-
-                It "Should return $false when <Parameter> is incorrect" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Value
-                    )
-
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        AccountType        = 'Single'
-                        Path               = $mockPath
-                        Description        = $mockSingleServiceAccount.Description
-                        Ensure             = 'Present'
-                        DisplayName        = ''
+                    It 'Should return $true' {
+                        Test-TargetResource @testTargetResourceParametersStandAloneAbsent | Should -Be $true
                     }
-
-                    $testResourceParametersSingle[$Parameter] = $value
-                    Test-TargetResource @testResourceParametersSingle | Should -BeFalse
-                }
-            }
-
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (gMSA)" {
-                $mockCompareGroupServiceAccountNotCompliant = Copy-ArrayObjects $mockCompareGroupServiceAccount
-
-                $testIncorrectParameters = @{
-                    AccountType = 'Single'
-                    Path        = 'WrongPath'
-                    Description = 'WrongDescription'
-                    Ensure      = 'Absent'
-                    Members     = ''
-                    DisplayName = 'DisplayNameWrong'
-                }
-
-                $testCases = @()
-                foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
-                {
-                    $objectParameter = $mockCompareGroupServiceAccountNotCompliant | Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
-                    $objectParameter.Expected = $incorrectParameter.Value
-                    $objectParameter.Pass = $false
-
-                    $testCases += @{ Parameter = $incorrectParameter.Name; Value = $incorrectParameter.Value }
-                }
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name)"
-                    return $mockCompareGroupServiceAccountNotCompliant
-                }
-
-                It "Should return $false when <Parameter> is incorrect" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Value
-                    )
-
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName  = $mockGroupServiceAccount.Name
-                        MembershipAttribute = 'SamAccountName'
-                        AccountType         = 'Group'
-                        Path                = $mockPath
-                        Description         = $mockGroupServiceAccount.Description
-                        Ensure              = 'Present'
-                        Members             = 'Node1$', 'User1'
-                        DisplayName         = ''
-                    }
-
-                    $testResourceParametersGroup[$Parameter] = $value
-                    Test-TargetResource @testResourceParametersGroup | Should -BeFalse
                 }
             }
         }
         #endregion Function Test-TargetResource
 
-        Describe -Name 'MSFT_ADManagedServiceAccount\New-ADServiceAccountHelper' {
-            BeforeAll {
-                Mock -CommandName New-ADServiceAccount
-            }
-
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (sMSA)" {
-                $testResourceParametersSingle = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                    AccountType        = 'Single'
-                    Path               = $mockPath
-                    Description        = $mockSingleServiceAccount.Description
-                    Ensure             = 'Present'
-                    DisplayName        = 'NewDisplayName'
-                }
-
-                It 'Should call New-ADServiceAccount' {
-                    New-ADServiceAccountHelper @testResourceParametersSingle
-                    Assert-MockCalled -CommandName New-ADServiceAccount -Scope It -Exactly -Times 1
-                }
-            }
-
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (gMSA)" {
-                $testResourceParametersGroup = @{
-                    ServiceAccountName  = $mockGroupServiceAccount.Name
-                    MembershipAttribute = 'SamAccountName'
-                    AccountType         = 'Group'
-                    Path                = $mockPath
-                    Description         = $mockGroupServiceAccount.Description
-                    Ensure              = 'Present'
-                    Members             = 'Node1$', 'User1'
-                    DisplayName         = ''
-                }
-
-                It 'Should call New-ADServiceAccount' {
-                    New-ADServiceAccountHelper @testResourceParametersGroup
-                    Assert-MockCalled -CommandName New-ADServiceAccount -Scope It -Exactly -Times 1
-                }
-            }
-        }
-
         #region Function Set-TargetResource
         Describe -Name 'MSFT_ADManagedServiceAccount\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
-                Mock -CommandName New-ADServiceAccountHelper
+                Mock -CommandName New-ADServiceAccount
                 Mock -CommandName Remove-ADServiceAccount
                 Mock -CommandName Move-ADObject
                 Mock -CommandName Set-ADServiceAccount
+                Mock -CommandName Get-DomainName -MockWith { $mockDomainName }
             }
 
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Present' (sMSA)" {
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                    return $mockCompareSingleServiceAccount
-                }
-
-                $testResourceParametersSingle = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                    AccountType        = 'Single'
-                    Path               = $mockPath
-                    Description        = $mockSingleServiceAccount.Description
-                    Ensure             = 'Present'
-                    DisplayName        = ''
-                }
-
-                It 'Should NOT take any action when all parameters are correct' {
-                    Set-TargetResource @testResourceParametersSingle
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
+            $setTargetResourceParametersStandAlone = @{
+                ServiceAccountName     = $mockAdServiceAccountStandAlone.ServiceAccountName
+                AccountType            = $mockAdServiceAccountStandAlone.AccountType
+                Path                   = $mockPath
+                Description            = $mockAdServiceAccountStandalone.Description
+                Ensure                 = $mockAdServiceAccountStandAlone.Ensure
+                DisplayName            = $mockAdServiceAccountStandAlone.DisplayName
+                KerberosEncryptionType = $mockAdServiceAccountStandAlone.KerberosEncryptionType
             }
 
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Present' (gMSA)" {
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name)"
-                    return $mockCompareGroupServiceAccount
-                }
+            $setTargetResourceParametersStandAloneAbsent = $setTargetResourceParametersStandAlone.Clone()
+            $setTargetResourceParametersStandAloneAbsent.Ensure = 'Absent'
 
-                $testResourceParametersGroup = @{
-                    ServiceAccountName  = $mockGroupServiceAccount.Name
-                    MembershipAttribute = 'SamAccountName'
-                    AccountType         = 'Group'
-                    Path                = $mockPath
-                    Description         = $mockGroupServiceAccount.Description
-                    Ensure              = 'Present'
-                    Members             = 'Node1$', 'User1'
-                    DisplayName         = ''
-                }
-
-                It 'Should NOT take any action when all parameters are correct' {
-                    Set-TargetResource @testResourceParametersGroup
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
+            $setTargetResourceParametersGroup = @{
+                ServiceAccountName        = $mockAdServiceAccountGroup.ServiceAccountName
+                MembershipAttribute       = $mockAdServiceAccountGroup.MembershipAttribute
+                AccountType               = $mockAdServiceAccountGroup.AccountType
+                Path                      = $mockPath
+                Description               = $mockAdServiceAccountGroup.Description
+                Ensure                    = $mockAdServiceAccountGroup.Ensure
+                ManagedPasswordPrincipals = $mockAdServiceAccountGroup.ManagedPasswordPrincipals
+                DisplayName               = $mockAdServiceAccountGroup.Name.DisplayName
+                KerberosEncryptionType    = $mockAdServiceAccountGroup.KerberosEncryptionType
             }
+            Context 'When the Resource should be Present' {
 
-            Context -Name "When the system is in the desired state and 'Ensure' is 'Absent' (Both)" {
-                $mockCompareSingleServiceAccountEnsureAbsent = $mockCompareSingleServiceAccount.Clone()
-                $objectEnsure = $mockCompareSingleServiceAccountEnsureAbsent | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
-                $objectEnsure.Actual = 'Absent'
-                $objectEnsure.Pass = $true
+                Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAlone }
 
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                    return $mockCompareSingleServiceAccountEnsureAbsent
-                }
+                Context 'When the Resource is Present' {
 
-                $testResourceParametersSingle = @{
-                    ServiceAccountName = $mockSingleServiceAccount.Name
-                    Ensure             = 'Absent'
-                }
+                    foreach ($property in $mockAdServiceAccountChanged.Keys)
+                    {
+                        $setTargetResourceParametersChangedProperty = $setTargetResourceParametersGroup.Clone()
+                        $setTargetResourceParametersChangedProperty.$property = $mockAdServiceAccountChanged.$property
 
-                It "Should pass when 'Ensure' is set to 'Absent" {
-                    Set-TargetResource @testResourceParametersSingle
+                        Mock -CommandName Get-TargetResource `
+                            -ParameterFilter { $mockGetAdServiceAccountResultsGroup.Name -eq $ServiceAccountName } `
+                            -MockWith { $mockGetTargetResourceResultsGroup }
 
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
-            }
+                        It "Should call the correct mocks when $property has changed" {
+                            Set-TargetResource @setTargetResourceParametersChangedProperty
 
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (sMSA)" {
-                $mockCompareSingleServiceAccountNotCompliantPath = Copy-ArrayObjects $mockCompareSingleServiceAccount
-                $mockCompareSingleServiceAccountNotCompliantOtherParameters = Copy-ArrayObjects $mockCompareSingleServiceAccount
-                $mockCompareSingleServiceAccountNotCompliantAccountType = Copy-ArrayObjects $mockCompareSingleServiceAccount
-                $mockCompareSingleServiceAccountNotCompliantEnsure = Copy-ArrayObjects $mockCompareSingleServiceAccount
-
-                #region Incorrect Path setup
-                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
-                $objectPath.Expected = 'WrongPath'
-                $objectPath.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName -and $Path -eq $objectPath.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name) and Path '$($objectPath.Expected)'"
-                    return $mockCompareSingleServiceAccountNotCompliantPath
-                }
-                #endregion Incorrect Path setup
-
-                It "Should call 'Move-ADObject' when 'Path' is incorrect" {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Path               = $objectPath.Expected
+                            Assert-MockCalled -CommandName Get-TargetResource `
+                                -ParameterFilter { $ServiceAccountName -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
+                                -Scope It -Exactly -Times 1
+                            Assert-MockCalled -CommandName New-ADServiceAccount -Scope It -Exactly -Times 0
+                            Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
+                            Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
+                            Assert-MockCalled -CommandName Set-ADServiceAccount `
+                                -ParameterFilter { $Identity -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
+                                -Scope It -Exactly -Times 1
+                        }
                     }
 
-                    Set-TargetResource @testResourceParametersSingle
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
+                    Context 'When ''Set-AdServiceAccount'' throws an exception' {
+                        Mock -CommandName Set-ADServiceAccount -MockWith { throw 'UnexpectedError' }
 
-                #region Incorrect parameter test setup
-                $testIncorrectParameters = @{
-                    Description = 'WrongDescription'
-                    DisplayName = 'WrongDisplayName'
-                }
-
-                $testCases = @()
-                foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
-                {
-                    $objectParameter = $mockCompareSingleServiceAccountNotCompliantOtherParameters |
-                                            Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
-                    $objectParameter.Expected = $incorrectParameter.Value
-                    $objectParameter.Pass = $false
-
-                    $testCases += @{ Parameter = $incorrectParameter.Name; Value = $incorrectParameter.Value }
-                }
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName -and (
-                        $Description -eq $testIncorrectParameters.Description -or
-                        $DisplayName -eq $testIncorrectParameters.DisplayName
-                    )
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name) and incorrect parameters"
-                    return $mockCompareSingleServiceAccountNotCompliantOtherParameters
-                }
-                #endregion Incorrect parameter test setup
-
-                It "Should call 'Set-ADServiceAccount' when '<Parameter>' is incorrect" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Value
-                    )
-
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                    }
-                    $testResourceParametersSingle[$Parameter] = $Value
-
-                    Set-TargetResource @testResourceParametersSingle
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 1
-                }
-
-                #region Incorrect Account type setup
-                $objectAccountType = $mockCompareSingleServiceAccountNotCompliantAccountType | Where-Object -FilterScript {$_.Parameter -eq 'AccountType'}
-                $objectAccountType.Expected = 'Group'
-                $objectAccountType.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName -and $AccountType -eq $objectAccountType.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name) and AccountType '$($objectAccountType.Expected)'"
-                    return $mockCompareSingleServiceAccountNotCompliantAccountType
-                }
-                #endregion Incorrect Account type setup
-
-                It "Should NOT call 'Remove-ADServiceAccount, New-ADServiceAccountHelper' when 'AccountType' is incorrect and 'AccountTypeForce' is false" {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        AccountType        = $objectAccountType.Expected
-                        AccountTypeForce   = $false
+                        It 'Should throw the correct exception' {
+                            { Set-TargetResource  @setTargetResourceParametersChangedProperty } |
+                                Should -Throw ($script:localizedData.SettingManagedServiceAccountError -f `
+                                        $setTargetResourceParametersChangedProperty.AccountType, `
+                                        $setTargetResourceParametersChangedProperty.ServiceAccountName)
+                        }
                     }
 
-                    # Check if Warning is returned
-                    Set-TargetResource @testResourceParametersSingle 3>&1 | Should -Not -Be $null
+                    Context 'When the Resource has a changed AccountType' {
+                        $setTargetResourceParametersChangedAccountType = $setTargetResourceParametersStandAlone.Clone()
+                        $setTargetResourceParametersChangedAccountType.AccountType = 'Group'
 
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
+                        Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAlone }
 
-                It "Should call 'Remove-ADServiceAccount, New-ADServiceAccountHelper' when 'AccountType' is incorrect and 'AccountTypeForce' is true" {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        AccountType        = 'Group'
-                        AccountTypeForce   = $true
+                        It 'Should call the correct mocks' {
+                            Set-TargetResource @setTargetResourceParametersChangedAccountType
+
+                            Assert-MockCalled -CommandName Get-TargetResource `
+                                -ParameterFilter { $ServiceAccountName -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName New-ADServiceAccount `
+                                -ParameterFilter { $Name -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Remove-ADServiceAccount `
+                                -ParameterFilter { $Identity -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                            Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                        }
+
+                        Context 'When ''Remove-AdServiceAccount'' throws an exception' {
+                            Mock -CommandName Remove-ADServiceAccount -MockWith { throw 'UnexpectedError' }
+
+                            It 'Should throw the correct exception' {
+                                { Set-TargetResource  @setTargetResourceParametersChangedAccountType } |
+                                    Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f `
+                                            $setTargetResourceParametersChangedAccountType.AccountType, `
+                                            $setTargetResourceParametersChangedAccountType.ServiceAccountName)
+                            }
+                        }
                     }
 
-                    Set-TargetResource @testResourceParametersSingle
+                    Context 'When the Resource has a changed Path' {
+                        $setTargetResourceParametersChangedPath = $setTargetResourceParametersStandAlone.Clone()
+                        $setTargetResourceParametersChangedPath.Path = $mockChangedPath
 
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 1
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
+                        Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAlone }
+
+                        It 'Should call the correct mocks' {
+                            Set-TargetResource @setTargetResourceParametersChangedPath
+
+                            Assert-MockCalled -CommandName Get-TargetResource `
+                                -ParameterFilter { $ServiceAccountName -eq $setTargetResourceParametersChangedPath.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Move-ADObject `
+                                -ParameterFilter { $Identity -eq $mockGetTargetResourceResultsStandAlone.DistinguishedName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                        }
+
+                        Context 'When ''Move-AdObject'' throws an exception' {
+                            Mock -CommandName Move-AdObject -MockWith { throw 'UnexpectedError' }
+
+                            It 'Should throw the correct exception' {
+                                { Set-TargetResource  @setTargetResourceParametersChangedPath } |
+                                    Should -Throw ($script:localizedData.MovingManagedServiceAccountError -f `
+                                            $setTargetResourceParametersChangedPath.AccountType, `
+                                            $setTargetResourceParametersChangedPath.ServiceAccountName, `
+                                            $mockGetTargetResourceResultsStandAlone.Path, `
+                                            $setTargetResourceParametersChangedPath.Path)
+                            }
+                        }
+                    }
                 }
 
-                #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareSingleServiceAccountNotCompliantEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
-                $objectEnsure.Expected = 'Absent'
-                $objectEnsure.Pass = $false
+                Context 'When the Resource is Absent' {
+                    Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAloneAbsent }
 
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName -and $Ensure -eq $objectEnsure.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name) and Ensure '$($objectEnsure.Expected)'"
-                    return $mockCompareSingleServiceAccountNotCompliantEnsure
-                }
-                #endregion Incorrect Ensure type setup
-
-                It "Should call 'Remove-ADServiceAccount' when 'Ensure' is set to 'Absent'" {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Ensure             = $objectEnsure.Expected
+                    It 'Should not throw' {
+                        { Set-TargetResource @setTargetResourceParametersStandAlone } | Should -Not -Throw
                     }
 
-                    Set-TargetResource @testResourceParametersSingle
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
-
-            }
-
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (gMSA)" {
-                $mockCompareGroupServiceAccountNotCompliantPath = Copy-ArrayObjects $mockCompareGroupServiceAccount
-                $mockCompareGroupServiceAccountNotCompliantOtherParameters = Copy-ArrayObjects $mockCompareGroupServiceAccount
-                $mockCompareGroupServiceAccountNotCompliantAccountType = Copy-ArrayObjects $mockCompareGroupServiceAccount
-                $mockCompareGroupServiceAccountNotCompliantEnsure = Copy-ArrayObjects $mockCompareGroupServiceAccount
-
-                #region Incorrect Path setup
-                $objectPath = $mockCompareGroupServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
-                $objectPath.Expected = 'WrongPath'
-                $objectPath.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $Path -eq $objectPath.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name) and Path '$($objectPath.Expected)'"
-                    return $mockCompareGroupServiceAccountNotCompliantPath
-                }
-                #endregion Incorrect Path setup
-
-                It "Should call 'Move-ADObject' when 'Path' is incorrect" {
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName = $mockGroupServiceAccount.Name
-                        AccountType        = 'Group'
-                        Path               = $objectPath.Expected
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                            $ServiceAccountName -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName New-ADServiceAccount `
+                            -ParameterFilter { $Name -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                        Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                     }
 
-                    Set-TargetResource @testResourceParametersGroup
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
+                    Context 'When ''New-AdServiceAccount'' throws an exception' {
+                        Mock -CommandName New-AdServiceAccount -MockWith { throw 'UnexpectedError' }
 
-                #region Incorrect parameter test setup
-                $testIncorrectParameters = @{
-                    Description = 'WrongDescription'
-                    DisplayName = 'WrongDisplayName'
-                    Members     = 'WrongUser'
-                }
-
-                $testCases = @()
-                foreach($incorrectParameter in $testIncorrectParameters.GetEnumerator())
-                {
-                    $objectParameter = $mockCompareGroupServiceAccountNotCompliantOtherParameters |
-                                            Where-Object -FilterScript { $_.Parameter -eq $incorrectParameter.Name }
-                    $objectParameter.Expected = $incorrectParameter.Value
-                    $objectParameter.Pass = $false
-
-                    $testCases += @{ Parameter = $incorrectParameter.Name; Value = $incorrectParameter.Value }
-                }
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and (
-                        $Description -eq $testIncorrectParameters.Description -or
-                        $DisplayName -eq $testIncorrectParameters.DisplayName -or
-                        $Members -eq $testIncorrectParameters.Members
-                    )
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name) and incorrect parameters"
-                    return $mockCompareGroupServiceAccountNotCompliantOtherParameters
-                }
-                #endregion Incorrect parameter test setup
-
-                It "Should call 'Set-ADServiceAccount' when '<Parameter>' is incorrect" -TestCases $testCases {
-                    param
-                    (
-                        [Parameter()]
-                        $Parameter,
-
-                        [Parameter()]
-                        $Value
-                    )
-
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName = $mockGroupServiceAccount.Name
-                        AccountType        = 'Group'
+                        It 'Should throw the correct exception' {
+                            { Set-TargetResource  @setTargetResourceParametersStandAlone } |
+                                Should -Throw ($script:localizedData.AddingManagedServiceAccountError -f `
+                                        $setTargetResourceParametersStandAlone.AccountType, `
+                                        $setTargetResourceParametersStandAlone.ServiceAccountName, `
+                                        $setTargetResourceParametersStandAlone.Path)
+                        }
                     }
-                    $testResourceParametersGroup[$Parameter] = $Value
-
-                    Set-TargetResource @testResourceParametersGroup
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 1
-                }
-
-                #region Incorrect Account type setup
-                $objectAccountType = $mockCompareGroupServiceAccountNotCompliantAccountType | Where-Object -FilterScript {$_.Parameter -eq 'AccountType'}
-                $objectAccountType.Expected = 'Single'
-                $objectAccountType.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $AccountType -eq $objectAccountType.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name) and AccountType '$($objectAccountType.Expected)'"
-                    return $mockCompareGroupServiceAccountNotCompliantAccountType
-                }
-                #endregion Incorrect Account type setup
-
-                It "Should NOT call 'Remove-ADServiceAccount, New-ADServiceAccountHelper' when 'AccountType' is incorrect and 'AccountTypeForce' is false" {
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName = $mockGroupServiceAccount.Name
-                        AccountType        = $objectAccountType.Expected
-                        AccountTypeForce   = $false
-                    }
-
-                    # Check if Warning is returned
-                    Set-TargetResource @testResourceParametersGroup 3>&1 | Should -Not -Be $null
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
-
-                It "Should call 'Remove-ADServiceAccount, New-ADServiceAccountHelper' when 'AccountType' is incorrect and 'AccountTypeForce' is true" {
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName = $mockGroupServiceAccount.Name
-                        AccountType        = 'Single'
-                        AccountTypeForce   = $true
-                    }
-
-                    Set-TargetResource @testResourceParametersGroup
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 1
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
-
-                #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareGroupServiceAccountNotCompliantEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
-                $objectEnsure.Expected = 'Absent'
-                $objectEnsure.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockGroupServiceAccount.Name -eq $ServiceAccountName -and $Ensure -eq $objectEnsure.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockGroupServiceAccount.Name) and Ensure '$($objectEnsure.Expected)'"
-                    return $mockCompareGroupServiceAccountNotCompliantEnsure
-                }
-                #endregion Incorrect Ensure type setup
-
-                It "Should call 'Remove-ADServiceAccount' when 'Ensure' is set to 'Absent'" {
-                    $testResourceParametersGroup = @{
-                        ServiceAccountName = $mockGroupServiceAccount.Name
-                        AccountType        = 'Group'
-                        Ensure             = $objectEnsure.Expected
-                    }
-
-                    Set-TargetResource @testResourceParametersGroup
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 0
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 1
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
                 }
             }
 
-            Context -Name "When the system is NOT in the desired state and 'Ensure' is 'Present' (Both)" {
-                $mockCompareSingleServiceAccountNotEnsure = Copy-ArrayObjects $mockCompareSingleServiceAccount
+            Context 'When the Resource should be Absent' {
 
-                #region Incorrect Ensure setup
-                $objectEnsure = $mockCompareSingleServiceAccountNotEnsure | Where-Object -FilterScript {$_.Parameter -eq 'Ensure'}
-                $objectEnsure.Expected = 'Present'
-                $objectEnsure.Actual = 'Absent'
-                $objectEnsure.Pass = $false
+                Context 'When the Resource is Present' {
+                    Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAlone }
 
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name)"
-                    return $mockCompareSingleServiceAccountNotEnsure
-                }
-                #endregion Incorrect Ensure setup
-
-                It "Should call 'New-AdServiceAccount' when 'Ensure' is set to 'Present" {
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Ensure             = $objectEnsure.Expected
+                    It 'Should not throw' {
+                        { Set-TargetResource @setTargetResourceParametersStandAloneAbsent } | Should -Not -Throw
                     }
 
-                    Set-TargetResource @testResourceParametersSingle
-
-                    Assert-MockCalled -CommandName Compare-TargetResourceState -Scope It -Times 1
-                    Assert-MockCalled -CommandName New-ADServiceAccountHelper -Scope It -Times 1
-                    Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
-                    Assert-MockCalled -CommandName Set-ADServiceAccount -Scope It -Exactly -Times 0
-                }
-            }
-
-            Context 'When system cannot connect to domain or other errors' {
-                Mock -CommandName Move-ADObject -MockWith {
-                    Write-Verbose "Calling 'Move-ADObject' and throwing an error"
-                    throw 'Microsoft.ActiveDirectory.Management.ADServerDownException'
-                }
-
-                $mockCompareSingleServiceAccountNotCompliantPath = Copy-ArrayObjects $mockCompareSingleServiceAccount
-
-                #region Incorrect Path setup
-                $objectPath = $mockCompareSingleServiceAccountNotCompliantPath | Where-Object -FilterScript {$_.Parameter -eq 'Path'}
-                $objectPath.Expected = 'WrongPath'
-                $objectPath.Pass = $false
-
-                Mock -CommandName Compare-TargetResourceState -ParameterFilter {
-                    $mockSingleServiceAccount.Name -eq $ServiceAccountName -and $Path -eq $objectPath.Expected
-                } -MockWith {
-                    Write-Verbose "Calling Compare-TargetResourceState with $($mockSingleServiceAccount.Name) and Path '$($objectPath.Expected)'"
-                    return $mockCompareSingleServiceAccountNotCompliantPath
-                }
-                #endregion Incorrect Path setup
-
-                It 'Should call "Move-ADObject" and throw an error when catching any other errors besides "Account Not Found"'{
-                    $testResourceParametersSingle = @{
-                        ServiceAccountName = $mockSingleServiceAccount.Name
-                        Path               = $objectPath.Expected
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                            $ServiceAccountName -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Remove-ADServiceAccount `
+                            -ParameterFilter {
+                            $Identity -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                        Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                     }
-                    { Set-TargetResource  @testResourceParametersSingle -ErrorAction 'SilentlyContinue' } |
-                        Should -Throw ($script:localizedData.AddingManagedServiceAccountError -f $testResourceParametersSingle.ServiceAccountName)
+
+                    Context 'When ''Remove-AdServiceAccount'' throws an exception' {
+                        Mock -CommandName Remove-ADServiceAccount -MockWith { throw 'UnexpectedError' }
+
+                        It 'Should throw the correct exception' {
+                            { Set-TargetResource  @setTargetResourceParametersStandAloneAbsent } |
+                                Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f `
+                                        $setTargetResourceParametersStandAloneAbsent.AccountType, `
+                                        $setTargetResourceParametersStandAloneAbsent.ServiceAccountName)
+                        }
+                    }
+                }
+
+                Context 'When the Resource is Absent' {
+                    Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAloneAbsent }
+
+                    It 'Should not throw' {
+                        { Set-TargetResource @setTargetResourceParametersStandAloneAbsent } | Should -Not -Throw
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource `
+                            -ParameterFilter {
+                            $ServiceAccountName -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -Exactly -Times 1
+                        Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                        Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                    }
                 }
             }
         }
