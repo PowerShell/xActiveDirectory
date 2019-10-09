@@ -4,6 +4,16 @@
 
 - Changes to ActiveDirectoryDsc
   - Resolved custom Script Analyzer rules that was added to the test framework.
+- Changes to ADManagedServiceAccount
+  - KerberosEncryptionType property added.
+  - AccountType parameter ValidateSet changed from ('Group', 'Single') to ('Group', 'Standalone') - Standalone is the correct terminology. ref: https://docs.microsoft.com/en-us/windows/security/identity-protection/access-control/service-accounts.
+AccountType parameter default of Single removed. - Enforce positive choice of account type.
+MembershipAttribute parameter ValidateSet member SID changed to ObjectSid to match result property of Get-AdObject. Current code does not work if SID is specified.
+  - AccountTypeForce parameter removed - unnecessary complication.
+  - Members parameter renamed to ManagedPasswordPrincipals - to closer match Get-AdServiceAccount result property PrincipalsAllowedToRetrieveManagedPassword. This is so that a DelegateToAccountPrincipals parameter can be added later.
+  - Common Compare-ResourcePropertyState function used to replace function specific Compare-TargetResourceState and code refactored.
+  - Resource unit tests refactored to use nested contexts and follow the logic of the module.
+  - Resource Integration tests added.
 - Changes to ADReplicationSite
   - Added 'Description' attribute parameter ([issue #500](https://github.com/PowerShell/ActiveDirectoryDsc/issues/500)).
   - Added Integration testing ([issue #355](https://github.com/PowerShell/ActiveDirectoryDsc/issues/355)).
