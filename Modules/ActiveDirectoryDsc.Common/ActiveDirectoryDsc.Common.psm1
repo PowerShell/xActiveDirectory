@@ -1799,67 +1799,74 @@ function Test-DscPropertyState
         $Values
     )
 
-    $returnValue = $true
-
-    if ($Values.CurrentValue -ne $Values.DesiredValue -or $Values.DesiredValue.GetType().IsArray)
+    if ($null -eq $Values.CurrentValue -and $null -eq $Values.DesiredValue)
     {
-        $desiredType = $Values.DesiredValue.GetType()
+        # Both values are $null so return $true
+        $returnValue = $true
+    }
+    elseif ($null -eq $Values.CurrentValue -or $null -eq $Values.DesiredValue)
+    {
+        # Either CurrentValue or DesiredValue are $null so return $false
+        $returnValue = $false
+    }
+    elseif ($Values.DesiredValue.GetType().IsArray -or $Values.CurrentValue.GetType().IsArray)
+    {
+        $compareObjectParameters = @{
+            ReferenceObject  = $Values.CurrentValue
+            DifferenceObject = $Values.DesiredValue
+        }
 
-        if ($desiredType.IsArray -eq $true)
+        $arrayCompare = Compare-Object @compareObjectParameters
+
+        if ($null -ne $arrayCompare)
         {
-            if ($Values.CurrentValue -and $Values.DesiredValue)
-            {
-                $compareObjectParameters = @{
-                    ReferenceObject  = $Values.CurrentValue
-                    DifferenceObject = $Values.DesiredValue
+            Write-Verbose -Message $script:localizedData.ArrayDoesNotMatch -Verbose
+
+            $arrayCompare |
+                ForEach-Object -Process {
+                    Write-Verbose -Message ($script:localizedData.ArrayValueThatDoesNotMatch -f `
+                            $_.InputObject, $_.SideIndicator) -Verbose
                 }
 
-                $arrayCompare = Compare-Object @compareObjectParameters
-
-                if ($null -ne $arrayCompare)
-                {
-                    Write-Verbose -Message $script:localizedData.ArrayDoesNotMatch -Verbose
-
-                    $arrayCompare |
-                        ForEach-Object -Process {
-                            Write-Verbose -Message ($script:localizedData.ArrayValueThatDoesNotMatch -f $_.InputObject, $_.SideIndicator) -Verbose
-                        }
-
-                    $returnValue = $false
-                }
-            }
-            else
-            {
-                $returnValue = $false
-            }
+            $returnValue = $false
         }
         else
         {
-            $returnValue = $false
-
-            $supportedTypes = @(
-                'String'
-                'Int32'
-                'UInt32'
-                'Int16'
-                'UInt16'
-                'Single'
-                'Boolean'
-            )
-
-            if ($desiredType.Name -notin $supportedTypes)
-            {
-                Write-Warning -Message ($script:localizedData.UnableToCompareType `
-                        -f $fieldName, $desiredType.Name)
-            }
-            else
-            {
-                Write-Verbose -Message (
-                    $script:localizedData.PropertyValueOfTypeDoesNotMatch `
-                        -f $desiredType.Name, $Values.CurrentValue, $Values.DesiredValue
-                ) -Verbose
-            }
+            $returnValue = $true
         }
+    }
+    elseif ($Values.CurrentValue -ne $Values.DesiredValue)
+    {
+        $desiredType = $Values.DesiredValue.GetType()
+
+        $returnValue = $false
+
+        $supportedTypes = @(
+            'String'
+            'Int32'
+            'UInt32'
+            'Int16'
+            'UInt16'
+            'Single'
+            'Boolean'
+        )
+
+        if ($desiredType.Name -notin $supportedTypes)
+        {
+            Write-Warning -Message ($script:localizedData.UnableToCompareType `
+                    -f $fieldName, $desiredType.Name)
+        }
+        else
+        {
+            Write-Verbose -Message (
+                $script:localizedData.PropertyValueOfTypeDoesNotMatch `
+                    -f $desiredType.Name, $Values.CurrentValue, $Values.DesiredValue
+            ) -Verbose
+        }
+    }
+    else
+    {
+        $returnValue = $true
     }
 
     return $returnValue

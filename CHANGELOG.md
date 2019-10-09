@@ -11,6 +11,8 @@
 - Changes to ADReplicationSubnet
   - Added 'Description' attribute parameter ([issue #503](https://github.com/PowerShell/ActiveDirectoryDsc/issues/500))
   - Added Integration testing ([issue #357](https://github.com/PowerShell/ActiveDirectoryDsc/issues/357))
+- Changes to ActiveDirectoryDsc.Common
+  - Fix `Test-DscPropertyState` Failing when Comparing $Null and Arrays. ([issue #513](https://github.com/PowerShell/ActiveDirectoryDsc/issues/513))
 
 ## 4.1.0.0
 

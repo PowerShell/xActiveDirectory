@@ -1806,6 +1806,51 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
 
                 Test-DscPropertyState -Values $mockValues | Should -BeFalse
             }
+
+            It 'Should return false when evaluating an array, but the desired value is $null' {
+                $mockValues = @{
+                    CurrentValue = @('1','2')
+                    DesiredValue = $null
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -BeFalse
+            }
+
+            It 'Should return false when evaluating an array, but the current value is an empty array' {
+                $mockValues = @{
+                    CurrentValue = @()
+                    DesiredValue = @('1','2')
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -BeFalse
+            }
+
+            It 'Should return false when evaluating an array, but the desired value is an empty array' {
+                $mockValues = @{
+                    CurrentValue = @('1','2')
+                    DesiredValue = @()
+                }
+
+                Test-DscPropertyState -Values $mockValues | Should -BeFalse
+            }
+
+            It 'Should return true when evaluating an array, when both values are $null' {
+                $mockValues = @{
+                    CurrentValue = $null
+                    DesiredValue = $null
+                }
+
+                Test-DscPropertyState -Values $mockValues -Verbose | Should -BeTrue
+            }
+
+            It 'Should return true when evaluating an array, when both values are an empty array' {
+                $mockValues = @{
+                    CurrentValue = @()
+                    DesiredValue = @()
+                }
+
+                Test-DscPropertyState -Values $mockValues -Verbose | Should -BeTrue
+            }
         }
 
         Context -Name 'When passing invalid types for DesiredValue' {
