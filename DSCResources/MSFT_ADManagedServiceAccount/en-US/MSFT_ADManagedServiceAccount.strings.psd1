@@ -17,5 +17,6 @@ ConvertFrom-StringData @'
     SettingManagedServiceAccountError             = Error setting {0} Account '{1}'. (MSA0015)
     MovingManagedServiceAccountError              = Error moving {0} Account '{1}' from '{2}' to '{3}'. (MSA0016)
     RetrievingManagedServiceAccountError          = Error retrieving Account '{0}'. (MSA0017)
-    RetrievingManagedPasswordPrincipalsError      = Error Retrieving Principal '{0}'. (MSA0018)
+    RetrievingManagedPasswordPrincipalsError      = Error retrieving Principal '{0}'. (MSA0018)
+    GettingADDomainError                          = Error getting Active Directory Domain details. (MSA0019)
 '@

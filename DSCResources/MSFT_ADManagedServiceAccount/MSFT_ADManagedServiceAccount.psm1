@@ -510,17 +510,17 @@ function Set-TargetResource
 
             $newAdServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
 
-            if ($Description)
+            if ($PSBoundParameters.ContainsKey('Description'))
             {
                 $newAdServiceAccountParameters.Description = $Description
             }
 
-            if ($DisplayName)
+            if ($PSBoundParameters.ContainsKey('DisplayName'))
             {
                 $newAdServiceAccountParameters.DisplayName = $DisplayName
             }
 
-            if ($Path)
+            if ($PSBoundParameters.ContainsKey('Path'))
             {
                 $newAdServiceAccountParameters.Path = $Path
             }
@@ -535,7 +535,7 @@ function Set-TargetResource
                 # Create group managed service account
                 $newAdServiceAccountParameters.DNSHostName = "$ServiceAccountName.$(Get-DomainName)"
 
-                if ($ManagedPasswordPrincipals)
+                if ($PSBoundParameters.ContainsKey('ManagedPasswordPrincipals'))
                 {
                     $newAdServiceAccountParameters.PrincipalsAllowedToRetrieveManagedPassword = `
                         $ManagedPasswordPrincipals
@@ -547,10 +547,20 @@ function Set-TargetResource
             }
             catch
             {
-                if ($Path -eq '')
+                if (-not $PSBoundParameters.ContainsKey('Path'))
                 {
-                    $Path = 'Managed Service Accounts'
+                    # Get default MSA path as one has not been specified
+                    try {
+                        $DomainDN = (Get-ADDomain).DistinguishedName
+                    }
+                    catch {
+                        $errorMessage = $script:localizedData.GettingADDomainError
+                        New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
+                    }
+
+                    $Path = "CN=Managed Service Accounts,$DomainDN"
                 }
+
                 $errorMessage = $script:localizedData.AddingManagedServiceAccountError -f `
                     $AccountType, $ServiceAccountName, $Path
                 New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
