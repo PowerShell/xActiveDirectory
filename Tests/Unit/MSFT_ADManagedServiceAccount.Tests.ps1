@@ -44,7 +44,7 @@ try
         # Load stub cmdlets and classes.
         Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
-        $mockPath = 'CN=Managed Service Accounts,DC=contoso,DC=com'
+        $mockDefaultMsaPath = 'CN=Managed Service Accounts,DC=contoso,DC=com'
         $mockChangedPath = 'OU=Service Accounts,DC=contoso,DC=com'
         $mockDomainController = 'MockDC'
         $mockDomainName = 'contoso.com'
@@ -75,7 +75,7 @@ try
         $mockAdServiceAccountStandalone = @{
             ServiceAccountName        = 'TestSMSA'
             AccountType               = 'Standalone'
-            DistinguishedName         = "CN=TestSMSA,$mockPath"
+            DistinguishedName         = "CN=TestSMSA,$mockDefaultMsaPath"
             Description               = 'Dummy StandAlone service account for unit testing'
             DisplayName               = 'TestSMSA'
             Enabled                   = $true
@@ -108,7 +108,7 @@ try
         $mockAdServiceAccountGroup = @{
             ServiceAccountName        = 'TestGMSA'
             AccountType               = 'Group'
-            DistinguishedName         = "CN=TestGMSA,$mockPath"
+            DistinguishedName         = "CN=TestGMSA,$mockDefaultMsaPath"
             Description               = 'Dummy group service account for unit testing'
             DisplayName               = 'TestGMSA'
             Enabled                   = $true
@@ -163,7 +163,7 @@ try
         $mockGetTargetResourceResultsStandAlone = @{
             ServiceAccountName        = $mockGetAdServiceAccountResultsStandAlone.Name
             DistinguishedName         = $mockGetAdServiceAccountResultsStandAlone.DistinguishedName
-            Path                      = $mockPath
+            Path                      = $mockDefaultMsaPath
             Description               = $mockGetAdServiceAccountResultsStandAlone.Description
             DisplayName               = $mockGetAdServiceAccountResultsStandAlone.DisplayName
             AccountType               = 'Standalone'
@@ -179,7 +179,7 @@ try
         $mockGetTargetResourceResultsGroup = @{
             ServiceAccountName        = $mockGetAdServiceAccountResultsGroup.Name
             DistinguishedName         = $mockGetAdServiceAccountResultsGroup.DistinguishedName
-            Path                      = $mockPath
+            Path                      = $mockDefaultMsaPath
             Description               = $mockGetAdServiceAccountResultsGroup.Description
             DisplayName               = $mockGetAdServiceAccountResultsGroup.DisplayName
             AccountType               = 'Group'
@@ -231,7 +231,7 @@ try
                         -MockWith { $mockGetAdServiceAccountResultsStandAlone }
 
                     Mock -CommandName Get-AdObjectParentDN `
-                        -MockWith { $mockPath }
+                        -MockWith { $mockDefaultMsaPath }
 
                     $result = Get-TargetResource @getTargetResourceParametersStandalone
 
@@ -274,7 +274,7 @@ try
                         -MockWith { $mockADUser }
 
                     Mock -CommandName Get-AdObjectParentDN `
-                        -MockWith { $mockPath }
+                        -MockWith { $mockDefaultMsaPath }
 
                     $result = Get-TargetResource @getTargetResourceParametersGroup
 
@@ -297,12 +297,12 @@ try
                             -ParameterFilter { $Identity -eq $getTargetResourceParametersGroup.ServiceAccountName } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-AdObject `
-                            -ParameterFilter {
-                            $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[0] } `
+                            -ParameterFilter { `
+                                $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[0] } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-AdObject `
-                            -ParameterFilter {
-                            $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[1] } `
+                            -ParameterFilter { `
+                                $Identity -eq $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[1] } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-ADObjectParentDN `
                             -ParameterFilter { $DN -eq $mockGetAdServiceAccountResultsGroup.DistinguishedName } `
@@ -315,8 +315,8 @@ try
 
                     It 'Should throw the correct exception' {
                         { Get-TargetResource  @getTargetResourceParametersStandAlone } |
-                            Should -Throw ($script:localizedData.RetrievingManagedServiceAccountError -f `
-                                    $getTargetResourceParametersStandAlone.ServiceAccountName)
+                            Should -Throw ($script:localizedData.RetrievingManagedServiceAccountError -f
+                                $getTargetResourceParametersStandAlone.ServiceAccountName)
                     }
                 }
 
@@ -339,13 +339,16 @@ try
                 }
 
                 Context 'When Get-AdObject throws an unexpected error' {
+                    Mock -CommandName Get-ADServiceAccount `
+                        -MockWith { $mockGetAdServiceAccountResultsGroup }
+
                     Mock -CommandName Get-ADObject `
                         -MockWith { throw 'UnexpectedError' }
 
                     It 'Should throw the correct exception' {
-                        { Get-TargetResource  @getTargetResourceParametersStandAlone } |
-                            Should -Throw ($script:localizedData.RetrievingManagedServiceAccountError -f `
-                                    $getTargetResourceParametersStandAlone.ServiceAccountName)
+                        { Get-TargetResource  @getTargetResourceParametersGroup } |
+                            Should -Throw ($script:localizedData.RetrievingManagedPasswordPrincipalsError -f
+                                $mockGetAdServiceAccountResultsGroup.PrincipalsAllowedToRetrieveManagedPassword[0])
                     }
                 }
             }
@@ -370,7 +373,8 @@ try
                             -ParameterFilter { $ModuleName -eq 'ActiveDirectory' } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-ADServiceAccount `
-                            -ParameterFilter { $Identity -eq $getTargetResourceParametersStandalone.ServiceAccountName } `
+                            -ParameterFilter { `
+                                $Identity -eq $getTargetResourceParametersStandalone.ServiceAccountName } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Get-AdObject `
                             -Exactly -Times 0
@@ -434,7 +438,8 @@ try
 
                     It 'Should call the expected mocks' {
                         Assert-MockCalled -CommandName Get-TargetResource `
-                            -ParameterFilter { $ServiceAccountName -eq $testTargetResourceParametersStandalone.ServiceAccountName } `
+                            -ParameterFilter { `
+                                $ServiceAccountName -eq $testTargetResourceParametersStandalone.ServiceAccountName } `
                             -Exactly -times 1
                     }
 
@@ -468,7 +473,7 @@ try
                     It 'Should call the expected mocks' {
                         Assert-MockCalled -CommandName Get-TargetResource `
                             -ParameterFilter {
-                                $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
                             -Exactly -times 1
                     }
 
@@ -508,8 +513,8 @@ try
 
                     It 'Should call the expected mocks' {
                         Assert-MockCalled -CommandName Get-TargetResource `
-                            -ParameterFilter {
-                            $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -ParameterFilter { `
+                                $ServiceAccountName -eq $testTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
                             -Exactly -times 1
                     }
 
@@ -524,17 +529,22 @@ try
         #region Function Set-TargetResource
         Describe -Name 'MSFT_ADManagedServiceAccount\Set-TargetResource' -Tag 'Set' {
             BeforeAll {
+                $mockGetAdDomainResults = @{
+                    DistinguishedName = 'DC=' + $mockDomainName.Replace('.', ',DC=')
+                }
+
                 Mock -CommandName New-ADServiceAccount
                 Mock -CommandName Remove-ADServiceAccount
                 Mock -CommandName Move-ADObject
                 Mock -CommandName Set-ADServiceAccount
                 Mock -CommandName Get-DomainName -MockWith { $mockDomainName }
+                Mock -CommandName Get-ADDomain -MockWith { $mockGetAdDomainResults }
             }
 
             $setTargetResourceParametersStandAlone = @{
                 ServiceAccountName     = $mockAdServiceAccountStandAlone.ServiceAccountName
                 AccountType            = $mockAdServiceAccountStandAlone.AccountType
-                Path                   = $mockPath
+                Path                   = $mockDefaultMsaPath
                 Description            = $mockAdServiceAccountStandalone.Description
                 Ensure                 = $mockAdServiceAccountStandAlone.Ensure
                 DisplayName            = $mockAdServiceAccountStandAlone.DisplayName
@@ -548,7 +558,7 @@ try
                 ServiceAccountName        = $mockAdServiceAccountGroup.ServiceAccountName
                 MembershipAttribute       = $mockAdServiceAccountGroup.MembershipAttribute
                 AccountType               = $mockAdServiceAccountGroup.AccountType
-                Path                      = $mockPath
+                Path                      = $mockDefaultMsaPath
                 Description               = $mockAdServiceAccountGroup.Description
                 Ensure                    = $mockAdServiceAccountGroup.Ensure
                 ManagedPasswordPrincipals = $mockAdServiceAccountGroup.ManagedPasswordPrincipals
@@ -574,14 +584,18 @@ try
                             Set-TargetResource @setTargetResourceParametersChangedProperty
 
                             Assert-MockCalled -CommandName Get-TargetResource `
-                                -ParameterFilter { $ServiceAccountName -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
+                                -ParameterFilter { `
+                                    $ServiceAccountName -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
                                 -Scope It -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount -Scope It -Exactly -Times 0
                             Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
                             Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount `
-                                -ParameterFilter { $Identity -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
+                                -ParameterFilter { `
+                                    $Identity -eq $setTargetResourceParametersChangedProperty.ServiceAccountName } `
                                 -Scope It -Exactly -Times 1
+                            Assert-MockCalled -CommandName Get-DomainName -Scope It -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-ADDomain -Scope It -Exactly -Times 0
                         }
                     }
 
@@ -590,9 +604,9 @@ try
 
                         It 'Should throw the correct exception' {
                             { Set-TargetResource  @setTargetResourceParametersChangedProperty } |
-                                Should -Throw ($script:localizedData.SettingManagedServiceAccountError -f `
-                                        $setTargetResourceParametersChangedProperty.AccountType, `
-                                        $setTargetResourceParametersChangedProperty.ServiceAccountName)
+                                Should -Throw ($script:localizedData.SettingManagedServiceAccountError -f
+                                    $setTargetResourceParametersChangedProperty.AccountType,
+                                    $setTargetResourceParametersChangedProperty.ServiceAccountName)
                         }
                     }
 
@@ -606,16 +620,21 @@ try
                             Set-TargetResource @setTargetResourceParametersChangedAccountType
 
                             Assert-MockCalled -CommandName Get-TargetResource `
-                                -ParameterFilter { $ServiceAccountName -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -ParameterFilter { `
+                                    $ServiceAccountName -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount `
-                                -ParameterFilter { $Name -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -ParameterFilter { `
+                                    $Name -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Remove-ADServiceAccount `
-                                -ParameterFilter { $Identity -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                -ParameterFilter { `
+                                    $Identity -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
                                 -Exactly -Times 1
+                            Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 1
                             Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                         }
 
                         Context 'When ''Remove-AdServiceAccount'' throws an exception' {
@@ -623,9 +642,9 @@ try
 
                             It 'Should throw the correct exception' {
                                 { Set-TargetResource  @setTargetResourceParametersChangedAccountType } |
-                                    Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f `
-                                            $setTargetResourceParametersChangedAccountType.AccountType, `
-                                            $setTargetResourceParametersChangedAccountType.ServiceAccountName)
+                                    Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f
+                                        $setTargetResourceParametersChangedAccountType.AccountType,
+                                        $setTargetResourceParametersChangedAccountType.ServiceAccountName)
                             }
                         }
                     }
@@ -648,6 +667,8 @@ try
                                 -ParameterFilter { $Identity -eq $mockGetTargetResourceResultsStandAlone.DistinguishedName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                         }
 
                         Context 'When ''Move-AdObject'' throws an exception' {
@@ -655,11 +676,11 @@ try
 
                             It 'Should throw the correct exception' {
                                 { Set-TargetResource  @setTargetResourceParametersChangedPath } |
-                                    Should -Throw ($script:localizedData.MovingManagedServiceAccountError -f `
-                                            $setTargetResourceParametersChangedPath.AccountType, `
-                                            $setTargetResourceParametersChangedPath.ServiceAccountName, `
-                                            $mockGetTargetResourceResultsStandAlone.Path, `
-                                            $setTargetResourceParametersChangedPath.Path)
+                                    Should -Throw ($script:localizedData.MovingManagedServiceAccountError -f
+                                        $setTargetResourceParametersChangedPath.AccountType,
+                                        $setTargetResourceParametersChangedPath.ServiceAccountName,
+                                        $mockGetTargetResourceResultsStandAlone.Path,
+                                        $setTargetResourceParametersChangedPath.Path)
                             }
                         }
                     }
@@ -668,32 +689,83 @@ try
                 Context 'When the Resource is Absent' {
                     Mock -CommandName Get-TargetResource -MockWith { $mockGetTargetResourceResultsStandAloneAbsent }
 
-                    It 'Should not throw' {
-                        { Set-TargetResource @setTargetResourceParametersStandAlone } | Should -Not -Throw
-                    }
+                    Context 'When the resource is a Standalone Account' {
+                        It 'Should not throw' {
+                            { Set-TargetResource @setTargetResourceParametersStandAlone } | Should -Not -Throw
+                        }
 
-                    It 'Should call the expected mocks' {
-                        Assert-MockCalled -CommandName Get-TargetResource `
-                            -ParameterFilter {
-                            $ServiceAccountName -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
-                            -Exactly -Times 1
-                        Assert-MockCalled -CommandName New-ADServiceAccount `
-                            -ParameterFilter { $Name -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
-                            -Exactly -Times 1
-                        Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
-                        Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
-                        Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
-                    }
+                        It 'Should call the expected mocks' {
+                            Assert-MockCalled -CommandName Get-TargetResource `
+                                -ParameterFilter { `
+                                    $ServiceAccountName -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName New-ADServiceAccount `
+                                -ParameterFilter { $Name -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                            Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
+                        }
 
-                    Context 'When ''New-AdServiceAccount'' throws an exception' {
-                        Mock -CommandName New-AdServiceAccount -MockWith { throw 'UnexpectedError' }
+                        Context 'When "New-AdServiceAccount" throws an exception' {
+                            Mock -CommandName New-AdServiceAccount -MockWith { throw 'UnexpectedError' }
 
-                        It 'Should throw the correct exception' {
-                            { Set-TargetResource  @setTargetResourceParametersStandAlone } |
-                                Should -Throw ($script:localizedData.AddingManagedServiceAccountError -f `
-                                        $setTargetResourceParametersStandAlone.AccountType, `
-                                        $setTargetResourceParametersStandAlone.ServiceAccountName, `
+                            It 'Should throw the correct exception' {
+                                { Set-TargetResource  @setTargetResourceParametersStandAlone } |
+                                    Should -Throw ($script:localizedData.AddingManagedServiceAccountError -f
+                                        $setTargetResourceParametersStandAlone.AccountType,
+                                        $setTargetResourceParametersStandAlone.ServiceAccountName,
                                         $setTargetResourceParametersStandAlone.Path)
+                            }
+
+                            Context 'When the Path property has not been specified' {
+                                $setTargetResourceParametersStandAloneNoPath = $setTargetResourceParametersStandAlone.Clone()
+                                $setTargetResourceParametersStandAloneNoPath.Remove('Path')
+
+                                It 'Should throw the correct exception' {
+                                    { Set-TargetResource  @setTargetResourceParametersStandAloneNoPath } |
+                                        Should -Throw ($script:localizedData.AddingManagedServiceAccountError -f
+                                            $setTargetResourceParametersStandAloneNoPath.AccountType,
+                                            $setTargetResourceParametersStandAloneNoPath.ServiceAccountName,
+                                            $mockDefaultMsaPath)
+                                }
+
+                                It 'Should call the expected mocks' {
+                                    Assert-MockCalled -CommandName Get-ADDomain -Scope Context -Exactly -Times 1
+                                }
+
+                                Context 'when "Get-ADDomain" throws an exception' {
+                                    Mock -CommandName Get-ADDomain -MockWith { throw 'UnexpectedError' }
+
+                                    It 'Should throw the correct exception' {
+                                        { Set-TargetResource  @setTargetResourceParametersStandAloneNoPath } |
+                                            Should -Throw $script:localizedData.GettingADDomainError
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Context 'When the resource is a Group Account' {
+                        It 'Should not throw' {
+                            { Set-TargetResource @setTargetResourceParametersGroup } | Should -Not -Throw
+                        }
+
+                        It 'Should call the expected mocks' {
+                            Assert-MockCalled -CommandName Get-TargetResource `
+                                -ParameterFilter {
+                                $ServiceAccountName -eq $setTargetResourceParametersGroup.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName New-ADServiceAccount `
+                                -ParameterFilter { $Name -eq $setTargetResourceParametersGroup.ServiceAccountName } `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 1
+                            Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
+                            Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                         }
                     }
                 }
@@ -720,6 +792,8 @@ try
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                     }
 
                     Context 'When ''Remove-AdServiceAccount'' throws an exception' {
@@ -727,9 +801,9 @@ try
 
                         It 'Should throw the correct exception' {
                             { Set-TargetResource  @setTargetResourceParametersStandAloneAbsent } |
-                                Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f `
-                                        $setTargetResourceParametersStandAloneAbsent.AccountType, `
-                                        $setTargetResourceParametersStandAloneAbsent.ServiceAccountName)
+                                Should -Throw ($script:localizedData.RemovingManagedServiceAccountError -f
+                                    $setTargetResourceParametersStandAloneAbsent.AccountType,
+                                    $setTargetResourceParametersStandAloneAbsent.ServiceAccountName)
                         }
                     }
                 }
@@ -743,13 +817,15 @@ try
 
                     It 'Should call the expected mocks' {
                         Assert-MockCalled -CommandName Get-TargetResource `
-                            -ParameterFilter {
-                            $ServiceAccountName -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
+                            -ParameterFilter { `
+                                $ServiceAccountName -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
                         Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
                         Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
+                        Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                     }
                 }
             }
