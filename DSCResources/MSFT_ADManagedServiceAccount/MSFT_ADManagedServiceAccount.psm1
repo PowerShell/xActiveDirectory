@@ -550,10 +550,12 @@ function Set-TargetResource
                 if (-not $PSBoundParameters.ContainsKey('Path'))
                 {
                     # Get default MSA path as one has not been specified
-                    try {
+                    try
+                    {
                         $DomainDN = (Get-ADDomain).DistinguishedName
                     }
-                    catch {
+                    catch
+                    {
                         $errorMessage = $script:localizedData.GettingADDomainError
                         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
