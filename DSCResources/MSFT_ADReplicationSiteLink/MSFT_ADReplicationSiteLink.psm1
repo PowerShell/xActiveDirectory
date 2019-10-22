@@ -33,7 +33,7 @@ function Get-TargetResource
 
     try
     {
-        $siteLink = Get-ADReplicationSiteLink -Identity $Name -Properties 'Description'
+        $siteLink = Get-ADReplicationSiteLink -Identity $Name -Properties 'Description', 'Options'
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
@@ -46,6 +46,9 @@ function Get-TargetResource
             ReplicationFrequencyInMinutes = $null
             SitesIncluded                 = $null
             SitesExcluded                 = $SitesExcluded
+            OptionChangeNotification      = $false
+            OptionTwoWaySync              = $false
+            OptionDisableCompression      = $false
             Ensure                        = 'Absent'
         }
         $siteLink = $null
@@ -68,6 +71,15 @@ function Get-TargetResource
             }
         }
 
+        if ($null -eq $siteLink.Options)
+        {
+            $siteLinkOptions = Get-EnabledOptions -OptionValue 0
+        }
+        else
+        {
+            $siteLinkOptions = Get-EnabledOptions -OptionValue $siteLink.Options
+        }
+
         $sitesExcludedEvaluated = $SitesExcluded |
             Where-Object -FilterScript { $_ -notin $siteCommonNames }
 
@@ -78,6 +90,9 @@ function Get-TargetResource
             ReplicationFrequencyInMinutes = $siteLink.ReplicationFrequencyInMinutes
             SitesIncluded                 = $siteCommonNames
             SitesExcluded                 = $sitesExcludedEvaluated
+            OptionChangeNotification      = $siteLinkOptions.USE_NOTIFY
+            OptionTwoWaySync              = $siteLinkOptions.TWOWAY_SYNC
+            OptionDisableCompression      = $siteLinkOptions.DISABLE_COMPRESSION
             Ensure                        = 'Present'
         }
     }
@@ -106,6 +121,15 @@ function Get-TargetResource
 
     .PARAMETER SitesExcluded
         Specifies the list of sites to remove from a site link.
+
+    .PARAMETER OptionChangeNotification
+        Enables or disables Change Notification Replication on a site link. Default value is $false.
+
+    .PARAMETER OptionTwoWaySync
+        Two Way Sync on a site link. Default value is $false.
+
+    .PARAMETER OptionDisableCompression
+        Enables or disables Compression on a site link. Default value is $false.
 
     .PARAMETER Ensure
         Specifies if the site link is created or deleted.
@@ -140,6 +164,18 @@ function Set-TargetResource
         $SitesExcluded,
 
         [Parameter()]
+        [System.Boolean]
+        $OptionChangeNotification = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionTwoWaySync = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionDisableCompression = $false,
+
+        [Parameter()]
         [ValidateSet('Present', 'Absent')]
         [System.String]
         $Ensure = 'Present'
@@ -170,6 +206,8 @@ function Set-TargetResource
                 Identity = $Name
             }
 
+            $replaceParameters = @{}
+
             # build the SitesIncluded hashtable.
             $sitesIncludedParameters = @{ }
             if ($SitesExcluded)
@@ -199,13 +237,57 @@ function Set-TargetResource
                 $setParameters.Add('SitesIncluded', $sitesIncludedParameters)
             }
 
+            # Calculate the Options value for Change Notification replication
+            if ($PSBoundParameters.ContainsKey('OptionChangeNotification'))
+            {
+                $changeNotification = $OptionChangeNotification
+            }
+            else
+            {
+                $changeNotification = $currentADSiteLink.OptionChangeNotification
+            }
+
+            if ($PSBoundParameters.ContainsKey('OptionTwoWaySync'))
+            {
+                $twoWaySync = $OptionTwoWaySync
+            }
+            else
+            {
+                $twoWaySync = $currentADSiteLink.OptionTwoWaySync
+            }
+
+            if ($PSBoundParameters.ContainsKey('OptionDisableCompression'))
+            {
+                $disableCompression = $OptionDisableCompression
+            }
+            else
+            {
+                $disableCompression = $currentADSiteLink.OptionDisableCompression
+            }
+
+            $optionsValue = ConvertTo-EnabledOptions -OptionChangeNotification $changeNotification -OptionTwoWaySync $twoWaySync -OptionDisableCompression $disableCompression
+
+            if ($optionsValue -eq 0)
+            {
+                $setParameters.Add('Clear', 'Options')
+            }
+            else
+            {
+                $replaceParameters.Add('Options', $optionsValue)
+            }
+
             # Add the rest of the parameters.
             foreach ($parameter in $PSBoundParameters.Keys)
             {
-                if ($parameter -notmatch 'SitesIncluded|SitesExcluded|Name|Ensure')
+                if ($parameter -notmatch 'SitesIncluded|SitesExcluded|Name|Ensure|OptionChangeNotification|OptionTwoWaySync|OptionDisableCompression')
                 {
                     $setParameters.Add($parameter, $PSBoundParameters[$parameter])
                 }
+            }
+
+            if ($replaceParameters.Count -gt 0)
+            {
+                $setParameters.Add('Replace', $replaceParameters)
             }
 
             Set-ADReplicationSiteLink @setParameters
@@ -241,6 +323,15 @@ function Set-TargetResource
     .PARAMETER SitesExcluded
         Specifies the list of sites to remove from a site link.
 
+    .PARAMETER OptionChangeNotification
+        Enables or disables Change Notification Replication on a site link. Default value is $false.
+
+    .PARAMETER OptionTwoWaySync
+        Two Way Sync on a site link. Default value is $false.
+
+    .PARAMETER OptionDisableCompression
+        Enables or disables Compression on a site link. Default value is $false.
+
     .PARAMETER Ensure
         Specifies if the site link is created or deleted.
 #>
@@ -273,6 +364,18 @@ function Test-TargetResource
         [Parameter()]
         [System.String[]]
         $SitesExcluded,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionChangeNotification = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionTwoWaySync = $false,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionDisableCompression = $false,
 
         [Parameter()]
         [ValidateSet('Present', 'Absent')]
@@ -309,10 +412,10 @@ function Test-TargetResource
         }
     }
 
-    # Test for Description|ReplicationFrequencyInMinutes|Cost.
     foreach ($parameter in $PSBoundParameters.Keys)
     {
-        if ($parameter -match 'Description|ReplicationFrequencyInMinutes|Cost')
+        # Test for Description|ReplicationFrequencyInMinutes|Cost.
+        if ($parameter -match 'Description|ReplicationFrequencyInMinutes|Cost|OptionChangeNotification|OptionTwoWaySync|OptionDisableCompression')
         {
             if ($PSBoundParameters[$parameter] -ne $currentSiteLink[$parameter])
             {
@@ -351,6 +454,101 @@ function Resolve-SiteLinkName
     $adSite = Get-ADReplicationSite -Identity $SiteName
 
     return $adSite.Name
+}
+
+<#
+    .SYNOPSIS
+        Calculates the options enabled on a Site Link
+
+    .PARAMETER OptionValue
+        The value of currently enabled options
+#>
+function Get-EnabledOptions
+{
+    [OutputType([System.Collections.Hashtable])]
+    [CmdletBinding()]
+
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [System.Int32]
+        $OptionValue
+    )
+
+    $returnValue = @{
+        USE_NOTIFY          = $false
+        TWOWAY_SYNC         = $false
+        DISABLE_COMPRESSION = $false
+    }
+
+    if (1 -band $optionValue)
+    {
+        $returnValue.USE_NOTIFY = $true
+    }
+
+    if (2 -band $optionValue)
+    {
+        $returnValue.TWOWAY_SYNC = $true
+    }
+
+    if (4 -band $optionValue)
+    {
+        $returnValue.DISABLE_COMPRESSION = $true
+    }
+
+    return $returnValue
+}
+
+<#
+    .SYNOPSIS
+        Calculates the options value for the given choices
+
+    .PARAMETER OptionChangeNotification
+        Enable/Disable Change notification replication
+
+    .PARAMETER OptionTwoWaySync
+        Enable/Disable Two Way sync
+
+    .PARAMETER OptionDisableCompression
+        Enable/Disable Compression
+#>
+function ConvertTo-EnabledOptions
+{
+    [OutputType([System.Int32])]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [System.Boolean]
+        $OptionChangeNotification,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionTwoWaySync,
+
+        [Parameter()]
+        [System.Boolean]
+        $OptionDisableCompression
+    )
+
+    $returnValue = 0
+
+    if ($OptionChangeNotification)
+    {
+        $returnValue = $returnValue + 1
+    }
+
+    if ($OptionTwoWaySync)
+    {
+        $returnValue = $returnValue + 2
+    }
+
+    if ($OptionDisableCompression)
+    {
+        $returnValue = $returnValue + 4
+    }
+
+    return $returnValue
 }
 
 Export-ModuleMember -Function *-TargetResource

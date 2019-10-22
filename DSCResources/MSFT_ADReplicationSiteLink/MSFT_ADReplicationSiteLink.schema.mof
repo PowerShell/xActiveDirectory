@@ -9,4 +9,7 @@ class MSFT_ADReplicationSiteLink : OMI_BaseResource
     [Write, Description("Specifies the list of sites included in the site link.")] String SitesIncluded[];
     [Write, Description("Specifies the list of sites to exclude from the site link.")] String SitesExcluded[];
     [Write, Description("Specifies if the site link should be present or absent. Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Write, Description("Enables or disables Change Notification Replication on a site link. Default value is $false.")] Boolean OptionChangeNotification;
+    [Write, Description("Enables or disables Two Way Sync on a site link. Default value is $false.")] Boolean OptionTwoWaySync;
+    [Write, Description("Enables or disables Compression on a site link. Default value is $false.")] Boolean OptionDisableCompression;
 };
