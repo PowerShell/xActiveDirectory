@@ -118,14 +118,16 @@ function Get-TargetResource
         # Resource exists
         if ($adServiceAccount.ObjectClass -eq 'msDS-ManagedServiceAccount')
         {
-            $accountType = 'Standalone'
+            $existingAccountType = 'Standalone'
         }
         else
         {
-            $accountType = 'Group'
+            $existingAccountType = 'Group'
 
             Write-Verbose -Message ($script:localizedData.RetrievingManagedPasswordPrincipalsMessage -f $MembershipAttribute)
+
             $managedPasswordPrincipals = @()
+
             foreach ($identity in $adServiceAccount.PrincipalsAllowedToRetrieveManagedPassword)
             {
                 try
@@ -141,13 +143,14 @@ function Get-TargetResource
                     $errorMessage = $script:localizedData.RetrievingManagedPasswordPrincipalsError -f $identity
                     New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                 }
+
                 $managedPasswordPrincipals += $principal
             }
         }
 
         $targetResource = @{
             ServiceAccountName        = $ServiceAccountName
-            AccountType               = $AccountType
+            AccountType               = $existingAccountType
             Path                      = Get-ADObjectParentDN -DN $adServiceAccount.DistinguishedName
             Description               = $adServiceAccount.Description
             DisplayName               = $adServiceAccount.DisplayName
