@@ -136,6 +136,7 @@ function Get-TargetResource
                 }
                 catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
                 {
+                    # Add unresolved SID as principal if the identity could not be found
                     $principal = $identity
                 }
                 catch
@@ -246,7 +247,8 @@ function Test-TargetResource
     )
 
     # Need to set these parameters to compare if users are using the default parameter values
-    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
+    [HashTable]$parameters = $PSBoundParameters
+    $parameters['MembershipAttribute'] = $MembershipAttribute
 
     $getTargetResourceParameters = @{
         ServiceAccountName  = $ServiceAccountName
@@ -257,7 +259,7 @@ function Test-TargetResource
 
     @($getTargetResourceParameters.Keys) |
         ForEach-Object {
-            if (-not $PSBoundParameters.ContainsKey($_))
+            if (-not $parameters.ContainsKey($_))
             {
                 $getTargetResourceParameters.Remove($_)
             }
@@ -272,7 +274,7 @@ function Test-TargetResource
         {
             # Resource should exist
             $propertiesNotInDesiredState = Compare-ResourcePropertyState `
-                -CurrentValues $getTargetResourceResult -DesiredValues $PSBoundParameters -Verbose:$false | `
+                -CurrentValues $getTargetResourceResult -DesiredValues $parameters -Verbose:$false | `
                     Where-Object -Property InDesiredState -eq $false
 
             if ($propertiesNotInDesiredState)
@@ -386,10 +388,11 @@ function Set-TargetResource
     )
 
     # Need to set these to compare if not specified since user is using defaults
-    $PSBoundParameters['MembershipAttribute'] = $MembershipAttribute
-    $PSBoundParameters.Remove('Ensure') | Out-Null
+    [HashTable]$parameters = $PSBoundParameters
+    $parameters['MembershipAttribute'] = $MembershipAttribute
+    $parameters.Remove('Ensure') | Out-Null
 
-    $adServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters
+    $adServiceAccountParameters = Get-ADCommonParameters @parameters
 
     $getTargetResourceParameters = @{
         ServiceAccountName  = $ServiceAccountName
@@ -400,7 +403,7 @@ function Set-TargetResource
 
     @($getTargetResourceParameters.Keys) |
         ForEach-Object {
-            if (-not $PSBoundParameters.ContainsKey($_))
+            if (-not $parameters.ContainsKey($_))
             {
                 $getTargetResourceParameters.Remove($_)
             }
@@ -416,7 +419,7 @@ function Set-TargetResource
             # Resource is present
             $createNewAdServiceAccount = $false
             $propertiesNotInDesiredState = (
-                Compare-ResourcePropertyState -CurrentValues $getTargetResourceResult -DesiredValues $PSBoundParameters |
+                Compare-ResourcePropertyState -CurrentValues $getTargetResourceResult -DesiredValues $parameters |
                     Where-Object -Property InDesiredState -eq $false)
             if ($propertiesNotInDesiredState)
             {
@@ -440,7 +443,7 @@ function Set-TargetResource
                 }
                 else
                 {
-                    $PSBoundParameters.Remove('AccountType')
+                    $parameters.Remove('AccountType')
                     $setServiceAccountParameters = $adServiceAccountParameters.Clone()
                     $setAdServiceAccountRequired = $false
                     $moveAdServiceAccountRequired = $false
@@ -516,19 +519,19 @@ function Set-TargetResource
             Write-Verbose -Message ($script:localizedData.AddingManagedServiceAccountMessage -f `
                     $AccountType, $ServiceAccountName, $Path)
 
-            $newAdServiceAccountParameters = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
+            $newAdServiceAccountParameters = Get-ADCommonParameters @parameters -UseNameParameter
 
-            if ($PSBoundParameters.ContainsKey('Description'))
+            if ($parameters.ContainsKey('Description'))
             {
                 $newAdServiceAccountParameters.Description = $Description
             }
 
-            if ($PSBoundParameters.ContainsKey('DisplayName'))
+            if ($parameters.ContainsKey('DisplayName'))
             {
                 $newAdServiceAccountParameters.DisplayName = $DisplayName
             }
 
-            if ($PSBoundParameters.ContainsKey('Path'))
+            if ($parameters.ContainsKey('Path'))
             {
                 $newAdServiceAccountParameters.Path = $Path
             }
@@ -543,7 +546,7 @@ function Set-TargetResource
                 # Create group managed service account
                 $newAdServiceAccountParameters.DNSHostName = "$ServiceAccountName.$(Get-DomainName)"
 
-                if ($PSBoundParameters.ContainsKey('ManagedPasswordPrincipals'))
+                if ($parameters.ContainsKey('ManagedPasswordPrincipals'))
                 {
                     $newAdServiceAccountParameters.PrincipalsAllowedToRetrieveManagedPassword = `
                         $ManagedPasswordPrincipals
@@ -556,7 +559,7 @@ function Set-TargetResource
             }
             catch
             {
-                if (-not $PSBoundParameters.ContainsKey('Path'))
+                if (-not $parameters.ContainsKey('Path'))
                 {
                     # Get default MSA path as one has not been specified
                     try
