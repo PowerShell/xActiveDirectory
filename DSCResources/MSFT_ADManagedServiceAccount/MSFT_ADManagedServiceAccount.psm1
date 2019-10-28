@@ -262,16 +262,17 @@ function Test-TargetResource
                 $getTargetResourceParameters.Remove($_)
             }
         }
-    $targetResource = Get-TargetResource @getTargetResourceParameters
 
-    if ($targetResource.Ensure -eq 'Present')
+    $getTargetResourceResult = Get-TargetResource @getTargetResourceParameters
+
+    if ($getTargetResourceResult.Ensure -eq 'Present')
     {
         # Resource exists
         if ($Ensure -eq 'Present')
         {
             # Resource should exist
             $propertiesNotInDesiredState = Compare-ResourcePropertyState `
-                -CurrentValues $targetResource -DesiredValues $PSBoundParameters -Verbose:$false | `
+                -CurrentValues $getTargetResourceResult -DesiredValues $PSBoundParameters -Verbose:$false | `
                     Where-Object -Property InDesiredState -eq $false
 
             if ($propertiesNotInDesiredState)
@@ -396,6 +397,7 @@ function Set-TargetResource
         DomainController    = $DomainController
         MembershipAttribute = $MembershipAttribute
     }
+
     @($getTargetResourceParameters.Keys) |
         ForEach-Object {
             if (-not $PSBoundParameters.ContainsKey($_))
@@ -403,17 +405,18 @@ function Set-TargetResource
                 $getTargetResourceParameters.Remove($_)
             }
         }
-    $targetResource = Get-TargetResource @GetTargetResourceParameters
+
+    $getTargetResourceResult = Get-TargetResource @GetTargetResourceParameters
 
     if ($Ensure -eq 'Present')
     {
         # Resource should be present
-        if ($targetResource.Ensure -eq 'Present')
+        if ($getTargetResourceResult.Ensure -eq 'Present')
         {
             # Resource is present
-            $CreateNewAdServiceAccount = $false
+            $createNewAdServiceAccount = $false
             $propertiesNotInDesiredState = (
-                Compare-ResourcePropertyState -CurrentValues $targetResource -DesiredValues $PSBoundParameters |
+                Compare-ResourcePropertyState -CurrentValues $getTargetResourceResult -DesiredValues $PSBoundParameters |
                     Where-Object -Property InDesiredState -eq $false)
             if ($propertiesNotInDesiredState)
             {
@@ -433,7 +436,7 @@ function Set-TargetResource
                         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
 
-                    $CreateNewAdServiceAccount = $true
+                    $createNewAdServiceAccount = $true
                 }
                 else
                 {
@@ -452,16 +455,18 @@ function Set-TargetResource
                         else
                         {
                             $setAdServiceAccountRequired = $true
+
                             Write-Verbose -Message ($script:localizedData.UpdatingManagedServiceAccountPropertyMessage -f `
                                     $AccountType, $ServiceAccountName, $property.ParameterName, ($property.Expected -join ', '))
+
                             if ($property.ParameterName -eq 'ManagedPasswordPrincipals' -and $AccountType -eq 'Group')
                             {
-                                $setServiceAccountParameters.add('PrincipalsAllowedToRetrieveManagedPassword', `
+                                $setServiceAccountParameters.Add('PrincipalsAllowedToRetrieveManagedPassword', `
                                         $ManagedPasswordPrincipals)
                             }
                             else
                             {
-                                $SetServiceAccountParameters.add($property.ParameterName, $property.Expected)
+                                $SetServiceAccountParameters.Add($property.ParameterName, $property.Expected)
                             }
                         }
                     }
@@ -483,9 +488,9 @@ function Set-TargetResource
                     if ($moveAdServiceAccountRequired)
                     {
                         Write-Verbose -Message ($script:localizedData.MovingManagedServiceAccountMessage -f `
-                                $AccountType, $ServiceAccountName, $targetResource.Path, $Path)
+                                $AccountType, $ServiceAccountName, $getTargetResourceResult.Path, $Path)
                         $moveADObjectParameters = $adServiceAccountParameters.Clone()
-                        $moveADObjectParameters.Identity = $targetResource.DistinguishedName
+                        $moveADObjectParameters.Identity = $getTargetResourceResult.DistinguishedName
                         try
                         {
                             Move-ADObject @moveADObjectParameters -TargetPath $Path
@@ -493,7 +498,7 @@ function Set-TargetResource
                         catch
                         {
                             $errorMessage = $script:localizedData.MovingManagedServiceAccountError -f `
-                                $AccountType, $ServiceAccountName, $targetResource.Path, $Path
+                                $AccountType, $ServiceAccountName, $getTargetResourceResult.Path, $Path
                             New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                         }
                     }
@@ -503,10 +508,10 @@ function Set-TargetResource
         else
         {
             # Resource is absent
-            $CreateNewAdServiceAccount = $true
+            $createNewAdServiceAccount = $true
         }
 
-        if ($CreateNewAdServiceAccount)
+        if ($createNewAdServiceAccount)
         {
             Write-Verbose -Message ($script:localizedData.AddingManagedServiceAccountMessage -f `
                     $AccountType, $ServiceAccountName, $Path)
@@ -544,6 +549,7 @@ function Set-TargetResource
                         $ManagedPasswordPrincipals
                 }
             }
+
             try
             {
                 New-ADServiceAccount @newAdServiceAccountParameters
@@ -555,7 +561,7 @@ function Set-TargetResource
                     # Get default MSA path as one has not been specified
                     try
                     {
-                        $DomainDN = (Get-ADDomain).DistinguishedName
+                        $domainDistinguishedName = (Get-ADDomain).DistinguishedName
                     }
                     catch
                     {
@@ -563,11 +569,15 @@ function Set-TargetResource
                         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
                     }
 
-                    $Path = "CN=Managed Service Accounts,$DomainDN"
+                    $errorMessagePath = "CN=Managed Service Accounts,$domainDistinguishedName"
+                }
+                else
+                {
+                    $errorMessagePath = $Path
                 }
 
                 $errorMessage = $script:localizedData.AddingManagedServiceAccountError -f `
-                    $AccountType, $ServiceAccountName, $Path
+                    $AccountType, $ServiceAccountName, $errorMessagePath
                 New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
         }
@@ -575,11 +585,12 @@ function Set-TargetResource
     else
     {
         # Resource should be absent
-        if ($targetResource.Ensure -eq 'Present')
+        if ($getTargetResourceResult.Ensure -eq 'Present')
         {
             # Resource is present
             Write-Verbose -Message ($script:localizedData.RemovingManagedServiceAccountMessage -f `
                     $AccountType, $ServiceAccountName)
+
             try
             {
                 Remove-ADServiceAccount @adServiceAccountParameters -Confirm:$false

@@ -7,7 +7,7 @@ ConvertFrom-StringData @'
     ManagedServiceAccountNotFoundMessage          = {0} Account '{1}' was not found. (MSA0005)
     RetrievingManagedServiceAccountMessage        = Retrieving Account '{0}'. (MSA0006)
     ManagedServiceAccountInDesiredStateMessage    = {0} Account '{1}' is in the desired state. (MSA0007)
-    UpdatingManagedServiceAccountPropertyMessage  = Updating {0} Account property '{1}' to '{2}'. (MSA0008)
+    UpdatingManagedServiceAccountPropertyMessage  = Updating {0} Account '{1}' property '{2}' to '{3}'. (MSA0008)
     RetrievingManagedPasswordPrincipalsMessage    = Retrieving Principals Allowed To Retrieve Managed Password based on '{0}' property. (MSA0009)
     ResourcePropertyNotInDesiredStateMessage      = {0} Account '{1}' Property '{2}' is not in the desired state. Expected '{3}', actual '{4}'. (MSA0010)
     ResourceExistsButShouldNotMessage             = {0} Account '{1}' exists but should not. (MSA0011)

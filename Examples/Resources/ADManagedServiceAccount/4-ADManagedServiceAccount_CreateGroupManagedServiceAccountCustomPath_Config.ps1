@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 1.0
-.GUID 4ab7581b-8729-4262-ae01-b04d1af51ab2
+.GUID f758390b-0576-416a-9110-a0b26263415e
 .AUTHOR Microsoft Corporation
 .COMPANYNAME Microsoft Corporation
 .COPYRIGHT (c) Microsoft Corporation. All rights reserved.
@@ -19,20 +19,23 @@
 
 <#
     .DESCRIPTION
-        This configuration will create a standalone managed service account in the default 'Managed Service Accounts'
-        container.
+        This configuration will create a group managed service account in the specified path.
 #>
-Configuration ADManagedServiceAccount_CreateManagedServiceAccount_Config
+Configuration ADManagedServiceAccount_CreateGroupManagedServiceAccountCustomPath_Config
 {
     Import-DscResource -Module ActiveDirectoryDsc
 
     Node localhost
     {
-        ADManagedServiceAccount 'ExampleStandaloneMSA'
+        Node localhost
         {
-            Ensure             = 'Present'
-            ServiceAccountName = 'Service01'
-            AccountType        = 'Standalone'
+            ADManagedServiceAccount 'ExampleGroupMSA'
+            {
+                Ensure             = 'Present'
+                ServiceAccountName = 'Service01'
+                AccountType        = 'Group'
+                Path               = 'OU=ServiceAccounts,DC=contoso,DC=com'
+            }
         }
     }
 }

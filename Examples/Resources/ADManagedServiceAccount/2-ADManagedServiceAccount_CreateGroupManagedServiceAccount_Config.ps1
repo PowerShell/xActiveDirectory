@@ -19,7 +19,8 @@
 
 <#
     .DESCRIPTION
-        This configuration will create a group managed service account.
+        This configuration will create a group managed service account in the default 'Managed Service Accounts'
+        container.
 #>
 Configuration ADManagedServiceAccount_CreateGroupManagedServiceAccount_Config
 {
