@@ -4,6 +4,8 @@
 
 - Changes to ADServicePrincipalName
   - Added Integration testing ([issue #358](https://github.com/PowerShell/ActiveDirectoryDsc/issues/358)).
+- Changes to ADKDSKey
+  - Added Integration testing
 
 ## 4.2.0.0
 
