@@ -27,7 +27,6 @@
         'New-ObjectNotFoundException'
         'New-InvalidResultException'
         'Get-LocalizedData'
-        'Test-DscParameterState'
         'Start-ProcessWithTimeout'
         'Assert-Module'
         'Test-DomainMember'

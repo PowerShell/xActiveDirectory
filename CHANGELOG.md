@@ -33,6 +33,7 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
   - Updated PowerShell help files.
   - Updated Wiki link in README.md.
   - Remove verbose parameters from unit tests.
+  - Remove unused common function Test-DscParameterState ([issue #522](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/522)).
 
 ### Fixed
 
