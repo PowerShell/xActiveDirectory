@@ -27,7 +27,7 @@ full release to [PowerShell Gallery](https://www.powershellgallery.com/).
 ## Documentation and Examples
 
 For a full list of resources in ActiveDirectoryDsc and examples on their use, check
-out the [ActiveDirectoryDsc wiki](https://github.com/PowerShell/ActiveDirectoryDsc/wiki).
+out the [ActiveDirectoryDsc wiki](https://github.com/dsccommunity/ActiveDirectoryDsc/wiki).
 
 ## Contributing
 

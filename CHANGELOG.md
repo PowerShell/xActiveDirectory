@@ -29,6 +29,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
   - Common Compare-ResourcePropertyState function used to replace function specific Compare-TargetResourceState and code refactored.
   ([issue #512](https://github.com/PowerShell/ActiveDirectoryDsc/issues/512)).
   - Resource unit tests refactored to use nested contexts and follow the logic of the module.
+- ActiveDirectoryDsc
+  - Updated Wiki link in README.md
 
 ### Fixed
 
