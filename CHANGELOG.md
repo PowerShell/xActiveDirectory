@@ -39,6 +39,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
   - Updated Assert-ADPSDrive with PSProvider Checks ([issue #527](https://github.com/PowerShell/ActiveDirectoryDsc/issues/527)).
 - ADReplicationSite
   - Fixed incorrect evaluation of site configuration state when no description is defined ([issue #534](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/534)).
+- ADComputer
+  - Fixed the SamAcountName property description ([issue #529](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/529)).
 
 ## 4.2.0.0
 

@@ -92,7 +92,7 @@
 
 .PARAMETER SamAccountName
     Read - String
-    Returns the security identifier of the computer object.
+    Returns the SAM account name of the computer object.
 
 .PARAMETER Enabled
     Read - Boolean
