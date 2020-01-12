@@ -35,6 +35,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Fixed
 
+- ActiveDirectoryDsc
+  - Fix tests ErrorAction on DscResource.Test Import-Module.
 - ADObjectPermissionEntry
   - Updated Assert-ADPSDrive with PSProvider Checks ([issue #527](https://github.com/PowerShell/ActiveDirectoryDsc/issues/527)).
 - ADReplicationSite
