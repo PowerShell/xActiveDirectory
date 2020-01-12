@@ -212,7 +212,7 @@ function Set-TargetResource
             $sitesIncludedParameters = @{}
             if ($SitesExcluded)
             {
-                Write-Verbose -Message ($script:localizedData.RemovingSites -f $($SiteExcluded -join ', '), $Name)
+                Write-Verbose -Message ($script:localizedData.RemovingSites -f $($SitesExcluded -join ', '), $Name)
 
                 <#
                     Wrapped in $() as we were getting some weird results without it,
