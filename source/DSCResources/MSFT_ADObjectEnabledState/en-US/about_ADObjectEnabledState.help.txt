@@ -34,7 +34,7 @@
     Specifies the Active Directory Domain Services instance to connect to perform the task.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Specifies the user account credentials to use to perform the task.
 
 .EXAMPLE 1
@@ -82,7 +82,7 @@ Configuration ADObjectEnabledState_CreateClusterComputerAccount_Config
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName xFailoverCluster
+    Import-DscResource -ModuleName xFailoverCluster -ModuleVersion '1.14.1'
 
     node localhost
     {
@@ -128,7 +128,7 @@ Configuration ADObjectEnabledState_EnabledPrestagedClusterComputerAccount_Config
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName xFailoverCluster
+    Import-DscResource -ModuleName xFailoverCluster -ModuleVersion '1.14.1'
 
     node localhost
     {

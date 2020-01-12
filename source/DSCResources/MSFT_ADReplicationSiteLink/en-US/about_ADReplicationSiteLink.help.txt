@@ -21,30 +21,33 @@
     This parameter sets the value of the Description property for the object.
 
 .PARAMETER ReplicationFrequencyInMinutes
-    Write - Sint32
+    Write - SInt32
     Species the frequency (in minutes) for which replication will occur where this site link is in use between sites.
 
 .PARAMETER SitesIncluded
-    Write - String
+    Write - StringArray
     Specifies the list of sites included in the site link.
 
 .PARAMETER SitesExcluded
-    Write - String
+    Write - StringArray
     Specifies the list of sites to exclude from the site link.
-
-.PARAMETER OptionChangeNotification
-        Enables or disables Change Notification Replication on a site link. Default value is $false.
-
-.PARAMETER OptionTwoWaySync
-    Two Way Sync on a site link. Default value is $false.
-
-.PARAMETER OptionDisableCompression
-    Enables or disables Compression on a site link. Default value is $false.
 
 .PARAMETER Ensure
     Write - String
     Allowed values: Present, Absent
     Specifies if the site link should be present or absent. Default value is 'Present'.
+
+.PARAMETER OptionChangeNotification
+    Write - Boolean
+    Enables or disables Change Notification Replication on a site link. Default value is $false.
+
+.PARAMETER OptionTwoWaySync
+    Write - Boolean
+    Enables or disables Two Way Sync on a site link. Default value is $false.
+
+.PARAMETER OptionDisableCompression
+    Write - Boolean
+    Enables or disables Compression on a site link. Default value is $false.
 
 .EXAMPLE 1
 
@@ -91,7 +94,7 @@ Configuration ADReplicationSiteLink_ModifyExistingReplicationSiteLink_Config
 
 .EXAMPLE 3
 
-This configuration will modify an existing AD Replication Site Link.
+This configuration will modify an existing AD Replication Site Link by enabling Replication Options.
 
 Configuration ADReplicationSiteLink_EnableOptions_Config
 {
@@ -113,3 +116,5 @@ Configuration ADReplicationSiteLink_EnableOptions_Config
         }
     }
 }
+
+

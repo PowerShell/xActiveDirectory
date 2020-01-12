@@ -34,7 +34,7 @@
     Specifies the fully qualified domain name (FQDN) of the computer account.
 
 .PARAMETER ServicePrincipalNames
-    Write - String
+    Write - StringArray
     Specifies the service principal names for the computer account.
 
 .PARAMETER UserPrincipalName
@@ -62,7 +62,7 @@
     Specifies the Active Directory Domain Services instance to connect to perform the task.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Specifies the user account credentials to use to perform the task.
 
 .PARAMETER RequestFile
@@ -71,7 +71,7 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies whether the computer account is present or absent. Default value is 'Present'.
 
 .PARAMETER RestoreFromRecycleBin
@@ -242,7 +242,7 @@ Configuration ADComputer_CreateClusterComputerAccount_Config
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName xFailoverCluster
+    Import-DscResource -ModuleName xFailoverCluster -ModuleVersion '1.14.1'
 
     node localhost
     {

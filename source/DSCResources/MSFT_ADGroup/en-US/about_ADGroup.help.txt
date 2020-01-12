@@ -44,7 +44,7 @@
     Display name of the Active Directory group.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Credentials used to enact the change upon.
 
 .PARAMETER DomainController
@@ -52,15 +52,15 @@
     Active Directory domain controller to enact the change upon.
 
 .PARAMETER Members
-    Write - String
+    Write - StringArray
     Active Directory group membership should match membership exactly.
 
 .PARAMETER MembersToInclude
-    Write - String
+    Write - StringArray
     Active Directory group should include these members.
 
 .PARAMETER MembersToExclude
-    Write - String
+    Write - StringArray
     Active Directory group should NOT include these members.
 
 .PARAMETER MembershipAttribute

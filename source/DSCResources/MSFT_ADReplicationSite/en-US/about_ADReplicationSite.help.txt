@@ -10,7 +10,7 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies if the Active Directory replication site should be present or absent. Default value is 'Present'.
 
 .PARAMETER Name
@@ -84,22 +84,4 @@ Configuration ADReplicationSite_RemoveADReplicationSite_Config
     }
 }
 
-.EXAMPLE 4
 
-This configuration will set the AD Relication Site description for
-a site called SeattleSite
-
-Configuration ADReplicationSite_CreateADReplicationSite_Config
-{
-    Import-DscResource -Module ActiveDirectoryDsc
-
-    Node localhost
-    {
-        ADReplicationSite 'SeattleSite'
-        {
-            Ensure      = 'Present'
-            Name        = 'Seattle'
-            Description = 'Seattle Head Office'
-        }
-    }
-}

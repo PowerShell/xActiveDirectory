@@ -22,11 +22,11 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies whether the Organization Unit (OU) is present or absent. Default value is 'Present'.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     The credential to be used to perform the operation on Active Directory.
 
 .PARAMETER ProtectedFromAccidentalDeletion

@@ -14,7 +14,7 @@
     Specifies whether the computer account is present or absent. Default value is 'Present'.
 
 .PARAMETER TargetCredential
-    Required - String
+    Required - PSCredential
     Specifies the credentials to authenticate to the target domain.
 
 .PARAMETER TargetDomainName

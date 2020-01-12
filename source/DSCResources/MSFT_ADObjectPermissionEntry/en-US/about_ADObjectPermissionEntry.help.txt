@@ -13,7 +13,7 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Indicates if the access will be added (Present) or will be removed (Absent). Default value is 'Present'.
 
 .PARAMETER Path
@@ -22,16 +22,16 @@
 
 .PARAMETER IdentityReference
     Key - String
-    Indicates the identity of the principal for the ACE. Use the notation DOMAIN\\SamAccountName for the identity.
+    Indicates the identity of the principal for the ACE. Use the notation DOMAIN\SamAccountName for the identity.
 
 .PARAMETER ActiveDirectoryRights
-    Write - String
-    Allowed values: AccessSystemSecurity,  CreateChild,  Delete,  DeleteChild,  DeleteTree,  ExtendedRight,  GenericAll,  GenericExecute,  GenericRead,  GenericWrite,  ListChildren,  ListObject,  ReadControl,  ReadProperty,  Self,  Synchronize,  WriteDacl,  WriteOwner,  WriteProperty
+    Write - StringArray
+    Allowed values: AccessSystemSecurity, CreateChild, Delete, DeleteChild, DeleteTree, ExtendedRight, GenericAll, GenericExecute, GenericRead, GenericWrite, ListChildren, ListObject, ReadControl, ReadProperty, Self, Synchronize, WriteDacl, WriteOwner, WriteProperty
     A combination of one or more of the ActiveDirectoryRights enumeration values that specifies the rights of the access rule. Default value is 'GenericAll'.
 
 .PARAMETER AccessControlType
     Key - String
-    Allowed values: Allow,  Deny
+    Allowed values: Allow, Deny
     Indicates whether to Allow or Deny access to the target object.
 
 .PARAMETER ObjectType
@@ -40,7 +40,7 @@
 
 .PARAMETER ActiveDirectorySecurityInheritance
     Key - String
-    Allowed values: All,  Children,  Descendents,  None,  SelfAndChildren
+    Allowed values: All, Children, Descendents, None, SelfAndChildren
     One of the 'ActiveDirectorySecurityInheritance' enumeration values that specifies the inheritance type of the access rule.
 
 .PARAMETER InheritedObjectType

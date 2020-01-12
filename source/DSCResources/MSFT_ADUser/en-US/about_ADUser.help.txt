@@ -21,12 +21,12 @@
     Specifies the Security Account Manager (SAM) account name of the user (ldapDisplayName 'sAMAccountName').
 
 .PARAMETER Password
-    Write - String
+    Write - PSCredential
     Specifies a new password value for the account.
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies whether the user account should be present or absent. Default value is 'Present'.
 
 .PARAMETER CommonName
@@ -202,7 +202,7 @@
     Specifies the Active Directory Domain Services instance to use to perform the task.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Specifies the user account credentials to use to perform this task.
 
 .PARAMETER PasswordAuthentication
@@ -223,11 +223,11 @@
     Try to restore the user object from the recycle bin before creating a new one.
 
 .PARAMETER ServicePrincipalNames
-    Write - String
+    Write - StringArray
     Specifies the service principal names for the user account.
 
 .PARAMETER ProxyAddresses
-    Write - String
+    Write - StringArray
     Specifies the proxy addresses for the user account.
 
 .PARAMETER AccountNotDelegated

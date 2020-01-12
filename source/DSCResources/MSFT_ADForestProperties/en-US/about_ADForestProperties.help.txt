@@ -9,7 +9,7 @@
     * Target machine must be running Windows Server 2008 R2 or later.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Specifies the user account credentials to use to perform this task.
 
 .PARAMETER ForestName
@@ -17,27 +17,27 @@
     Specifies the target Active Directory forest for the change.
 
 .PARAMETER ServicePrincipalNameSuffix
-    Write - String
+    Write - StringArray
     Specifies the Service Principal Name (SPN) Suffix(es) to be explicitly defined in the forest and replace existing Service Principal Names. Cannot be used with ServicePrincipalNameSuffixToAdd or ServicePrincipalNameSuffixToRemove.
 
 .PARAMETER ServicePrincipalNameSuffixToAdd
-    Write - String
+    Write - StringArray
     Specifies the Service Principal Name (SPN) Suffix(es) to be added to the forest. Cannot be used with ServicePrincipalNameSuffix.
 
 .PARAMETER ServicePrincipalNameSuffixToRemove
-    Write - String
+    Write - StringArray
     Specifies the Service Principal Name (SPN) Suffix(es) to be removed from the forest. Cannot be used with ServicePrincipalNameSuffix.
 
 .PARAMETER UserPrincipalNameSuffix
-    Write - String
+    Write - StringArray
     Specifies the User Principal Name (UPN) Suffix(es) to be explicitly defined in the forest and replace existing User Principal Names. Cannot be used with UserPrincipalNameSuffixToAdd or UserPrincipalNameSuffixToRemove.
 
 .PARAMETER UserPrincipalNameSuffixToAdd
-    Write - String
+    Write - StringArray
     Specifies the User Principal Name (UPN) Suffix(es) to be added to the forest. Cannot be used with UserPrincipalNameSuffix.
 
 .PARAMETER UserPrincipalNameSuffixToRemove
-    Write - String
+    Write - StringArray
     Specifies the User Principal Name (UPN) Suffix(es) to be removed from the forest. Cannot be used with UserPrincipalNameSuffix.
 
 .EXAMPLE 1

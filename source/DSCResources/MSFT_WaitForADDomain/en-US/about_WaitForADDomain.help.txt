@@ -34,7 +34,7 @@
     Specifies the site in the domain where to look for a domain controller.
 
 .PARAMETER Credential
-    Write - String
+    Write - PSCredential
     Specifies the credentials that are used when accessing the domain, unless the built-in PsDscRunAsCredential is used.
 
 .PARAMETER WaitTimeout

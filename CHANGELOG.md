@@ -30,7 +30,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
   ([issue #512](https://github.com/PowerShell/ActiveDirectoryDsc/issues/512)).
   - Resource unit tests refactored to use nested contexts and follow the logic of the module.
 - ActiveDirectoryDsc
-  - Updated Wiki link in README.md
+  - Updated PowerShell help files.
+  - Updated Wiki link in README.md.
 
 ### Fixed
 

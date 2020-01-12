@@ -10,7 +10,7 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies if the Active Directory replication subnet should be present or absent. Default value is 'Present'.
 
 .PARAMETER Name

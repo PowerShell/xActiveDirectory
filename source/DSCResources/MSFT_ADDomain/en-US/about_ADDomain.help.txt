@@ -13,11 +13,11 @@
     The fully qualified domain name (FQDN) of a new domain. If setting up a child domain this must be set to a single-label DNS name.
 
 .PARAMETER Credential
-    Required - String
+    Required - PSCredential
     Specifies the user name and password that corresponds to the account used to install the domain controller. When adding a child domain these credentials need the correct permission in the parent domain. The credentials will also be used to query for the existence of the domain or child domain. This will not be created as a user in the new domain. The domain administrator password will be the same as the password of the local Administrator of this node.
 
 .PARAMETER SafeModeAdministratorPassword
-    Required - String
+    Required - PSCredential
     Password for the administrator account when the computer is started in Safe Mode.
 
 .PARAMETER ParentDomainName
@@ -29,7 +29,7 @@
     NetBIOS name for the new domain.
 
 .PARAMETER DnsDelegationCredential
-    Write - String
+    Write - PSCredential
     Credential used for creating DNS delegation.
 
 .PARAMETER DatabasePath
@@ -46,12 +46,12 @@
 
 .PARAMETER ForestMode
     Write - String
-    Allowed values: Win2008,  Win2008R2,  Win2012,  Win2012R2,  WinThreshold
+    Allowed values: Win2008, Win2008R2, Win2012, Win2012R2, WinThreshold
     The Forest Functional Level for the entire forest.
 
 .PARAMETER DomainMode
     Write - String
-    Allowed values: Win2008,  Win2008R2,  Win2012,  Win2012R2,  WinThreshold
+    Allowed values: Win2008, Win2008R2, Win2012, Win2012R2, WinThreshold
     The Domain Functional Level for the entire domain.
 
 .PARAMETER DomainExist
@@ -86,7 +86,7 @@ Configuration ADDomain_NewForest_Config
         $SafeModePassword
     )
 
-    Import-DscResource -ModuleName PSDscResources
+    Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
     node 'localhost'
@@ -133,7 +133,7 @@ Configuration ADDomain_NewChildDomain_Config
         $SafeModePassword
     )
 
-    Import-DscResource -ModuleName PSDscResources
+    Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ActiveDirectoryDsc
 
     node 'localhost'

@@ -10,7 +10,7 @@
 
 .PARAMETER Ensure
     Write - String
-    Allowed values: Present,  Absent
+    Allowed values: Present, Absent
     Specifies if the service principal name should be added or remove. Default value is 'Present'.
 
 .PARAMETER ServicePrincipalName

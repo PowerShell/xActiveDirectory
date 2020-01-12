@@ -20,7 +20,7 @@
     Specifies the feature to be activated
 
 .PARAMETER EnterpriseAdministratorCredential
-    Required - String
+    Required - PSCredential
     Specifies the user account credentials to use to perform this task.
 
 .PARAMETER Enabled
