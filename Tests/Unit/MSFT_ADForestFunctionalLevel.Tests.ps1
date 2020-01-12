@@ -37,7 +37,6 @@ try
         $mockDefaultParameters = @{
             ForestIdentity = 'contoso.com'
             ForestMode = 'Windows2016Forest'
-            Verbose = $true
         }
 
         Describe 'MSFT_ADForestFunctionalLevel\Get-TargetResource' -Tag 'Get' {

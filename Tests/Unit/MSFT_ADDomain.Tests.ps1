@@ -52,7 +52,6 @@ try
             DomainName = $mockDomainName
             Credential = $mockAdministratorCredential
             SafeModeAdministratorPassword = $mockAdministratorCredential
-            Verbose = $true
         }
 
         #region Function Get-TargetResource

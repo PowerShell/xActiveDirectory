@@ -47,7 +47,6 @@ try
                     TargetDomainName                    = $mockTargetDomainName
                     TargetCredential = $mockCredential
                     TrustDirection                      = 'Outbound'
-                    Verbose                             = $false
                 }
             }
 
@@ -241,7 +240,6 @@ try
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
                     TargetCredential = $mockCredential
-                    Verbose                             = $true
                 }
             }
 
@@ -386,7 +384,6 @@ try
                     SourceDomainName                    = $mockSourceDomainName
                     TargetDomainName                    = $mockTargetDomainName
                     TargetCredential = $mockCredential
-                    Verbose                             = $true
                 }
 
                 $mockGetTargetResource_Absent = {
@@ -608,7 +605,6 @@ try
                     TargetDomainName                    = $mockTargetDomainName
                     TargetCredential = $mockCredential
                     TrustDirection                      = 'Outbound'
-                    Verbose                             = $true
                 }
             }
 
@@ -1020,7 +1016,6 @@ try
                     TargetDomainName                    = $mockTargetDomainName
                     TargetCredential = $mockCredential
                     TrustType                           = $TrustType
-                    Verbose                             = $true
                 }
 
                 { Get-TrustSourceAndTargetObject @testParameters } | Should -Not -Throw

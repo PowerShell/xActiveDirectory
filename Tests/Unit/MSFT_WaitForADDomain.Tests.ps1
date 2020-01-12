@@ -148,7 +148,7 @@ try
                             Mock -CommandName Write-Verbose -ParameterFilter {
                                 $Message -eq ($script:localizedData.ImpersonatingCredentials -f $mockBuiltInCredentialName)
                             } -MockWith {
-                                Write-Verbose -Message ('VERBOSE OUTPUT FROM MOCK: {0}' -f $Message) -Verbose
+                                Write-Verbose -Message ('VERBOSE OUTPUT FROM MOCK: {0}' -f $Message)
                             }
 
                             $getTargetResourceParameters = $mockDefaultParameters.Clone()

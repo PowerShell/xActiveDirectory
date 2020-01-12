@@ -32,6 +32,7 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - ActiveDirectoryDsc
   - Updated PowerShell help files.
   - Updated Wiki link in README.md.
+  - Remove verbose parameters from unit tests.
 
 ### Fixed
 

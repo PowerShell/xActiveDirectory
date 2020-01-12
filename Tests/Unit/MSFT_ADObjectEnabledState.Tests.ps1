@@ -64,7 +64,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -85,7 +84,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -119,7 +117,6 @@ try
                                 DomainController = $mockDomainController
                                 Credential       = $mockCredential
                                 Enabled          = $false
-                                Verbose          = $true
                             }
                         }
 
@@ -149,7 +146,6 @@ try
                                 DomainController = $mockDomainController
                                 Credential       = $mockCredential
                                 Enabled          = $true
-                                Verbose          = $true
                             }
                         }
 
@@ -178,7 +174,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -202,7 +197,6 @@ try
                             ObjectClass      = $mockObjectClass_Computer
                             Enabled          = $false
                             DomainController = $mockDomainController
-                            Verbose          = $true
                         }
                     }
 
@@ -226,7 +220,6 @@ try
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
                             Credential  = $mockCredential
-                            Verbose     = $true
                         }
                     }
 
@@ -277,7 +270,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -297,7 +289,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $true
-                            Verbose     = $true
                         }
                     }
 
@@ -319,7 +310,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $true
-                            Verbose     = $true
                         }
                     }
 
@@ -339,7 +329,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -388,7 +377,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $true
-                            Verbose     = $true
                         }
                     }
 
@@ -407,7 +395,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 
@@ -428,7 +415,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $true
-                            Verbose     = $true
                         }
                     }
 
@@ -449,7 +435,6 @@ try
                             Identity    = $mockComputerNamePresent
                             ObjectClass = $mockObjectClass_Computer
                             Enabled     = $false
-                            Verbose     = $true
                         }
                     }
 

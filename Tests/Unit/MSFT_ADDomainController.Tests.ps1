@@ -54,13 +54,11 @@ try
         $testDefaultParams = @{
             Credential = $testAdminCredential
             SafeModeAdministratorPassword = $testAdminCredential
-            Verbose                       = $true
         }
 
         $testDefaultParamsRODC = @{
             Credential = $testAdminCredential
             SafeModeAdministratorPassword = $testAdminCredential
-            Verbose                       = $true
             ReadOnlyReplica               = $true
             SiteName                      = $correctSiteName
         }

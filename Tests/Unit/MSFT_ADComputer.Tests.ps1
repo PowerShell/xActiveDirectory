@@ -117,7 +117,6 @@ try
                             RequestFile           = 'TestDrive:\ODJ.txt'
                             RestoreFromRecycleBin = $false
                             EnabledOnCreation     = $false
-                            Verbose               = $true
                         }
                     }
 
@@ -166,7 +165,6 @@ try
                             RequestFile           = 'TestDrive:\ODJ.txt'
                             RestoreFromRecycleBin = $false
                             EnabledOnCreation     = $false
-                            Verbose               = $true
                         }
                     }
 
@@ -210,7 +208,6 @@ try
 
                         $getTargetResourceParameters = @{
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -233,7 +230,6 @@ try
                         $getTargetResourceParameters = @{
                             ComputerName     = $mockComputerNamePresent
                             DomainController = 'DC01'
-                            Verbose          = $true
                         }
                     }
 
@@ -256,7 +252,6 @@ try
                         $getTargetResourceParameters = @{
                             ComputerName = $mockComputerNamePresent
                             Credential   = $mockCredential
-                            Verbose      = $true
                         }
                     }
 
@@ -335,7 +330,6 @@ try
                         $testTargetResourceParameters = @{
                             Ensure       = 'Absent'
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -358,7 +352,6 @@ try
                             RequestFile           = 'TestDrive:\ODJ.txt'
                             RestoreFromRecycleBin = $false
                             EnabledOnCreation     = $false
-                            Verbose               = $true
                         }
                     }
 
@@ -377,7 +370,6 @@ try
                         $testTargetResourceParameters = @{
                             ComputerName          = $mockComputerNamePresent
                             ServicePrincipalNames = $mockServicePrincipalNames
-                            Verbose               = $true
                         }
                     }
 
@@ -398,7 +390,6 @@ try
                         $testTargetResourceParameters = @{
                             Ensure       = 'Present'
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -417,7 +408,6 @@ try
                         $testTargetResourceParameters = @{
                             Ensure       = 'Absent'
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -552,7 +542,6 @@ try
                             $testTargetResourceParameters = @{
                                 ComputerName   = $mockComputerNamePresent
                                 $ParameterName = $Value
-                                Verbose        = $true
                             }
 
                             $testTargetResourceResult = Test-TargetResource @testTargetResourceParameters
@@ -633,7 +622,6 @@ try
                         $setTargetResourceParameters = @{
                             Ensure       = 'Absent'
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -658,7 +646,6 @@ try
                             RequestFile           = 'TestDrive:\ODJ.txt'
                             RestoreFromRecycleBin = $false
                             EnabledOnCreation     = $false
-                            Verbose               = $true
                         }
                     }
 
@@ -679,7 +666,6 @@ try
                         $setTargetResourceParameters = @{
                             ComputerName          = $mockComputerNamePresent
                             ServicePrincipalNames = $mockServicePrincipalNames_DefaultValues
-                            Verbose               = $true
                         }
                     }
 
@@ -732,7 +718,6 @@ try
                             $setTargetResourceParameters = @{
                                 Ensure       = 'Present'
                                 ComputerName = $mockComputerNamePresent
-                                Verbose      = $true
                             }
                         }
 
@@ -752,7 +737,6 @@ try
                                 Ensure       = 'Present'
                                 ComputerName = $mockComputerNamePresent
                                 Path         = $mockParentContainer
-                                Verbose      = $true
                             }
                         }
 
@@ -774,7 +758,6 @@ try
                         $setTargetResourceParameters = @{
                             Ensure       = 'Absent'
                             ComputerName = $mockComputerNamePresent
-                            Verbose      = $true
                         }
                     }
 
@@ -795,7 +778,6 @@ try
                         $setTargetResourceParameters = @{
                             ComputerName      = $mockComputerNamePresent
                             EnabledOnCreation = $true
-                            Verbose           = $true
                         }
                     }
 
@@ -818,7 +800,6 @@ try
                         $setTargetResourceParameters = @{
                             ComputerName      = $mockComputerNamePresent
                             EnabledOnCreation = $false
-                            Verbose           = $true
                         }
                     }
 
@@ -870,7 +851,6 @@ try
                             Path             = $mockParentContainer
                             DomainController = 'dc01.contoso.com'
                             RequestFile      = 'c:\ODJTest.txt'
-                            Verbose          = $true
                         }
                     }
 
@@ -908,7 +888,6 @@ try
                         $setTargetResourceParameters = @{
                             ComputerName = $mockComputerNamePresent
                             RequestFile  = 'c:\ODJTest.txt'
-                            Verbose      = $true
                         }
                     }
 
@@ -981,7 +960,6 @@ try
                             $setTargetResourceParameters = @{
                                 ComputerName   = $mockComputerNamePresent
                                 $ParameterName = $Value
-                                Verbose        = $true
                             }
 
                             { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
@@ -1048,7 +1026,6 @@ try
                             $setTargetResourceParameters = @{
                                 ComputerName   = $mockComputerNamePresent
                                 $ParameterName = $Value
-                                Verbose        = $true
                             }
 
                             { Set-TargetResource @setTargetResourceParameters } | Should -Not -Throw
@@ -1067,7 +1044,6 @@ try
                             $setTargetResourceParameters = @{
                                 ComputerName = $mockComputerNamePresent
                                 Path         = 'OU=New,CN=Computers,DC=contoso,DC=com'
-                                Verbose      = $true
                             }
                         }
 
@@ -1102,7 +1078,6 @@ try
                         $setTargetResourceParameters = @{
                             ComputerName          = $mockComputerNamePresent
                             RestoreFromRecycleBin = $true
-                            Verbose               = $true
                         }
                     }
 
