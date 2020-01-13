@@ -247,7 +247,7 @@ function Get-TargetResource
 
         $adProperties = @()
 
-        # Create an array of the AD propertie names to retrieve from the property map
+        # Create an array of the AD property names to retrieve from the property map
         foreach ($property in $adPropertyMap)
         {
             if ($property.ADProperty)
@@ -263,16 +263,12 @@ function Get-TargetResource
         Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName)
 
         $adUser = Get-ADUser @adCommonParameters -Properties $adProperties
-
-        Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName)
-
-        $ensure = 'Present'
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
     {
         Write-Verbose -Message ($script:localizedData.ADUserNotPresent -f $UserName, $DomainName)
 
-        $ensure = 'Absent'
+        $adUser = $null
     }
     catch
     {
@@ -280,75 +276,96 @@ function Get-TargetResource
         New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
     }
 
-    $targetResource = @{
-        DomainName        = $DomainName
-        UserName          = $UserName
-        Password          = $null
-        DistinguishedName = $adUser.DistinguishedName; # Read-only property
-        Ensure            = $ensure
-        DomainController  = $DomainController
-    }
-
-    # Retrieve each property from the ADPropertyMap and add to the hashtable
-    foreach ($property in $adPropertyMap)
+    if ($adUser)
     {
-        $parameter = $property.Parameter
-        if ($parameter -eq 'Path')
-        {
-            # The path returned is not the parent container
-            if (-not [System.String]::IsNullOrEmpty($adUser.DistinguishedName))
-            {
-                $targetResource[$parameter] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
-            }
+        Write-Verbose -Message ($script:localizedData.ADUserIsPresent -f $UserName, $DomainName)
+
+        $targetResource = @{
+            DistinguishedName = $adUser.DistinguishedName; # Read-only property
+            DomainController  = $DomainController
+            DomainName        = $DomainName
+            Ensure            = 'Present'
+            Password          = $null
+            UserName          = $UserName
         }
-        elseif ($parameter -eq 'ChangePasswordAtLogon')
+
+        # Retrieve each property from the ADPropertyMap and add to the hashtable
+        foreach ($property in $adPropertyMap)
         {
-            if ($adUser.pwdlastset -eq 0)
+            $parameter = $property.Parameter
+            if ($parameter -eq 'Path')
             {
-                $targetResource[$parameter] = $true
+                # The path returned is not the parent container
+                if (-not [System.String]::IsNullOrEmpty($adUser.DistinguishedName))
+                {
+                    $targetResource[$parameter] = Get-ADObjectParentDN -DN $adUser.DistinguishedName
+                }
+            }
+            elseif ($parameter -eq 'ChangePasswordAtLogon')
+            {
+                if ($adUser.pwdlastset -eq 0)
+                {
+                    $targetResource[$parameter] = $true
+                }
+                else
+                {
+                    $targetResource[$parameter] = $false
+                }
+            }
+            elseif ($parameter -eq 'ThumbnailPhoto')
+            {
+                if ([System.String]::IsNullOrEmpty($adUser.$parameter))
+                {
+                    $targetResource[$parameter] = $null
+                    $targetResource['ThumbnailPhotoHash'] = $null
+                }
+                else
+                {
+                    $targetResource[$parameter] = [System.Convert]::ToBase64String($adUser.$parameter)
+                    $targetResource['ThumbnailPhotoHash'] = Get-MD5HashString -Bytes $adUser.$parameter
+                }
+            }
+            elseif ($property.ADProperty)
+            {
+                # The AD property name is different to the function parameter to use this
+                $aDProperty = $property.ADProperty
+                if ($property.Type -eq 'Array')
+                {
+                    $targetResource[$parameter] = [System.String[]] $adUser.$ADProperty
+                }
+                else
+                {
+                    $targetResource[$parameter] = $adUser.$aDProperty
+                }
             }
             else
             {
-                $targetResource[$parameter] = $false
+                # The AD property name matches the function parameter
+                if ($property.Type -eq 'Array')
+                {
+                    $targetResource[$Parameter] = [System.String[]] $adUser.$parameter
+                }
+                else
+                {
+                    $targetResource[$Parameter] = $adUser.$parameter
+                }
             }
         }
-        elseif ($parameter -eq 'ThumbnailPhoto')
-        {
-            if ([System.String]::IsNullOrEmpty($adUser.$parameter))
-            {
-                $targetResource[$parameter] = $null
-                $targetResource['ThumbnailPhotoHash'] = $null
-            }
-            else
-            {
-                $targetResource[$parameter] = [System.Convert]::ToBase64String($adUser.$parameter)
-                $targetResource['ThumbnailPhotoHash'] = Get-MD5HashString -Bytes $adUser.$parameter
-            }
+    }
+    else
+    {
+        $targetResource = @{
+            DistinguishedName = $adUser.DistinguishedName; # Read-only property
+            DomainController  = $DomainController
+            DomainName        = $DomainName
+            Ensure            = 'Absent'
+            Password          = $null
+            UserName          = $UserName
         }
-        elseif ($property.ADProperty)
+
+        foreach ($property in $adPropertyMap)
         {
-            # The AD property name is different to the function parameter to use this
-            $aDProperty = $property.ADProperty
-            if ($property.Type -eq 'Array')
-            {
-                $targetResource[$parameter] = [System.String[]] $adUser.$aDProperty
-            }
-            else
-            {
-                $targetResource[$parameter] = $adUser.$aDProperty
-            }
-        }
-        else
-        {
-            # The AD property name matches the function parameter
-            if ($property.Type -eq 'Array')
-            {
-                $targetResource[$Parameter] = [System.String[]] $adUser.$parameter
-            }
-            else
-            {
-                $targetResource[$Parameter] = $adUser.$parameter
-            }
+            $targetResource[$property.Parameter] = $null
         }
     }
 
