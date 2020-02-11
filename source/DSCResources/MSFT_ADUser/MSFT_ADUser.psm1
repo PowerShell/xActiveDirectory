@@ -241,27 +241,27 @@ function Get-TargetResource
 
     Assert-Module -ModuleName 'ActiveDirectory'
 
+    $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
+
+    $adProperties = @()
+
+    # Create an array of the AD property names to retrieve from the property map
+    foreach ($property in $adPropertyMap)
+    {
+        if ($property.ADProperty)
+        {
+            $adProperties += $property.ADProperty
+        }
+        else
+        {
+            $adProperties += $property.Parameter
+        }
+    }
+
+    Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName)
+
     try
     {
-        $adCommonParameters = Get-ADCommonParameters @PSBoundParameters
-
-        $adProperties = @()
-
-        # Create an array of the AD property names to retrieve from the property map
-        foreach ($property in $adPropertyMap)
-        {
-            if ($property.ADProperty)
-            {
-                $adProperties += $property.ADProperty
-            }
-            else
-            {
-                $adProperties += $property.Parameter
-            }
-        }
-
-        Write-Verbose -Message ($script:localizedData.RetrievingADUser -f $UserName, $DomainName)
-
         $adUser = Get-ADUser @adCommonParameters -Properties $adProperties
     }
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
@@ -355,7 +355,7 @@ function Get-TargetResource
     else
     {
         $targetResource = @{
-            DistinguishedName = $adUser.DistinguishedName; # Read-only property
+            DistinguishedName = $null
             DomainController  = $DomainController
             DomainName        = $DomainName
             Ensure            = 'Absent'
@@ -959,7 +959,8 @@ function Test-TargetResource
     {
         if ($targetResource.Ensure -eq 'Present')
         {
-            Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Ensure', $PSBoundParameters.Ensure, $targetResource.Ensure)
+            Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f
+                'Ensure', $PSBoundParameters.Ensure, $targetResource.Ensure)
             $isCompliant = $false
         }
     }
@@ -971,27 +972,33 @@ function Test-TargetResource
 
         foreach ($parameter in $PSBoundParameters.Keys)
         {
-            if ($parameter -eq 'Password' -and $PasswordNeverResets -eq $false)
+            if ($parameter -eq 'Password')
             {
-                $testPasswordParams = @{
-                    Username               = $UserName
-                    Password               = $Password
-                    DomainName             = $DomainName
-                    PasswordAuthentication = $PasswordAuthentication
-                }
-
-                if ($Credential)
+                # Only process the Password parameter if the PasswordNeverResets parameter is false
+                if ($PasswordNeverResets -eq $false)
                 {
-                    $testPasswordParams['Credential'] = $Credential
-                }
+                    $testPasswordParams = @{
+                        Username               = $UserName
+                        Password               = $Password
+                        DomainName             = $DomainName
+                        PasswordAuthentication = $PasswordAuthentication
+                    }
 
-                if (-not (Test-Password @testPasswordParams))
-                {
-                    Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f 'Password', '<Password>', '<Password>')
-                    $isCompliant = $false
+                    if ($Credential)
+                    {
+                        $testPasswordParams['Credential'] = $Credential
+                    }
+
+                    if (-not (Test-Password @testPasswordParams))
+                    {
+                        Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f
+                            'Password', '<Password>', '<Password>')
+                        $isCompliant = $false
+                    }
                 }
             }
-            elseif ($parameter -eq 'ChangePasswordAtLogon' -and $PSBoundParameters.$parameter -eq $true -and $targetResource.Ensure -eq 'Present')
+            elseif ($parameter -eq 'ChangePasswordAtLogon' -and `
+                    $PSBoundParameters.$parameter -eq $true -and $targetResource.Ensure -eq 'Present')
             {
                 # Only process the ChangePasswordAtLogon = $true parameter during new user creation
                 continue
@@ -1002,13 +1009,15 @@ function Test-TargetResource
                     Compare thumbnail hash, if they are the same the function
                     Compare-ThumbnailPhoto returns $null if they are the same.
                 #>
-                $compareThumbnailPhotoResult = Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash
+                $compareThumbnailPhotoResult = Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto `
+                    -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash
 
                 if ($compareThumbnailPhotoResult)
                 {
                     Write-Verbose -Message (
                         $script:localizedData.ADUserNotDesiredPropertyState `
-                            -f $parameter, $compareThumbnailPhotoResult.DesiredThumbnailPhotoHash, $compareThumbnailPhotoResult.CurrentThumbnailPhotoHash
+                            -f $parameter, $compareThumbnailPhotoResult.DesiredThumbnailPhotoHash,
+                        $compareThumbnailPhotoResult.CurrentThumbnailPhotoHash
                     )
 
                     $isCompliant = $false
@@ -1018,7 +1027,8 @@ function Test-TargetResource
             elseif ($targetResource.ContainsKey($parameter))
             {
                 # This check is required to be able to explicitly remove values with an empty string, if required
-                if (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
+                if (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and `
+                    ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                 {
                     <#
                         Both values are null/empty and therefore we are compliant
@@ -1027,7 +1037,8 @@ function Test-TargetResource
                 }
                 elseif (($null -ne $PSBoundParameters.$parameter -and $null -eq $targetResource.$parameter) -or
                     ($null -eq $PSBoundParameters.$parameter -and $null -ne $targetResource.$parameter) -or
-                    (Compare-Object -ReferenceObject $PSBoundParameters.$parameter -DifferenceObject $targetResource.$parameter))
+                    (Compare-Object -ReferenceObject $PSBoundParameters.$parameter `
+                            -DifferenceObject $targetResource.$parameter))
                 {
                     Write-Verbose -Message ($script:localizedData.ADUserNotDesiredPropertyState -f $parameter,
                         ($PSBoundParameters.$parameter -join '; '), ($targetResource.$parameter -join '; '))
@@ -1665,8 +1676,7 @@ function Set-TargetResource
             }
         }
 
-        $setADUserParams = Get-ADCommonParameters @PSBoundParameters
-
+        $setADUserParams = @{}
         $replaceUserProperties = @{}
         $clearUserProperties = @()
         $moveUserRequired = $false
@@ -1687,7 +1697,8 @@ function Set-TargetResource
                     # Move user after any property changes
                     $moveUserRequired = $true
                 }
-                elseif ($parameter -eq 'CommonName' -and ($PSBoundParameters.CommonName -ne $targetResource.CommonName))
+                elseif ($parameter -eq 'CommonName' -and `
+                    ($PSBoundParameters.CommonName -ne $targetResource.CommonName))
                 {
                     # Rename user after any property changes
                     $renameUserRequired = $true
@@ -1706,7 +1717,6 @@ function Set-TargetResource
                     {
                         $testPasswordParams['Credential'] = $Credential
                     }
-
                     if (-not (Test-Password @testPasswordParams))
                     {
                         Write-Verbose -Message ($script:localizedData.SettingADUserPassword -f $UserName)
@@ -1714,7 +1724,8 @@ function Set-TargetResource
                         Set-ADAccountPassword @adCommonParameters -Reset -NewPassword $Password.Password
                     }
                 }
-                elseif ($parameter -eq 'ChangePasswordAtLogon' -and $PSBoundParameters.$parameter -eq $true -and $newADUser -eq $false)
+                elseif ($parameter -eq 'ChangePasswordAtLogon' -and $PSBoundParameters.$parameter -eq $true -and `
+                        $newADUser -eq $false)
                 {
                     # Only process the ChangePasswordAtLogon = $true parameter during new user creation
                     continue
@@ -1725,7 +1736,8 @@ function Set-TargetResource
                         Compare thumbnail hash, if they are the same the function
                         Compare-ThumbnailPhoto returns $null if they are the same.
                     #>
-                    if (Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash)
+                    if (Compare-ThumbnailPhoto -DesiredThumbnailPhoto $ThumbnailPhoto `
+                            -CurrentThumbnailPhotoHash $targetResource.ThumbnailPhotoHash)
                     {
                         if ($ThumbnailPhoto -eq [System.String]::Empty)
                         {
@@ -1737,13 +1749,13 @@ function Set-TargetResource
                         }
                         else
                         {
-                            [System.Byte[]] $thumbnailPhotoBytes = Get-ThumbnailByteArray -ThumbnailPhoto $ThumbnailPhoto
+                            [System.Byte[]] $thumbnailPhotoBytes = Get-ThumbnailByteArray `
+                                -ThumbnailPhoto $ThumbnailPhoto
 
                             $thumbnailPhotoHash = Get-MD5HashString -Bytes $thumbnailPhotoBytes
 
-                            Write-Verbose -Message (
-                                $script:localizedData.UpdatingThumbnailPhotoProperty -f $adProperty.ADProperty, $thumbnailPhotoHash
-                            )
+                            Write-Verbose -Message ($script:localizedData.UpdatingThumbnailPhotoProperty -f
+                                $adProperty.ADProperty, $thumbnailPhotoHash)
 
                             $replaceUserProperties[$adProperty.ADProperty] = $thumbnailPhotoBytes
                         }
@@ -1755,9 +1767,11 @@ function Set-TargetResource
                         We cannot enable/disable an account with -Add or -Replace parameters, but inform that
                         we will change this as it is out of compliance (it always gets set anyway).
                     #>
-                    Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, $PSBoundParameters.$parameter)
+                    Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f
+                        $parameter, $PSBoundParameters.$parameter)
                 }
-                elseif (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
+                elseif (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and `
+                    ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                 {
                     <#
                         Both values are null/empty and therefore we are compliant
@@ -1767,7 +1781,8 @@ function Set-TargetResource
                 # Use Compare-Object to allow comparison of string and array parameters
                 elseif (($null -ne $PSBoundParameters.$parameter -and $null -eq $targetResource.$parameter) -or
                     ($null -eq $PSBoundParameters.$parameter -and $null -ne $targetResource.$parameter) -or
-                    (Compare-Object -ReferenceObject $PSBoundParameters.$parameter -DifferenceObject $targetResource.$parameter))
+                    (Compare-Object -ReferenceObject $PSBoundParameters.$parameter `
+                            -DifferenceObject $targetResource.$parameter))
                 {
                     if ([System.String]::IsNullOrEmpty($adProperty))
                     {
@@ -1775,7 +1790,8 @@ function Set-TargetResource
                     }
                     else
                     {
-                        if ([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter) -and (-not ([System.String]::IsNullOrEmpty($targetResource.$parameter))))
+                        if ([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter) -and `
+                            (-not ([System.String]::IsNullOrEmpty($targetResource.$parameter))))
                         {
                             # We are clearing the existing value
                             Write-Verbose -Message ($script:localizedData.ClearingADUserProperty -f $parameter)
@@ -1796,7 +1812,8 @@ function Set-TargetResource
                         else
                         {
                             # We are replacing the existing value
-                            Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f $parameter, ($PSBoundParameters.$parameter -join ','))
+                            Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f
+                                $parameter, ($PSBoundParameters.$parameter -join ','))
 
                             if ($adProperty.UseCmdletParameter -eq $true)
                             {
@@ -1829,9 +1846,15 @@ function Set-TargetResource
             $setADUserParams['Clear'] = $clearUserProperties;
         }
 
-        Write-Verbose -Message ($script:localizedData.UpdatingADUser -f $UserName)
+        # Only call Set-ADUser if there are properties to change
+        if ($setADUserParams.Keys.Count -gt 0)
+        {
+            $setADUserParams += Get-ADCommonParameters @PSBoundParameters
 
-        [ref] $null = Set-ADUser @setADUserParams -Enabled $Enabled
+            Write-Verbose -Message ($script:localizedData.UpdatingADUser -f $UserName)
+
+            [ref] $null = Set-ADUser @setADUserParams -Enabled $Enabled
+        }
 
         if ($moveUserRequired)
         {
@@ -1841,7 +1864,8 @@ function Set-TargetResource
             # Using the SamAccountName for identity with Move-ADObject does not work, use the DN instead
             $moveAdObjectParameters['Identity'] = $targetResource.DistinguishedName
 
-            Write-Verbose -Message ($script:localizedData.MovingADUser -f $targetResource.Path, $PSBoundParameters.Path)
+            Write-Verbose -Message ($script:localizedData.MovingADUser -f
+                $targetResource.Path, $PSBoundParameters.Path)
 
             Move-ADObject @moveAdObjectParameters -TargetPath $PSBoundParameters.Path
 
@@ -1857,7 +1881,8 @@ function Set-TargetResource
             # Using the SamAccountName for identity with Rename-ADObject does not work, use the DN instead
             $renameAdObjectParameters['Identity'] = $targetResource.DistinguishedName
 
-            Write-Verbose -Message ($script:localizedData.RenamingADUser -f $targetResource.CommonName, $PSBoundParameters.CommonName)
+            Write-Verbose -Message ($script:localizedData.RenamingADUser -f
+                $targetResource.CommonName, $PSBoundParameters.CommonName)
 
             Rename-ADObject @renameAdObjectParameters -NewName $PSBoundParameters.CommonName
         }
@@ -1934,8 +1959,10 @@ function Assert-Parameters
     }
 
     # ChangePasswordAtLogon cannot be set for an account that also has PasswordNeverExpires set
-    if ($PSBoundParameters.ContainsKey('ChangePasswordAtLogon') -and $PSBoundParameters['ChangePasswordAtLogon'] -eq $true -and
-        $PSBoundParameters.ContainsKey('PasswordNeverExpires') -and $PSBoundParameters['PasswordNeverExpires'] -eq $true)
+    if ($PSBoundParameters.ContainsKey('ChangePasswordAtLogon') -and `
+            $PSBoundParameters['ChangePasswordAtLogon'] -eq $true -and `
+            $PSBoundParameters.ContainsKey('PasswordNeverExpires') -and `
+            $PSBoundParameters['PasswordNeverExpires'] -eq $true)
     {
         $errorMessage = $script:localizedData.ChangePasswordParameterConflictError
         New-InvalidArgumentException -ArgumentName 'ChangePasswordAtLogon, PasswordNeverExpires' -Message $errorMessage
@@ -2149,11 +2176,11 @@ function Get-ThumbnailByteArray
 
     .PARAMETER CurrentThumbnailPhotoHash
         The current thumbnail photo MD5 hash, or an empty string or $null if there
-        are no current thumbnail photo.
+        is no current thumbnail photo.
 
     .OUTPUTS
         Returns $null if the thumbnail photos are the same, or a hashtable with
-        the hashes if the thumbnail photos does not match.
+        the hashes if the thumbnail photos do not match.
 #>
 function Compare-ThumbnailPhoto
 {
@@ -2178,7 +2205,8 @@ function Compare-ThumbnailPhoto
     }
     else
     {
-        $desiredThumbnailPhotoHash = Get-MD5HashString -Bytes (Get-ThumbnailByteArray -ThumbnailPhoto $DesiredThumbnailPhoto)
+        $desiredThumbnailPhotoHash = Get-MD5HashString `
+            -Bytes (Get-ThumbnailByteArray -ThumbnailPhoto $DesiredThumbnailPhoto)
     }
 
     <#
