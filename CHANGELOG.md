@@ -33,6 +33,9 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
   - Updated license copyright ([issue #550](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/550)).
 - ADForestProperties
   - Refactored unit tests.
+- ADUser
+  - Refactored Get-TargetResource Function - ([issue #488](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/488))
+  - Refactored Unit Tests - ([issue #467](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/467))
 
 ## [5.0.0] - 2020-01-14
 
