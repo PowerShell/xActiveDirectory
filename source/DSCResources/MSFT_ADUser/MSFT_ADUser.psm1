@@ -1761,15 +1761,6 @@ function Set-TargetResource
                         }
                     }
                 }
-                elseif ($parameter -eq 'Enabled' -and $PSBoundParameters.$parameter -ne $targetResource.$parameter)
-                {
-                    <#
-                        We cannot enable/disable an account with -Add or -Replace parameters, but inform that
-                        we will change this as it is out of compliance (it always gets set anyway).
-                    #>
-                    Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f
-                        $parameter, $PSBoundParameters.$parameter)
-                }
                 elseif (([System.String]::IsNullOrEmpty($PSBoundParameters.$parameter)) -and `
                     ([System.String]::IsNullOrEmpty($targetResource.$parameter)))
                 {
