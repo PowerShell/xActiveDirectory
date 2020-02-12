@@ -18,7 +18,9 @@ Updated author, copyright notice, and URLs.
 <#
     .DESCRIPTION
         This configuration will create a new child domain in an existing forest with
-        a Domain Functional Level of Windows Server 2012R2.
+        a Domain Functional Level of Windows Server 2016 (WinThreshold).
+        The credential parameter must contain the domain qualified credentials of a
+        user in the forest who has permissions to create a new child domain.
 #>
 Configuration ADDomain_NewChildDomain_Config
 {
@@ -57,7 +59,7 @@ Configuration ADDomain_NewChildDomain_Config
             DomainName                    = 'child'
             Credential                    = $Credential
             SafemodeAdministratorPassword = $SafeModePassword
-            DomainMode                    = 'Win2012R2'
+            DomainMode                    = 'WinThreshold'
             ParentDomainName              = 'contoso.com'
         }
     }

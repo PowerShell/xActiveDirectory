@@ -20,7 +20,7 @@ Description = 'The ActiveDirectoryDsc module contains DSC resources for deployme
 These DSC resources allow you to configure new domains, child domains, and high availability domain controllers, establish cross-domain trusts and manage users, groups and OUs.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '4.0'
+PowerShellVersion = '5.0'
 
 # Minimum version of the common language runtime (CLR) required by this module
 CLRVersion = '4.0'

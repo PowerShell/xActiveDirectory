@@ -3,7 +3,9 @@
     "MD029": {
         "style": "one"
     },
-    "MD013": true,
+    "MD013": {
+        "line_length": 120
+    },
     "MD024": false,
     "MD034": false,
     "no-hard-tabs": true
