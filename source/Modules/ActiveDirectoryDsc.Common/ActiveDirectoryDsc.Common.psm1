@@ -2270,10 +2270,32 @@ function Test-Password
         PrincipalContext       = $principalContext
         PasswordAuthentication = $PasswordAuthentication
     }
-    return Get-PrincipalContextCredentials @getPrincipalContextCredentials
+    return Test-PrincipalContextCredentials @getPrincipalContextCredentials
 }
 
-function Get-PrincipalContextCredentials
+<#
+    .SYNOPSIS
+        Test the validity of credentials using a PrincipalContext
+
+    .PARAMETER UserName
+        Specifies the Security Account Manager (SAM) account name of the user
+        (ldapDisplayName 'sAMAccountName').
+
+    .PARAMETER Password
+        Specifies a new password value for the account.
+
+    .PARAMETER PrincipalContext
+        Specifies the PrincipalContext object that the credential test will be
+        performed using.
+
+    .PARAMETER PasswordAuthentication
+        Specifies the authentication context type used when testing passwords.
+        Default value is 'Default'.
+
+    .NOTES
+        We are putting this in a function so we can mock it with pester.
+#>
+function Test-PrincipalContextCredentials
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
