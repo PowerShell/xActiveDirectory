@@ -2273,7 +2273,7 @@ function Test-Password
     return Get-PrincipalContextCredentials @getPrincipalContextCredentials
 }
 
-Function Get-PrincipalContextCredentials
+function Get-PrincipalContextCredentials
 {
 
     [CmdletBinding()]
