@@ -212,6 +212,17 @@ $adPropertyMap = @(
 
     .PARAMETER Credential
         Specifies the user account credentials to use to perform this task.
+
+    .NOTES
+        Used Functions:
+            Name                          | Module
+            ------------------------------|--------------------------
+            Get-ADUser                    | ActiveDirectory
+            Assert-Module                 | ActiveDirectoryDsc.Common
+            Get-ADCommonParameters        | ActiveDirectoryDsc.Common
+            New-InvalidOperationException | ActiveDirectoryDsc.Common
+            Get-ADObjectParentDN          | ActiveDirectoryDsc.Common
+            Get-MD5HashString             | MSFT_ADUser
 #>
 function Get-TargetResource
 {
@@ -619,6 +630,14 @@ function Get-TargetResource
         image. If set to an empty string ('') the current thumbnail photo will be
         removed. The property ThumbnailPhoto will always return the image as a
         Base64-encoded string even if the configuration specified a file path.
+
+    .NOTES
+        Used Functions:
+            Name                   | Module
+            -----------------------|--------------------------
+            Assert-Parameters      | MSFT_ADUser
+            Test-Password          | ActiveDirectoryDsc.Common
+            Compare-ThumbnailPhoto | MSFT_ADUser
 #>
 function Test-TargetResource
 {
@@ -1298,6 +1317,24 @@ function Test-TargetResource
         image. If set to an empty string ('') the current thumbnail photo will be
         removed. The property ThumbnailPhoto will always return the image as a
         Base64-encoded string even if the configuration specified a file path.
+
+        .NOTES
+        Used Functions:
+            Name                   | Module
+            -----------------------|--------------------------
+            Assert-Parameters      | MSFT_ADUser
+            Compare-ThumbnailPhoto | MSFT_ADUser
+            Get-ThumbnailByteArray | MSFT_ADUser
+            Get-MD5HashString      | MSFT_ADUser
+            Get-ADCommonParameters | ActiveDirectoryDsc.Common
+            Restore-ADCommonObject | ActiveDirectoryDsc.Common
+            Test-Password          | ActiveDirectoryDsc.Common
+            New-ADUser             | ActiveDirectory
+            Set-ADAccountPassword  | ActiveDirectory
+            Set-ADUser             | ActiveDirectory
+            Move-ADObject          | ActiveDirectory
+            Rename-ADObject        | ActiveDirectory
+            Remove-ADUser          | ActiveDirectory
 #>
 function Set-TargetResource
 {
