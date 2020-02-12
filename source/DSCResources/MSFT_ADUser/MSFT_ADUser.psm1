@@ -1786,12 +1786,7 @@ function Set-TargetResource
                         {
                             # We are clearing the existing value
                             Write-Verbose -Message ($script:localizedData.ClearingADUserProperty -f $parameter)
-                            if ($adProperty.UseCmdletParameter -eq $true)
-                            {
-                                # We need to pass the parameter explicitly to Set-ADUser, not via -Clear
-                                $setADUserParams[$adProperty.Parameter] = $PSBoundParameters.$parameter
-                            }
-                            elseif ([System.String]::IsNullOrEmpty($adProperty.ADProperty))
+                            if ([System.String]::IsNullOrEmpty($adProperty.ADProperty))
                             {
                                 $clearUserProperties += $adProperty.Parameter
                             }
