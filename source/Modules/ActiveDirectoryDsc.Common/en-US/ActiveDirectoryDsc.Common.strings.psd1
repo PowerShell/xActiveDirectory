@@ -46,4 +46,7 @@ ConvertFrom-StringData @'
     NoObjectFoundInRecycleBin           = Did not find a restorable object in the recycle bin. (ADCOMMON0055)
     AdPsProviderNotFound                = The Active Directory PS Provider was not found, Forcing import of the ActiveDirectory module. (ADCOMMON0056)
     AdPsProviderInstallFailureError     = Error installing the Active Directory PS Provider. (ADCOMMON0057)
+    CreatingADDomainConnection           = Creating connection to Active Directory domain '{0}'. (ADCOMMON0058)
+    CheckingADUserPassword               = Checking Active Directory user '{0}' password. (ADCOMMON0059)
+    TestPasswordUsingImpersonation       = Impersonating the credentials ''{0}'' to test password for user ''{1}''. (ADCOMMON0060)
 '@
