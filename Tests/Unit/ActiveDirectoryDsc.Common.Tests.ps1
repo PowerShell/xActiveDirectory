@@ -2332,7 +2332,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
             }
 
             Mock -CommandName New-Object -MockWith { $mockPrincipalContext }
-            Mock -CommandName Get-PrincipalContextCredentials
+            Mock -CommandName Test-PrincipalContextCredentials
         }
 
         Context 'When the "DomainName" parameter is an FQDN' {
@@ -2350,7 +2350,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                     -ParameterFilter { $TypeName -eq $principalContextTypeName -and `
                         $ArgumentList -contains $mockDomainName } `
                     -Exactly -Times 1
-                Assert-MockCalled -CommandName Get-PrincipalContextCredentials `
+                Assert-MockCalled -CommandName Test-PrincipalContextCredentials `
                     -ParameterFilter { $UserName -eq $testPasswordFQDNParms.UserName } `
                     -Exactly -Times 1
             }
@@ -2366,7 +2366,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                     -ParameterFilter { $TypeName -eq $principalContextTypeName -and `
                         $ArgumentList -contains $null } `
                     -Exactly -Times 1
-                Assert-MockCalled -CommandName Get-PrincipalContextCredentials `
+                Assert-MockCalled -CommandName Test-PrincipalContextCredentials `
                     -ParameterFilter { $UserName -eq $testPasswordParms.UserName } `
                     -Exactly -Times 1
             }
@@ -2387,7 +2387,7 @@ InModuleScope 'ActiveDirectoryDsc.Common' {
                     -ParameterFilter { $TypeName -eq $principalContextTypeName -and `
                         $ArgumentList -contains $testPasswordCredentialParms.Credential.UserName } `
                     -Exactly -Times 1
-                Assert-MockCalled -CommandName Get-PrincipalContextCredentials `
+                Assert-MockCalled -CommandName Test-PrincipalContextCredentials `
                     -ParameterFilter { $UserName -eq $testPasswordCredentialParms.UserName } `
                     -Exactly -Times 1
             }
