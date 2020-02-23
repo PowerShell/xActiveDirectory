@@ -24,6 +24,5 @@ ConvertFrom-StringData @'
     TestPasswordUsingImpersonation       = Impersonating the credentials ''{0}'' to test password for user ''{1}''. (ADU0023)
     LoadingThumbnailFromFile             = Importing thumbnail photo from the file '{0}'. (ADU0024)
     ThumbnailPhotoNotAFile               = Expected the thumbnail photo to be a file because the string contained the character '.' or '\', but the file could not be found. (ADU0025)
-    UpdatingThumbnailPhotoProperty       = Updating the property '{0}' with a new thumbnail photo with MD5 hash '{1}'. (ADU0026)
-    RemovingThumbnailPhoto               = Removing the thumbnail photo from the property '{0}'. (ADU0027)
+    UpdatingThumbnailPhotoProperty       = Updating property '{0}' with a new thumbnail photo with MD5 hash '{1}'. (ADU0026)
 '@

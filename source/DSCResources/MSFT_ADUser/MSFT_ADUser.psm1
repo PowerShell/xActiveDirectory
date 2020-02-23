@@ -1585,9 +1585,9 @@ function Set-TargetResource
                         {
                             $clearUserProperties += $adProperty.ADProperty
 
-                            Write-Verbose -Message ($script:localizedData.RemovingThumbnailPhoto -f
+                            Write-Verbose -Message ($script:localizedData.ClearingADUserProperty -f
                                 $adProperty.ADProperty)
-                        }
+                            }
                         else
                         {
                             [System.Byte[]] $thumbnailPhotoBytes = Get-ThumbnailByteArray `
@@ -1693,7 +1693,7 @@ function Set-TargetResource
                 $renameAdObjectParameters['Identity'] = $targetResource.DistinguishedName
 
                 Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f
-                    $targetResource.CommonName, $parameters.CommonName, $DomainName)
+                    'CommonName', $parameters.CommonName)
 
                 Rename-ADObject @renameAdObjectParameters -NewName $parameters.CommonName
             }
