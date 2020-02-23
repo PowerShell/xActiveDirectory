@@ -13,12 +13,6 @@
             Array              = $false
         }
         @{
-            Parameter          = 'Password'
-            ADProperty         = 'AccountPassword'
-            UseCmdletParameter = $false
-            Array              = $false
-        }
-        @{
             Parameter          = 'DisplayName'
             ADProperty         = 'DisplayName'
             UseCmdletParameter = $false
@@ -26,7 +20,7 @@
         }
         @{
             Parameter          = 'Path'
-            ADProperty         = 'Path'
+            ADProperty         = 'distinguishedName'
             UseCmdletParameter = $true
             Array              = $false
         }

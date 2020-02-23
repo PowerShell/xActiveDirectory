@@ -20,7 +20,6 @@ ConvertFrom-StringData @'
     UpdatingADUserProperty               = Updating property '{0}' with '{1}'. (ADU0018)
     ClearingADUserProperty               = Clearing property '{0}'. (ADU0019)
     MovingADUser                         = Moving user from '{0}' to '{1}'. (ADU0020)
-    RenamingADUser                       = Renaming user from '{0}' to '{1}' in domain '{1}'. (ADU0021)
     RestoringUser                        = Attempting to restore the user object {0} from the recycle bin. (ADU0022)
     TestPasswordUsingImpersonation       = Impersonating the credentials ''{0}'' to test password for user ''{1}''. (ADU0023)
     LoadingThumbnailFromFile             = Importing thumbnail photo from the file '{0}'. (ADU0024)

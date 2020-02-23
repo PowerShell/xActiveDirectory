@@ -1398,7 +1398,7 @@ function Set-TargetResource
 
     Assert-Parameters @PSBoundParameters
 
-    $parameters = @{ } + $PSBoundParameters
+    $parameters = @{} + $PSBoundParameters
     $parameters.Remove('DomainName')
     $parameters.Remove('UserName')
     $parameters.Remove('PasswordNeverResets')
@@ -1429,7 +1429,7 @@ function Set-TargetResource
 
     $targetResource = Get-TargetResource @getParameters
 
-    $newADUser = $false
+    $restorationSuccessful = $false
 
     if ($Ensure -eq 'Present')
     {
@@ -1451,43 +1451,77 @@ function Set-TargetResource
                 # User does not exist and needs creating
                 $newADUserParams = Get-ADCommonParameters @PSBoundParameters -UseNameParameter
 
-                $otherUserProperties = @{ }
+                $otherUserAttributes = @{}
+                $updateCnRequired = $false
+
                 foreach ($parameter in $parameters.keys)
                 {
                     $adProperty = $adPropertyMap |
                         Where-Object -FilterScript { $_.Parameter -eq $parameter }
 
-                    if ($adProperty.UseCmdletParameter -eq $true)
+                    if ($parameter -eq 'Password')
                     {
-                        # We need to pass the parameter explicitly to New-ADUser, not via -OtherAttributes
-                        $newADUserParams[$adProperty.Parameter] = $parameters.$parameter
+                        $newADUserParams['AccountPassword'] = $Password.Password
+                    }
+                    elseif ($parameter -eq 'CommonName')
+                    {
+                        if ($CommonName -ne $UserName)
+                        {
+                            # Need to set different CN using Rename after user creation
+                            $updateCnRequired = $true
+                        }
+                    }
+                    elseif ($parameter -eq 'ThumbnailPhoto')
+                    {
+                        [System.Byte[]] $thumbnailPhotoBytes = Get-ThumbnailByteArray `
+                            -ThumbnailPhoto $ThumbnailPhoto -Verbose:$false
+
+                        $otherUserAttributes[$adProperty.ADProperty] = $thumbnailPhotoBytes
                     }
                     else
                     {
-                        $otherUserProperties[$adProperty.ADProperty] = $parameters.$parameter
+                        if ($adProperty.UseCmdletParameter -eq $true)
+                        {
+                            # We need to pass the parameter explicitly to New-ADUser, not via -OtherAttributes
+                            $newADUserParams[$adProperty.ADProperty] = $parameters.$parameter
+                        }
+                        else
+                        {
+                            $otherUserAttributes[$adProperty.ADProperty] = $parameters.$parameter
+                        }
                     }
                 }
 
-                if ($otherUserProperties.Keys.Count -gt 0)
+                if ($otherUserAttributes.Keys.Count -gt 0)
                 {
-                    $newADUserParams['OtherAttributes'] = $otherUserProperties
+                    $newADUserParams['OtherAttributes'] = $otherUserAttributes
                 }
 
                 Write-Verbose -Message ($script:localizedData.AddingADUser -f $UserName, $DomainName)
 
                 Write-Debug -Message ('New-ADUser Parameters:' + ($newADUserParams | Out-String))
 
-                New-ADUser @newADUserParams -SamAccountName $UserName
+                $newADUser = New-ADUser @newADUserParams -SamAccountName $UserName -Passthru
+
+                if ($updateCnRequired)
+                {
+                    $renameAdObjectParameters = Get-ADCommonParameters @PSBoundParameters
+
+                    # Using the SamAccountName for identity with Rename-ADObject does not work, use the DN instead
+                    $renameAdObjectParameters['Identity'] = $newADUser.DistinguishedName
+
+                    Rename-ADObject @renameAdObjectParameters -NewName $CommonName
+                }
             }
         }
-        else
+        if ($targetResource.Ensure -eq 'Present' -or $restorationSuccessful)
         {
-            # Resource is Present
-            $setADUserParams = @{ }
-            $replaceUserProperties = @{ }
+            # Resource is Present or has just been restored from the recycle bin
+            $setADUserParams = @{}
+            $replaceUserProperties = @{}
             $clearUserProperties = @()
             $moveUserRequired = $false
-            $renameUserRequired = $false
+            $updateCnRequired = $false
 
             foreach ($parameter in $parameters.Keys)
             {
@@ -1495,15 +1529,21 @@ function Set-TargetResource
                 $adProperty = $adPropertyMap |
                     Where-Object -FilterScript { $_.Parameter -eq $parameter }
 
-                if ($parameter -eq 'Path' -and $parameters.Path -ne $targetResource.Path)
+                if ($parameter -eq 'Path')
                 {
-                    # Move user after any property changes
-                    $moveUserRequired = $true
+                    if ($parameters.Path -ne $targetResource.Path)
+                    {
+                        # Move user after any property changes
+                        $moveUserRequired = $true
+                    }
                 }
-                elseif ($parameter -eq 'CommonName' -and $parameters.CommonName -ne $targetResource.CommonName)
+                elseif ($parameter -eq 'CommonName')
                 {
-                    # Rename user after any property changes
-                    $renameUserRequired = $true
+                    if ($parameters.CommonName -ne $targetResource.CommonName)
+                    {
+                        # Rename user after any property changes
+                        $updateCnRequired = $true
+                    }
                 }
                 elseif ($parameter -eq 'Password')
                 {
@@ -1594,7 +1634,7 @@ function Set-TargetResource
                         if ($adProperty.UseCmdletParameter -eq $true)
                         {
                             # We need to pass the parameter explicitly to Set-ADUser, not via -Replace
-                            $setADUserParams[$adProperty.Parameter] = $parameters.$parameter
+                            $setADUserParams[$adProperty.ADProperty] = $parameters.$parameter
                         }
                         else
                         {
@@ -1644,15 +1684,15 @@ function Set-TargetResource
                 $targetResource.DistinguishedName = "cn=$($targetResource.CommonName),$($parameters.Path)"
             }
 
-            if ($renameUserRequired)
+            if ($updateCnRequired)
             {
-                # Cannot rename users by updating the CN property directly
+                # Cannot update the CN property directly. Must use Rename-ADObject
                 $renameAdObjectParameters = Get-ADCommonParameters @PSBoundParameters
 
                 # Using the SamAccountName for identity with Rename-ADObject does not work, use the DN instead
                 $renameAdObjectParameters['Identity'] = $targetResource.DistinguishedName
 
-                Write-Verbose -Message ($script:localizedData.RenamingADUser -f
+                Write-Verbose -Message ($script:localizedData.UpdatingADUserProperty -f
                     $targetResource.CommonName, $parameters.CommonName, $DomainName)
 
                 Rename-ADObject @renameAdObjectParameters -NewName $parameters.CommonName
