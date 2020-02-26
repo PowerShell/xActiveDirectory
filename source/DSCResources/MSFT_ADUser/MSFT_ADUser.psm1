@@ -802,7 +802,7 @@ function Test-TargetResource
                         Both values are null/empty and therefore we are compliant
                         Must catch this scenario separately, as Compare-Object can't compare Null objects
                     #>
-                    Continue
+                    continue
                 }
                 elseif (($null -ne $parameters.$parameter -and $null -eq $targetResource.$parameter) -or
                     ($null -eq $parameters.$parameter -and $null -ne $targetResource.$parameter) -or
