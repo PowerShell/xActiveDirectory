@@ -44,7 +44,7 @@ try
         $mockThumbnailPhotoByteArray = [System.Byte[]] (
             255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1, 0, 96, 0, 96, 0, 0, 255, 225, 0, 102, 69, 120, 105
         )
-        $mockChangedThumbnailPhotoHash = 'D8719F18D789F449CBD14B5798BE79F7'
+        $mockChangedThumbnailPhotoHash = '473CA6636A51A3B2953FD5A7D859020F'
         $mockChangedThumbnailPhotoBase64 = '/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhq'
 
         $mockPath = 'CN=Users,DC=contoso,DC=com'
@@ -68,11 +68,11 @@ try
             City                              = 'Cityville'
             State                             = 'State'
             UserPrincipalName                 = 'testuser@contoso.com'
-            ServicePrincipalNames             = @('spn/a', 'spn/b')
+            ServicePrincipalNames             = 'spn/a', 'spn/b'
             ThumbnailPhoto                    = $mockThumbnailPhotoBase64
             ThumbnailPhotoHash                = $mockThumbnailPhotoHash
             PostalCode                        = 'AA1 1AA'
-            Country                           = 'Country'
+            Country                           = 'US'
             Department                        = 'IT'
             Division                          = 'Global'
             Company                           = 'Contoso'
@@ -94,7 +94,7 @@ try
             IPPhone                           = '12345'
             HomePhone                         = '+1 56789'
             Manager                           = 'John Doe'
-            LogonWorkstations                 = 'PC01, PC02'
+            LogonWorkstations                 = 'PC01,PC02'
             Organization                      = 'Contoso'
             OtherName                         = 'User1'
             PasswordNeverExpires              = $false
@@ -183,10 +183,10 @@ try
             POBox                             = 'PO Box 1 Changed'
             City                              = 'Cityville Changed'
             State                             = 'State Changed'
-            ServicePrincipalNames             = @('spn/c', 'spn/d')
+            ServicePrincipalNames             = 'spn/c', 'spn/d'
             ThumbnailPhoto                    = $mockChangedThumbnailPhotoBase64
             PostalCode                        = 'AA1 1AA Changed'
-            Country                           = 'Country Changed'
+            Country                           = 'GB'
             Department                        = 'IT Changed'
             Division                          = 'Global Changed'
             Company                           = 'Contoso Changed'
@@ -208,7 +208,7 @@ try
             IPPhone                           = '123456'
             HomePhone                         = '+1 567890'
             Manager                           = 'John Doe Changed'
-            LogonWorkstations                 = 'PC03, PC04'
+            LogonWorkstations                 = 'PC03,PC04'
             Organization                      = 'Contoso Changed'
             OtherName                         = 'User1 Changed'
             PasswordNeverExpires              = $true
@@ -234,7 +234,7 @@ try
             sn                                = $mockResource.Surname
             Description                       = $mockResource.Description
             StreetAddress                     = $mockResource.StreetAddress
-            POBox                             = $mockResource.POBox
+            PostOfficeBox                     = $mockResource.POBox
             l                                 = $mockResource.City
             St                                = $mockResource.State
             PostalCode                        = $mockResource.PostalCode
@@ -262,8 +262,8 @@ try
             Enabled                           = $mockResource.Enabled
             Manager                           = $mockResource.Manager
             userWorkstations                  = $mockResource.LogonWorkstations
-            Organization                      = $mockResource.Organization
-            OtherName                         = $mockResource.OtherName
+            O                                 = $mockResource.Organization
+            middleName                        = $mockResource.OtherName
             ThumbnailPhoto                    = $mockThumbnailPhotoByteArray
             PasswordNeverExpires              = $mockResource.PasswordNeverExpires
             CannotChangePassword              = $mockResource.CannotChangePassword
@@ -1448,8 +1448,8 @@ try
             Context 'When the current thumbnail photo is not the desired thumbnail photo' {
                 BeforeAll {
                     $compareThumbnailPhotoParameters = @{
-                        DesiredThumbnailPhoto     = $mockThumbnailPhotoBase64
-                        CurrentThumbnailPhotoHash = $mockChangedThumbnailPhotoHash
+                        DesiredThumbnailPhoto     = $mockChangedThumbnailPhotoBase64
+                        CurrentThumbnailPhotoHash = $mockThumbnailPhotoHash
                     }
 
                     $compareThumbnailPhotoResult = Compare-ThumbnailPhoto @compareThumbnailPhotoParameters
@@ -1457,8 +1457,8 @@ try
 
                 It 'Should return the correct result' {
                     $compareThumbnailPhotoResult | Should -BeOfType [System.Collections.Hashtable]
-                    $compareThumbnailPhotoResult.CurrentThumbnailPhotoHash | Should -Be $mockChangedThumbnailPhotoHash
-                    $compareThumbnailPhotoResult.DesiredThumbnailPhotoHash | Should -Be $mockThumbnailPhotoHash
+                    $compareThumbnailPhotoResult.CurrentThumbnailPhotoHash | Should -Be $mockThumbnailPhotoHash
+                    $compareThumbnailPhotoResult.DesiredThumbnailPhotoHash | Should -Be $mockChangedThumbnailPhotoHash
                 }
             }
 
