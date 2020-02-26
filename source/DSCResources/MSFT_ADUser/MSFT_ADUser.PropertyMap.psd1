@@ -56,7 +56,7 @@
         }
         @{
             Parameter          = 'POBox'
-            ADProperty         = 'POBox'
+            ADProperty         = 'PostOfficeBox'
             UseCmdletParameter = $false
             Array              = $false
         }
@@ -224,13 +224,13 @@
         }
         @{
             Parameter          = 'Organization'
-            ADProperty         = 'Organization'
+            ADProperty         = 'o'
             UseCmdletParameter = $false
             Array              = $false
         }
         @{
             Parameter          = 'OtherName'
-            ADProperty         = 'OtherName'
+            ADProperty         = 'middleName'
             UseCmdletParameter = $false
             Array              = $false
         }

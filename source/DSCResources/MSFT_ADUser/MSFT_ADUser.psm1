@@ -705,7 +705,7 @@ function Test-TargetResource
     }
     Assert-Parameters @PSBoundParameters
 
-    $parameters = @{ } + $PSBoundParameters
+    $parameters = @{} + $PSBoundParameters
     $parameters.Remove('DomainName')
     $parameters.Remove('UserName')
     $parameters.Remove('RestoreFromRecycleBin')
@@ -1483,7 +1483,7 @@ function Set-TargetResource
                         if ($adProperty.UseCmdletParameter -eq $true)
                         {
                             # We need to pass the parameter explicitly to New-ADUser, not via -OtherAttributes
-                            $newADUserParams[$adProperty.ADProperty] = $parameters.$parameter
+                            $newADUserParams[$adProperty.Parameter] = $parameters.$parameter
                         }
                         else
                         {
@@ -1541,7 +1541,7 @@ function Set-TargetResource
                 {
                     if ($parameters.CommonName -ne $targetResource.CommonName)
                     {
-                        # Rename user after any property changes
+                        # Update CN after any property changes
                         $updateCnRequired = $true
                     }
                 }
