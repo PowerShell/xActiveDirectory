@@ -1,10 +1,25 @@
+<#
+    .SYNOPSIS
+        Pester integration test for the ADUser Resource of the ActiveDirectoryDsc Module
+
+    .DESCRIPTION
+        Verbose/Debug output can be set by running:
+
+        Invoke-pester -Script @{Path='.\MSFT_ADUser.Integration.Tests.ps1';Parameters=@{Verbose=$true;Debug=$true}}
+#>
+
+[CmdletBinding()]
+param ()
+
+Set-StrictMode -Version 1.0
+
 $script:dscModuleName = 'ActiveDirectoryDsc'
 $script:dscResourceFriendlyName = 'ADUser'
 $script:dscResourceName = "MSFT_$($script:dscResourceFriendlyName)"
 
 try
 {
-    Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop'
+    Import-Module -Name DscResource.Test -Force -ErrorAction 'Stop' -Verbose:$false
 }
 catch [System.IO.FileNotFoundException]
 {
@@ -26,251 +41,55 @@ try
         BeforeAll {
             $resourceId = "[$($script:dscResourceFriendlyName)]Integration_Test"
         }
+        foreach ($testName in $ConfigurationData.AllNodes.Tests.Keys)
+        {
+            $configurationName = "$($script:dscResourceName)_$($testName)_Config"
 
-        $configurationName = "$($script:dscResourceName)_CreateUser1_Config"
-
-        Context ('When using configuration {0}' -f $configurationName) {
-            It 'Should compile and apply the MOF without throwing' {
-                {
+            Context ('When using configuration {0}' -f $configurationName) {
+                BeforeAll {
                     $configurationParameters = @{
                         OutputPath        = $TestDrive
                         # The variable $ConfigurationData was dot-sourced above.
                         ConfigurationData = $ConfigurationData
                     }
 
-                    & $configurationName @configurationParameters
+                    & $configurationName @configurationParameters -Debug:$false
 
                     $startDscConfigurationParameters = @{
                         Path         = $TestDrive
                         ComputerName = 'localhost'
                         Wait         = $true
-                        Verbose      = $true
                         Force        = $true
                         ErrorAction  = 'Stop'
                     }
+                }
 
-                    Start-DscConfiguration @startDscConfigurationParameters
-                } | Should -Not -Throw
-            }
+                It 'Should compile and apply the MOF without throwing' {
+                    { Start-DscConfiguration @startDscConfigurationParameters } |
+                        Should -Not -Throw
+                }
 
-            It 'Should be able to call Get-DscConfiguration without throwing' {
-                {
-                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
-                } | Should -Not -Throw
-            }
+                It 'Should be able to call Get-DscConfiguration without throwing' {
+                    { $script:currentConfiguration = Get-DscConfiguration -ErrorAction Stop } |
+                        Should -Not -Throw
+                }
 
-            It 'Should have set the resource and all the parameters should match' {
                 $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
                     $_.ConfigurationName -eq $configurationName `
                         -and $_.ResourceId -eq $resourceId
                 }
 
-                $resourceCurrentState.Ensure | Should -Be 'Present'
-                $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.UserPrincipalName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.DisplayName | Should -Be $ConfigurationData.AllNodes.DisplayName1
-                $resourceCurrentState.Credential | Should -BeNullOrEmpty
-            }
-
-            It 'Should return $true when Test-DscConfiguration is run' {
-                Test-DscConfiguration -Verbose | Should -Be 'True'
-            }
-        }
-
-        $configurationName = "$($script:dscResourceName)_UpdateThumbnailPhotoUsingBase64_Config"
-
-        Context ('When using configuration {0}' -f $configurationName) {
-            It 'Should compile and apply the MOF without throwing' {
+                foreach ($property in $ConfigurationData.AllNodes.Tests.$testName.Keys)
                 {
-                    $configurationParameters = @{
-                        OutputPath        = $TestDrive
-                        # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData = $ConfigurationData
+                    It "Should have set the correct '$property' property" {
+                        $resourceCurrentState.$property | Sort-Object |
+                            Should -Be ($ConfigurationData.AllNodes.Tests.$testName.$property | Sort-Object)
                     }
-
-                    & $configurationName @configurationParameters
-
-                    $startDscConfigurationParameters = @{
-                        Path         = $TestDrive
-                        ComputerName = 'localhost'
-                        Wait         = $true
-                        Verbose      = $true
-                        Force        = $true
-                        ErrorAction  = 'Stop'
-                    }
-
-                    Start-DscConfiguration @startDscConfigurationParameters
-                } | Should -Not -Throw
-            }
-
-            It 'Should be able to call Get-DscConfiguration without throwing' {
-                {
-                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
-                } | Should -Not -Throw
-            }
-
-            It 'Should have set the resource and all the parameters should match' {
-                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
-                    $_.ConfigurationName -eq $configurationName `
-                        -and $_.ResourceId -eq $resourceId
                 }
 
-                $resourceCurrentState.Ensure | Should -Be 'Present'
-                $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.ThumbnailPhoto | Should -Be $ConfigurationData.AllNodes.ThumbnailPhotoBase64
-                $resourceCurrentState.ThumbnailPhotoHash | Should -Be $ConfigurationData.AllNodes.ThumbnailPhotoHash
-            }
-
-            It 'Should return $true when Test-DscConfiguration is run' {
-                Test-DscConfiguration -Verbose | Should -Be 'True'
-            }
-        }
-
-        $configurationName = "$($script:dscResourceName)_RemoveThumbnailPhoto_Config"
-
-        Context ('When using configuration {0}' -f $configurationName) {
-            It 'Should compile and apply the MOF without throwing' {
-                {
-                    $configurationParameters = @{
-                        OutputPath        = $TestDrive
-                        # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData = $ConfigurationData
-                    }
-
-                    & $configurationName @configurationParameters
-
-                    $startDscConfigurationParameters = @{
-                        Path         = $TestDrive
-                        ComputerName = 'localhost'
-                        Wait         = $true
-                        Verbose      = $true
-                        Force        = $true
-                        ErrorAction  = 'Stop'
-                    }
-
-                    Start-DscConfiguration @startDscConfigurationParameters
-                } | Should -Not -Throw
-            }
-
-            It 'Should be able to call Get-DscConfiguration without throwing' {
-                {
-                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
-                } | Should -Not -Throw
-            }
-
-            It 'Should have set the resource and all the parameters should match' {
-                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
-                    $_.ConfigurationName -eq $configurationName `
-                        -and $_.ResourceId -eq $resourceId
+                It 'Should return $true when Test-DscConfiguration is run' {
+                    Test-DscConfiguration | Should -Be 'True'
                 }
-
-                $resourceCurrentState.Ensure | Should -Be 'Present'
-                $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.ThumbnailPhoto | Should -BeNullOrEmpty
-                $resourceCurrentState.ThumbnailPhotoHash | Should -BeNullOrEmpty
-            }
-
-            It 'Should return $true when Test-DscConfiguration is run' {
-                Test-DscConfiguration -Verbose | Should -Be 'True'
-            }
-        }
-
-        $configurationName = "$($script:dscResourceName)_UpdateThumbnailPhotoFromFile_Config"
-
-        Context ('When using configuration {0}' -f $configurationName) {
-            It 'Should compile and apply the MOF without throwing' {
-                {
-                    $configurationParameters = @{
-                        OutputPath        = $TestDrive
-                        # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData = $ConfigurationData
-                    }
-
-                    & $configurationName @configurationParameters
-
-                    $startDscConfigurationParameters = @{
-                        Path         = $TestDrive
-                        ComputerName = 'localhost'
-                        Wait         = $true
-                        Verbose      = $true
-                        Force        = $true
-                        ErrorAction  = 'Stop'
-                    }
-
-                    Start-DscConfiguration @startDscConfigurationParameters
-                } | Should -Not -Throw
-            }
-
-            It 'Should be able to call Get-DscConfiguration without throwing' {
-                {
-                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
-                } | Should -Not -Throw
-            }
-
-            It 'Should have set the resource and all the parameters should match' {
-                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
-                    $_.ConfigurationName -eq $configurationName `
-                        -and $_.ResourceId -eq $resourceId
-                }
-
-                $resourceCurrentState.Ensure | Should -Be 'Present'
-                $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.ThumbnailPhoto | Should -Be $ConfigurationData.AllNodes.ThumbnailPhotoBase64
-                $resourceCurrentState.ThumbnailPhotoHash | Should -Be $ConfigurationData.AllNodes.ThumbnailPhotoHash
-            }
-
-            It 'Should return $true when Test-DscConfiguration is run' {
-                Test-DscConfiguration -Verbose | Should -Be 'True'
-            }
-        }
-
-        $configurationName = "$($script:dscResourceName)_RemoveUser1_Config"
-
-        Context ('When using configuration {0}' -f $configurationName) {
-            It 'Should compile and apply the MOF without throwing' {
-                {
-                    $configurationParameters = @{
-                        OutputPath        = $TestDrive
-                        # The variable $ConfigurationData was dot-sourced above.
-                        ConfigurationData = $ConfigurationData
-                    }
-
-                    & $configurationName @configurationParameters
-
-                    $startDscConfigurationParameters = @{
-                        Path         = $TestDrive
-                        ComputerName = 'localhost'
-                        Wait         = $true
-                        Verbose      = $true
-                        Force        = $true
-                        ErrorAction  = 'Stop'
-                    }
-
-                    Start-DscConfiguration @startDscConfigurationParameters
-                } | Should -Not -Throw
-            }
-
-            It 'Should be able to call Get-DscConfiguration without throwing' {
-                {
-                    $script:currentConfiguration = Get-DscConfiguration -Verbose -ErrorAction Stop
-                } | Should -Not -Throw
-            }
-
-            It 'Should have set the resource and all the parameters should match' {
-                $resourceCurrentState = $script:currentConfiguration | Where-Object -FilterScript {
-                    $_.ConfigurationName -eq $configurationName `
-                        -and $_.ResourceId -eq $resourceId
-                }
-
-                $resourceCurrentState.Ensure | Should -Be 'Absent'
-                $resourceCurrentState.UserName | Should -Be $ConfigurationData.AllNodes.UserName1
-                $resourceCurrentState.UserPrincipalName | Should -BeNullOrEmpty
-                $resourceCurrentState.DisplayName | Should -BeNullOrEmpty
-                $resourceCurrentState.Credential | Should -BeNullOrEmpty
-            }
-
-            It 'Should return $true when Test-DscConfiguration is run' {
-                Test-DscConfiguration -Verbose | Should -Be 'True'
             }
         }
     }
