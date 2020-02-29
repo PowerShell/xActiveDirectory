@@ -37,8 +37,10 @@ try
         Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Stubs\ActiveDirectory_2019.psm1') -Force
 
         $testDomainController = 'TESTDC'
-        $testCredential = [System.Management.Automation.PSCredential]::Empty
-
+        $testPassword = ConvertTo-SecureString -String 'P@ssW0rd1' -AsPlainText -Force
+        $testCredential = [System.Management.Automation.PSCredential]::new('user', $testPassword)
+        $testChangedPassword = ConvertTo-SecureString -String 'P@ssW0rd2' -AsPlainText -Force
+        $testChangedCredential = [System.Management.Automation.PSCredential]::new('user', $testChangedPassword)
         $mockThumbnailPhotoHash = 'D8719F18D789F449CBD14B5798BE79F7'
         $mockThumbnailPhotoBase64 = '/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhp'
         $mockThumbnailPhotoByteArray = [System.Byte[]] (
@@ -59,8 +61,8 @@ try
             Initials                          = 'T'
             Enabled                           = $true
             GivenName                         = 'Test'
-            CommonName                        = 'Common'
-            Password                          = 'password'
+            CommonName                        = $UserName
+            Password                          = $testCredential
             Description                       = 'This is the test user'
             Surname                           = 'User'
             StreetAddress                     = '1 Highway Road'
@@ -1152,69 +1154,119 @@ try
                 }
 
                 Context 'When the resource should be present' {
-                    foreach ($property in $mockChangedSetResource.Keys)
+                    foreach ($property in $mockChangedResource.Keys)
                     {
-                        Context "When the '$property' parameter is specified" {
-                            BeforeAll {
-                                $setTargetResourceParamsChangedProperty = $setTargetResourcePresentParams.Clone()
-                                $setTargetResourceParamsChangedProperty.$property = $mockChangedSetResource.$property
-                            }
+                        if ($property -eq 'CommonName')
+                        {
+                            Context 'When the CommonName does not match the UserName' {
+                                BeforeAll {
+                                    $setTargetResourceNewParams = $setTargetResourcePresentParams.Clone()
+                                    $setTargetResourceNewParams.CommonName = $mockChangedResource.CommonName
+                                    $mockNewAdUserResult = @{
+                                        DistinguishedName = $mockResource.DistinguishedName
+                                    }
 
-                            It 'Should not throw' {
-                                { Set-TargetResource @setTargetResourceParamsChangedProperty } | Should -Not -Throw
-                            }
+                                    Mock -CommandName New-ADUser -MockWith { $mockNewAdUserResult }
+                                }
 
-                            It 'Should call the correct mocks' {
-                                Assert-MockCalled -CommandName Get-TargetResource `
-                                    -ParameterFilter { `
-                                        $Name -eq $setTargetResourceParamsChangedProperty.Name } `
-                                    -Exactly -Times 1
-                                Assert-MockCalled -CommandName New-ADUser `
-                                    -ParameterFilter { $TargetName -eq $setTargetResourceParamsChangedProperty.Name } `
-                                    -Exactly -Times 1
-                                Assert-MockCalled -CommandName Set-ADUser `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Move-ADObject `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Rename-ADObject `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Set-ADAccountPassword `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Test-Password `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Remove-ADUser `
-                                    -Exactly -Times 0
-                                Assert-MockCalled -CommandName Restore-ADCommonObject `
-                                    -Exactly -Times 0
+                                It 'Should not throw' {
+                                    { Set-TargetResource @setTargetResourceNewParams } |
+                                        Should -Not -Throw
+                                }
+
+                                It 'Should call the expected mocks' {
+                                    Assert-MockCalled -CommandName Get-TargetResource `
+                                        -ParameterFilter { `
+                                            $Name -eq $setTargetResourceNewParams.Name } `
+                                        -Exactly -Times 1
+                                    Assert-MockCalled -CommandName New-ADUser `
+                                        -Exactly -Times 1
+                                    Assert-MockCalled -CommandName Rename-ADObject `
+                                        -ParameterFilter { $NewName -eq $setTargetResourceNewParams.CommonName } `
+                                        -Exactly -Times 1
+                                    Assert-MockCalled -CommandName Remove-ADUser `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Set-ADUser `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Test-Password `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Set-ADAccountPassword `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Move-ADObject `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Restore-ADCommonObject `
+                                        -Exactly -Times 0
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Context "When the '$property' parameter is specified" {
+                                BeforeAll {
+                                    $setTargetResourceNewParams = $setTargetResourcePresentParams.Clone()
+                                    $setTargetResourceNewParams.$property = $mockChangedResource.$property
+                                }
+
+                                It 'Should not throw' {
+                                    { Set-TargetResource @setTargetResourceNewParams } | Should -Not -Throw
+                                }
+
+                                It 'Should call the correct mocks' {
+                                    Assert-MockCalled -CommandName Get-TargetResource `
+                                        -ParameterFilter { `
+                                            $Name -eq $setTargetResourceNewParams.Name } `
+                                        -Exactly -Times 1
+                                    Assert-MockCalled -CommandName New-ADUser `
+                                        -ParameterFilter { $TargetName -eq $setTargetResourceNewParams.Name } `
+                                        -Exactly -Times 1
+                                    Assert-MockCalled -CommandName Set-ADUser `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Move-ADObject `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Rename-ADObject `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Set-ADAccountPassword `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Test-Password `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Remove-ADUser `
+                                        -Exactly -Times 0
+                                    Assert-MockCalled -CommandName Restore-ADCommonObject `
+                                        -Exactly -Times 0
+                                }
                             }
                         }
                     }
 
-                    Context 'When the Path parameter is specified' {
-                        It 'Should not throw' {
-                            { Set-TargetResource @setTargetResourcePresentParams -Path $mockPath } |
-                                Should -Not -Throw
+                    Context "When the Password parameter is specified" {
+                        BeforeAll {
+                            $setTargetResourceNewParams = $setTargetResourcePresentParams.Clone()
+                            $setTargetResourceNewParams.Password = $mockResource.Password
                         }
 
-                        It 'Should call the expected mocks' {
+                        It 'Should not throw' {
+                            { Set-TargetResource @setTargetResourceNewParams } | Should -Not -Throw
+                        }
+
+                        It 'Should call the correct mocks' {
                             Assert-MockCalled -CommandName Get-TargetResource `
                                 -ParameterFilter { `
-                                    $Name -eq $setTargetResourcePresentParams.Name } `
+                                    $Name -eq $setTargetResourceNewParams.Name } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADUser `
-                                -ParameterFilter { $Path -eq $mockPath } `
+                                -ParameterFilter { $AccountPassword -eq $setTargetResourceNewParams.Password.Password } `
                                 -Exactly -Times 1
-                            Assert-MockCalled -CommandName Remove-ADUser `
-                                -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADUser `
                                 -Exactly -Times 0
-                            Assert-MockCalled -CommandName Test-Password `
-                                -Exactly -Times 0
-                            Assert-MockCalled -CommandName Set-ADAccountPassword `
+                            Assert-MockCalled -CommandName Move-ADObject `
                                 -Exactly -Times 0
                             Assert-MockCalled -CommandName Rename-ADObject `
                                 -Exactly -Times 0
-                            Assert-MockCalled -CommandName Move-ADObject `
+                            Assert-MockCalled -CommandName Set-ADAccountPassword `
+                                -Exactly -Times 0
+                            Assert-MockCalled -CommandName Test-Password `
+                                -Exactly -Times 0
+                            Assert-MockCalled -CommandName Remove-ADUser `
                                 -Exactly -Times 0
                             Assert-MockCalled -CommandName Restore-ADCommonObject `
                                 -Exactly -Times 0
