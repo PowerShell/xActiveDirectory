@@ -9,6 +9,11 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Fixed
 
+- ActiveDirectoryDsc
+  - The regular expression for `minor-version-bump-message` in the file
+    `GitVersion.yml` was changed to only raise minor version when the
+    commit message contain the word `add`, `adds`, `minor`, `feature`,
+    or `features`.
 - ADDomain
   - Added additional Get-ADDomain retry exceptions
     ([issue #581](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/581)).
