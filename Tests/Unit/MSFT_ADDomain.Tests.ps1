@@ -303,6 +303,27 @@ try
                     }
                 }
 
+                Context 'When Get-ADDomain throws an ArgumentException until timeout' {
+                    BeforeAll {
+                        Mock -CommandName Get-AdDomain `
+                            -MockWith { throw New-Object -TypeName 'System.ArgumentException' }
+                        Mock -CommandName Start-Sleep
+                    }
+
+                    It 'Should throw the correct exception' {
+                        { Get-TargetResource @mockGetTargetResourceParameters } |
+                            Should -Throw ($script:localizedData.MaxDomainRetriesReachedError -f $mockDomainFQDN)
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-ADDomain `
+                            -ParameterFilter { $Identity -eq $mockDomainFQDN } `
+                            -Exactly -Times $maxRetries
+                        Assert-MockCalled -CommandName Start-Sleep `
+                            -Exactly -Times $maxRetries
+                    }
+                }
+
                 Context 'When Get-ADForest throws an unexpected error' {
                     BeforeAll {
                         Mock -CommandName Get-AdForest `

@@ -7,6 +7,12 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ## [Unreleased]
 
+### Fixed
+
+- ADDomain
+  - Added additional Get-ADDomain retry exceptions
+    ([issue #581](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/581)).
+
 ### Changed
 
 - ActiveDirectoryDsc

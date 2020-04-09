@@ -102,7 +102,8 @@ function Get-TargetResource
             }
             catch [Microsoft.ActiveDirectory.Management.ADServerDownException], `
                 [System.Security.Authentication.AuthenticationException], `
-                [System.InvalidOperationException]
+                [System.InvalidOperationException], `
+                [System.ArgumentException]
             {
                 Write-Verbose ($script:localizedData.ADServerNotReady -f $domainFQDN)
                 $domainFound = $false
