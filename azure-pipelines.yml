@@ -3,8 +3,8 @@ trigger:
     include:
     - master
   paths:
-    exclude:
-    - CHANGELOG.md
+    include:
+    - source/*
   tags:
     include:
     - "v*"

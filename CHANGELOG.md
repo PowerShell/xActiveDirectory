@@ -21,8 +21,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 ### Changed
 
 - ActiveDirectoryDsc
-  - When merging a commit with changes only to CHANGELOG.md the CI pipeline
-    will not run.
+  - Only run CI pipeline on branch `master` when there are changes to files
+    inside the `source` folder.
 
 ## [6.0.0] - 2020-03-12
 
