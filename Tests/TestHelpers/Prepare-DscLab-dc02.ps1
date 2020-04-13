@@ -12,8 +12,8 @@
 $ConfigurationData = @{
     AllNodes = @(
         @{
-            NodeName= '*'
-            PSDscAllowDomainUser = $true
+            NodeName                    = '*'
+            PSDscAllowDomainUser        = $true
             PsDscAllowPlainTextPassword = $true
         },
         @{
@@ -29,12 +29,12 @@ configuration LCMConfig
     {
         Settings
         {
-            RefreshMode = 'Push'
-            RebootNodeIfNeeded = $false
-            ConfigurationMode = 'ApplyOnly'
-            CertificateId = $node.Thumbprint
+            RefreshMode          = 'Push'
+            RebootNodeIfNeeded   = $false
+            ConfigurationMode    = 'ApplyOnly'
+            CertificateId        = $node.Thumbprint
             AllowModuleOverwrite = $true
-            DebugMode = 'ForceModuleImport'
+            DebugMode            = 'ForceModuleImport'
         }
     }
 }
@@ -53,7 +53,7 @@ Configuration DomainController
     {
         Computer NewName
         {
-            Name = 'dc02'
+            Name        = 'dc02'
             Description = 'Second domain controller'
         }
 
@@ -75,7 +75,7 @@ Configuration DomainController
             AddressFamily  = 'IPv4'
             Dhcp           = 'Disabled'
 
-            DependsOn = '[NetAdapterName]RenameNetAdapter'
+            DependsOn      = '[NetAdapterName]RenameNetAdapter'
         }
 
         IPAddress NewIPv4Address
@@ -84,7 +84,7 @@ Configuration DomainController
             InterfaceAlias = 'dscadlab.com'
             AddressFamily  = 'IPV4'
 
-            DependsOn = '[NetAdapterName]RenameNetAdapter'
+            DependsOn      = '[NetAdapterName]RenameNetAdapter'
         }
 
         DNSServerAddress 'SetFirstDomainControllerDNSIPAddresses'

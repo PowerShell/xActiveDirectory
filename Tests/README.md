@@ -1,6 +1,64 @@
-# Running tests
+# Running Integration Tests
 
-## Run integration tests in Hyper-V (PowerShell Direct)
+## VMware ESXi
+
+_To be enhanced. Might be able to use [Invoke-VMScript](https://www.vmware.com/support/developer/windowstoolkit/wintk40u1/html/Invoke-VMScript.html)_
+_to more resemble the Hyper-V steps._
+
+### Requirements
+
+- This requires a ESXi install on a physical server.
+
+- The virtual machine should have at least 2GB of memory and 25GB of disk.
+
+- The host should also have a disk with enough free
+  space for a virtual machine plus snapshots (~30GB should
+  suffice).
+
+- The virtual machine need to have internet connectivity.
+
+### Deploy VMware ESXi virtual machine
+
+1. Downloaded the appropriate installation media, for example from
+   [Windows Server Evaluations](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019).
+1. Configure VM on a VMware ESXi host.
+1. Install the server operating system using the downloaded media.
+1. Make sure to install the necessary tools to be able to clone and build
+   the repository. See the article [Getting Started as a Contributor](https://dsccommunity.org/guidelines/getting-started/)
+   for the necessary tools.
+1. Clone the repository to the domain controller using `git`.
+1. Snapshot the virtual machine so it possible to revert to this state.
+
+### Running the integration tests
+
+1. Change location to the local repository folder.
+1. Build the module using `.\build.ps1 -ResolveDependency -Tasks build`.
+1. Build the first domain controller by running the integration test
+   `Invoke-Pester .\tests\Integration\MSFT_ADDomain.Root.Integration.Tests.ps1`.
+   The integration test will require a reboot.
+1. Run the any additional integration tests by changing the path to the
+   integration test in the previous test.
+
+## Microsoft Hyper-V (PowerShell Direct)
+
+### Requirements
+
+- This requires a host that can run Hyper-V. For example Windows 10
+  or Windows Server 2019 on either physical hardware with virtualization
+  enabled (BIOS setting) or in a VM that supports nested virtualization.
+
+  > In Azure (for example) the VM size `Standard E8-4s_v3` supports nested
+  > virtualization and have 4 vCPUs and 64 GiB memory.
+
+- The host should have enough memory to be able to run at least 4 VMs with
+  2GB each simultaneous.
+- The host should also have a disk with enough free
+  space to hold the template and 4 VM's plus checkpoints (~150GB should
+  suffice).
+
+- Internet connectivity is required to create the base VM template (if updates
+should be installed), but the lab that runs the integration tests does _not_
+need Internet connectivity.
 
 ### Create Hyper-V base image template
 
@@ -18,13 +76,13 @@ The below steps will help to create a base image template that will be
 used to create the one or more servers to run tests on.
 
 >**Note:** All these steps are expected to be run in the same elevated
->PowerShell prompt. It also expect that you have downloaded the appropriate
+>PowerShell prompt. It also expects that you have downloaded the appropriate
 >installation media, for example from [Windows Server Evaluations](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019)
 >or the [direct link to the ISO](https://software-download.microsoft.com/download/pr/17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.iso).
 
 <!-- markdownlint-disable MD031 - Fenced code blocks should be surrounded by blank lines -->
 1. Create a Hyper-VM (Generation 2). In an elevated PowerShell prompt run
-   this.
+   this:
    ```powershell
    $windowsServerIsoPath = 'C:\_images\17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso'
    if (-not (Test-Path -Path $windowsServerIsoPath))
@@ -65,7 +123,7 @@ used to create the one or more servers to run tests on.
    ```powershell
    C:\Windows\System32\SysPrep\sysprep.exe /quiet /generalize /oobe /shutdown
    ```
-1. Create the folder where we store the exported image. _This folder can_
+1. Create the folder where we will store the exported image. _This folder can_
    _be located anywhere._
    ```powershell
    $templatesPath = 'C:\Hyper-V\Templates'
@@ -132,7 +190,7 @@ memory (~32GB) and disk (~60GB) on the PC that will host the virtual machines.
 
    Get-VM -Name $vmNames | Start-VM -Verbose
    ```
-1. On each started VM finish the installation by configure the following
+1. On each started VM finish the installation by configuring the following
    in the Hyper-V Virtual Machine Connection.
    - Localization
    - (Optional) Product key
@@ -143,15 +201,15 @@ memory (~32GB) and disk (~60GB) on the PC that will host the virtual machines.
 
 ### Test prerequisites
 
-The host for the virtual machines must have access to Internet. The
+The host for the virtual machines must have access the Internet. The
 below steps assumes the virtual machines that should run the integration
-test are only connect to a private virtual switch and does not have access
+test are only connected to a private virtual switch and do not have access
 to the Internet.
 
-The blow steps *must* be run in a elevated PowerShell console.
+The below steps *must* be run in a elevated PowerShell console.
 
 <!-- markdownlint-disable MD031 - Fenced code blocks should be surrounded by blank lines -->
-1. Change to folder to root of your local working repository
+1. Change directory to the root of your local working repository
    folder, e.g. cd 'c:\source\ActiveDirectoryDsc'.
    ```powershell
    cd c:\source\ActiveDirectoryDsc
@@ -294,10 +352,10 @@ The blow steps *must* be run in a elevated PowerShell console.
 By reverting to the checkpoint created before, these tests can be run
 several times. The integration tests that depend on an already existing
 domain can be run several times without reverting to the checkpoint. The
-resources that need a clean environment are the resources that configures
+resources that need a clean environment are the resources that configure
 the domain, e.g. `ADDomain` and `ADDomainController`.
 
-1. Change to folder to root of your local working repository
+1. Change directory to the root of your local working repository
    folder, e.g. cd 'c:\source\ActiveDirectoryDsc'.
    ```powershell
    cd 'c:\source\ActiveDirectoryDsc'
