@@ -7,6 +7,12 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ## [Unreleased]
 
+### Added
+
+- ActiveDirectoryDsc
+  - Documentation and steps to setup a lab in Hyper-V to be able to run
+    the integration tests.
+
 ### Fixed
 
 - ActiveDirectoryDsc

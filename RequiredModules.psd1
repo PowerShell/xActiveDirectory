@@ -1,15 +1,15 @@
 @{
     # Set up a mini virtual environment...
-    PSDependOptions      = @{
-        AddToPath  = $True
+    PSDependOptions             = @{
+        AddToPath  = $true
         Target     = 'output\RequiredModules'
         Parameters = @{
         }
     }
 
-    invokeBuild                 = 'latest'
+    InvokeBuild                 = 'latest'
     PSScriptAnalyzer            = 'latest'
-    pester                      = 'latest'
+    Pester                      = 'latest'
     Plaster                     = 'latest'
     ModuleBuilder               = '1.0.0'
     ChangelogManagement         = 'latest'
@@ -18,5 +18,12 @@
     'DscResource.AnalyzerRules' = 'latest'
     xDscResourceDesigner        = 'latest'
     MarkdownLinkCheck           = 'latest'
+
+    # Modules required to compile examples.
     xFailoverCluster            = '1.14.1'
+
+    # Modules required to run integration tests in local lab environment.
+    PSDscResources              = '2.12.0.0'
+    NetworkingDsc               = '7.4.0.0'
+    ComputerManagementDsc       = '8.1.0'
 }

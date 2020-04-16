@@ -21,7 +21,7 @@ else
         AllNodes = @(
             @{
                 NodeName                = 'localhost'
-                CertificateFile         = $env:DscPublicCertificatePath
+                #CertificateFile         = $env:DscPublicCertificatePath
 
                 DomainDistinguishedName = $domainDistinguishedName
                 ComputerName1           = 'DSCINTEGTEST01'

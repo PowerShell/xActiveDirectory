@@ -21,12 +21,14 @@ else
         AllNodes = @(
             @{
                 NodeName        = 'localhost'
-                CertificateFile = $env:DscPublicCertificatePath
+                #CertificateFile = $env:DscPublicCertificatePath
 
                 ForestFullyQualifiedDomainName = $ForestFullyQualifiedDomainName
 
                 AdministratorUserName = ('{0}\Administrator' -f $netBiosDomainName)
-                AdministratorPassword = 'P@ssw0rd1'
+                AdministratorPassword = 'adminP@ssw0rd1'
+
+                PsDscAllowPlainTextPassword = $true
             }
         )
     }
