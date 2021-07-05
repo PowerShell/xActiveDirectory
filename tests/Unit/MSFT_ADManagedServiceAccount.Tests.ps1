@@ -71,7 +71,8 @@ try
         $mockAdServiceAccountStandalone = @{
             ServiceAccountName        = 'TestSMSA'
             AccountType               = 'Standalone'
-            DistinguishedName         = "CN=TestSMSA,$mockDefaultMsaPath"
+            CommonName                = 'TestSMSACN'
+            DistinguishedName         = "CN=TestSMSACN,$mockDefaultMsaPath"
             Description               = 'Dummy StandAlone service account for unit testing'
             DisplayName               = 'TestSMSA'
             Enabled                   = $true
@@ -84,6 +85,7 @@ try
         $mockAdServiceAccountStandaloneAbsent = @{
             ServiceAccountName        = $mockAdServiceAccountStandalone.ServiceAccountName
             AccountType               = $mockAdServiceAccountStandalone.AccountType
+            CommonName                = $null
             DistinguishedName         = $null
             Description               = $null
             DisplayName               = $null
@@ -95,6 +97,7 @@ try
         }
 
         $mockAdServiceAccountChanged = @{
+            CommonName                = 'Changed commonName'
             Description               = 'Changed description'
             DisplayName               = 'Changed displayname'
             KerberosEncryptionType    = 'AES128', 'AES256'
@@ -104,7 +107,8 @@ try
         $mockAdServiceAccountGroup = @{
             ServiceAccountName        = 'TestGMSA'
             AccountType               = 'Group'
-            DistinguishedName         = "CN=TestGMSA,$mockDefaultMsaPath"
+            CommonName                = 'TestGMSACN'
+            DistinguishedName         = "CN=TestGMSACN,$mockDefaultMsaPath"
             Description               = 'Dummy group service account for unit testing'
             DisplayName               = 'TestGMSA'
             Enabled                   = $true
@@ -117,6 +121,7 @@ try
         $mockAdServiceAccountGroupAbsent = @{
             ServiceAccountName        = $mockAdServiceAccountGroup.ServiceAccountName
             AccountType               = $mockAdServiceAccountGroup.AccountType
+            CommonName                = $null
             DistinguishedName         = $null
             Description               = $null
             DisplayName               = $null
@@ -128,6 +133,7 @@ try
         }
 
         $mockGetAdServiceAccountResultsStandAlone = @{
+            CN                     = $mockAdServiceAccountStandAlone.CommonName
             Description            = $mockAdServiceAccountStandalone.Description
             DisplayName            = $mockAdServiceAccountStandalone.DisplayName
             DistinguishedName      = $mockAdServiceAccountStandalone.DistinguishedName
@@ -142,6 +148,7 @@ try
         }
 
         $mockGetAdServiceAccountResultsGroup = @{
+            CN                                         = $mockAdServiceAccountGroup.CommonName
             Description                                = $mockAdServiceAccountGroup.Description
             DisplayName                                = $mockAdServiceAccountGroup.DisplayName
             DistinguishedName                          = $mockAdServiceAccountGroup.DistinguishedName
@@ -160,6 +167,7 @@ try
             ServiceAccountName        = $mockGetAdServiceAccountResultsStandAlone.Name
             DistinguishedName         = $mockGetAdServiceAccountResultsStandAlone.DistinguishedName
             Path                      = $mockDefaultMsaPath
+            CommonName                = $mockGetAdServiceAccountResultsStandAlone.CN
             Description               = $mockGetAdServiceAccountResultsStandAlone.Description
             DisplayName               = $mockGetAdServiceAccountResultsStandAlone.DisplayName
             AccountType               = 'Standalone'
@@ -176,6 +184,7 @@ try
             ServiceAccountName        = $mockGetAdServiceAccountResultsGroup.Name
             DistinguishedName         = $mockGetAdServiceAccountResultsGroup.DistinguishedName
             Path                      = $mockDefaultMsaPath
+            CommonName                = $mockGetAdServiceAccountResultsGroup.CN
             Description               = $mockGetAdServiceAccountResultsGroup.Description
             DisplayName               = $mockGetAdServiceAccountResultsGroup.DisplayName
             AccountType               = 'Group'
@@ -192,6 +201,7 @@ try
             ServiceAccountName        = $mockGetAdServiceAccountResultsStandAlone.Name
             DistinguishedName         = $null
             Path                      = $null
+            CN                        = $null
             Description               = $null
             DisplayName               = $null
             AccountType               = $null
@@ -222,7 +232,7 @@ try
 
             Context 'When the resource is Present' {
 
-                Context 'When the Resouce is a StandAlone account' {
+                Context 'When the Resource is a StandAlone account' {
                     Mock -CommandName Get-ADServiceAccount `
                         -MockWith { $mockGetAdServiceAccountResultsStandAlone }
 
@@ -257,7 +267,7 @@ try
                     }
                 }
 
-                Context 'When the Resouce is a Group account' {
+                Context 'When the Resource is a Group account' {
                     Mock -CommandName Get-ADServiceAccount `
                         -MockWith { $mockGetAdServiceAccountResultsGroup }
 
@@ -351,7 +361,7 @@ try
 
             Context 'When the resource is Absent' {
 
-                Context 'When the Resouce is a StandAlone account' {
+                Context 'When the Resource is a StandAlone account' {
                     Mock -CommandName Get-AdServiceAccount `
                         -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
 
@@ -377,7 +387,7 @@ try
                     }
                 }
 
-                Context 'When the Resouce is a Group account' {
+                Context 'When the Resource is a Group account' {
                     Mock -CommandName Get-AdServiceAccount `
                         -MockWith { throw New-Object Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException }
 
@@ -411,6 +421,7 @@ try
             $testTargetResourceParametersStandalone = @{
                 ServiceAccountName        = $mockAdServiceAccountStandalone.ServiceAccountName
                 AccountType               = $mockAdServiceAccountStandalone.AccountType
+                CommonName                = $mockAdServiceAccountStandalone.CommonName
                 Description               = $mockAdServiceAccountStandalone.Description
                 DisplayName               = $mockAdServiceAccountStandalone.DisplayName
                 KerberosEncryptionType    = $mockAdServiceAccountStandalone.KerberosEncryptionType
@@ -532,6 +543,7 @@ try
                 Mock -CommandName New-ADServiceAccount
                 Mock -CommandName Remove-ADServiceAccount
                 Mock -CommandName Move-ADObject
+                Mock -CommandName Rename-ADObject
                 Mock -CommandName Set-ADServiceAccount
                 Mock -CommandName Get-DomainName -MockWith { $mockDomainName }
                 Mock -CommandName Get-ADDomain -MockWith { $mockGetAdDomainResults }
@@ -541,6 +553,7 @@ try
                 ServiceAccountName     = $mockAdServiceAccountStandAlone.ServiceAccountName
                 AccountType            = $mockAdServiceAccountStandAlone.AccountType
                 Path                   = $mockDefaultMsaPath
+                CommonName             = $mockAdServiceAccountStandalone.CommonName
                 Description            = $mockAdServiceAccountStandalone.Description
                 Ensure                 = $mockAdServiceAccountStandAlone.Ensure
                 DisplayName            = $mockAdServiceAccountStandAlone.DisplayName
@@ -555,6 +568,7 @@ try
                 MembershipAttribute       = $mockAdServiceAccountGroup.MembershipAttribute
                 AccountType               = $mockAdServiceAccountGroup.AccountType
                 Path                      = $mockDefaultMsaPath
+                CommonName                = $mockAdServiceAccountGroup.CommonName
                 Description               = $mockAdServiceAccountGroup.Description
                 Ensure                    = $mockAdServiceAccountGroup.Ensure
                 ManagedPasswordPrincipals = $mockAdServiceAccountGroup.ManagedPasswordPrincipals
@@ -585,6 +599,12 @@ try
                                 -Scope It -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount -Scope It -Exactly -Times 0
                             Assert-MockCalled -CommandName Remove-ADServiceAccount -Scope It -Exactly -Times 0
+                            if ($property -eq 'CommonName') {
+                                Assert-MockCalled -CommandName Rename-ADObject -Scope It -Exactly -Times 1
+                            }
+                            else {
+                                Assert-MockCalled -CommandName Rename-ADObject -Scope It -Exactly -Times 0
+                            }
                             Assert-MockCalled -CommandName Move-ADObject -Scope It -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount `
                                 -ParameterFilter { `
@@ -621,13 +641,14 @@ try
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount `
                                 -ParameterFilter { `
-                                    $Name -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
+                                    $Name -eq $setTargetResourceParametersChangedAccountType.CommonName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Remove-ADServiceAccount `
                                 -ParameterFilter { `
                                     $Identity -eq $setTargetResourceParametersChangedAccountType.ServiceAccountName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 1
+                            Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                             Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
@@ -659,6 +680,7 @@ try
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
                             Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Move-ADObject `
                                 -ParameterFilter { $Identity -eq $mockGetTargetResourceResultsStandAlone.DistinguishedName } `
                                 -Exactly -Times 1
@@ -696,9 +718,10 @@ try
                                     $ServiceAccountName -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount `
-                                -ParameterFilter { $Name -eq $setTargetResourceParametersStandAlone.ServiceAccountName } `
+                                -ParameterFilter { $Name -eq $setTargetResourceParametersStandAlone.CommonName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                             Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
@@ -755,10 +778,11 @@ try
                                 $ServiceAccountName -eq $setTargetResourceParametersGroup.ServiceAccountName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName New-ADServiceAccount `
-                                -ParameterFilter { $Name -eq $setTargetResourceParametersGroup.ServiceAccountName } `
+                                -ParameterFilter { $Name -eq $setTargetResourceParametersGroup.CommonName } `
                                 -Exactly -Times 1
                             Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 1
                             Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                            Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                             Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                             Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
@@ -813,6 +837,7 @@ try
                             -ParameterFilter {
                             $Identity -eq $setTargetResourceParametersStandAloneAbsent.ServiceAccountName } `
                             -Exactly -Times 1
+                        Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                         Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0
@@ -845,6 +870,7 @@ try
                             -Exactly -Times 1
                         Assert-MockCalled -CommandName New-ADServiceAccount -Exactly -Times 0
                         Assert-MockCalled -CommandName Remove-ADServiceAccount -Exactly -Times 0
+                        Assert-MockCalled -CommandName Rename-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Move-ADObject -Exactly -Times 0
                         Assert-MockCalled -CommandName Set-ADServiceAccount -Exactly -Times 0
                         Assert-MockCalled -CommandName Get-DomainName -Exactly -Times 0

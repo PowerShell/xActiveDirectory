@@ -18,6 +18,10 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 
 ### Added
 
+- ADManagedServiceAccount
+  - Added support for setting a common name to a Managed Service Account for a longer more friendly name than
+    the SAM account name which has a 15 character limit.
+    ([issue #644](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/644)).
 - ADGroup
   - Added support for managing AD group membership of Foreign Security Principals. This involved completely
     refactoring group membership management to utilize the `Set-ADGroup` cmdlet and referencing SID values.
