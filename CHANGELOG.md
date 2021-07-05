@@ -67,6 +67,9 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - ADReplicationSiteLink
   - Fixed setting options after the resource is initially created
     ([issue #605](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/605)).
+- ADKDSKey
+  - The resource did not work due to a non-working date conversion.
+    ([issue #648](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/648)).
 
 ## [6.1.0] - 2020-12-09
 

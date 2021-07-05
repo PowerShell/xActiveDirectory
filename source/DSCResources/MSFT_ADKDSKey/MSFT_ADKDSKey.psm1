@@ -83,7 +83,7 @@ function Get-TargetResource
     {
         $kdsRootKey = $kdsRootKeys.GetEnumerator() |
             Where-Object -FilterScript {
-                [DateTime]::Parse($_.EffectiveTime) -eq $effectiveTimeObject
+                $_.EffectiveTime -eq $effectiveTimeObject
             }
     }
 
