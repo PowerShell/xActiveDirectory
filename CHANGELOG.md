@@ -15,6 +15,8 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - ADGroup
   - Refactored Module.
   - Refactored Unit and Integration Tests.
+  - Fixed management of child domain user membership.
+    ([issue #633](https://github.com/dsccommunity/ActiveDirectoryDsc/issues/633))
 
 ### Added
 

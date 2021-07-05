@@ -1117,6 +1117,8 @@ function Set-ADCommonGroupMember
         $Action = 'Add'
     )
 
+    Write-Debug 'Entering Set-ADCommonGroupMember'
+
     Assert-Module -ModuleName ActiveDirectory
 
     $setADGroupParameters = $Parameters.Clone()
@@ -2599,6 +2601,8 @@ function Resolve-MembersSecurityIdentifier
 
     begin
     {
+        Write-Debug 'Entering Resolve-MembersSecurityIdentifier'
+
         Assert-Module -ModuleName ActiveDirectory
 
         $property = 'ObjectSID'
@@ -2643,30 +2647,51 @@ function Resolve-MembersSecurityIdentifier
         {
             if ($MembershipAttribute -eq 'SamAccountName' -and $member -match '\\')
             {
-                Write-Debug -Message ($script:localizedData.TranslatingMembershipAttribute -f
+                $memberDomainName = $member.split('\')[0]
+                $memberSamAccountName = $member.split('\')[1]
+                try
+                {
+                    $memberDomainDetails = Get-ADDomain -Identity $memberDomainName
+                }
+                catch [System.Security.Authentication.AuthenticationException]
+                {
+                    Write-Debug -Message ($script:localizedData.TranslatingMembershipAttribute -f
                     $MembershipAttribute, $member, $property)
 
-                $securityIdentifier = Resolve-SecurityIdentifier -SamAccountName $member
+                    $securityIdentifier = Resolve-SecurityIdentifier -SamAccountName $member
+                    $sid = $true
+                    $memberDomainDetails = $null
+                }
+
+                if ($memberDomainDetails)
+                {
+                    $securityIdentifier = (Get-ADObject -SearchBase $memberDomainDetails.DistinguishedName -Filter "SamAccountName -eq '$memberSamAccountName'" -Server :3268).DistinguishedName
+                    $sid = $false
+                }
             }
             elseif ($MembershipAttribute -eq 'DistinguishedName' -and ($member -split ',')[1] -eq $fspADContainer)
             {
                 Write-Debug -Message ($script:localizedData.ParsingCommonNameFromDN -f $member)
 
                 $securityIdentifier = ($member -split ',')[0] -replace '^CN[=]'
+                $sid=$true
             }
             else
             {
                 Write-Debug -Message ($script:localizedData.ADObjectPropertyLookup -f
                     $property, $MembershipAttribute, $member)
 
-                $getADObjectParms['Filter'] = "$($MembershipAttribute) -eq '$($member)'"
+                #$getADObjectParms['Filter'] = "$($MembershipAttribute) -eq '$($member)'"
+                $getADObjectParms['Identity'] = $member
 
-                $securityIdentifier = [string](Get-ADObject @getADObjectParms).$property
+                #$securityIdentifier = [string](Get-ADObject @getADObjectParms -Server :3268).$property
+                $securityIdentifier = $member
+                $sid=$false
             }
 
             if (-not ([string]::IsNullOrEmpty($securityIdentifier)))
             {
-                if ($PrepareForMembership.IsPresent)
+                if ($PrepareForMembership.IsPresent -and $sid -eq $true)
                 {
                     "<SID=$($securityIdentifier)>"
                 }

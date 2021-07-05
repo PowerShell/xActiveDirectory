@@ -106,6 +106,7 @@ function Get-TargetResource
 
             if ($_.FullyQualifiedErrorId -eq $oneWayTrustFullyQualifiedErrorId)
             {
+                Write-Debug -Message 'Processing Group Members - One-Way Trust'
                 # Get-ADGroupMember returns property name 'SID' while Get-ADObject returns property name 'ObjectSID'
                 if ($MembershipAttribute -eq 'SID')
                 {
@@ -130,20 +131,51 @@ function Get-TargetResource
                         'ObjectSID'
                     )
 
-                    $adObject = Get-ADObject @getADObjectParameters
+                    $adObject = Get-ADObject @getADObjectParameters -Server :3268
 
-                    # Perform SID translation to a readable name as the SamAccountName if the member is
-                    # of objectClass "foreignSecurityPrincipal"
-                    $classMatchForResolve = $adObject.objectClass -eq 'foreignSecurityPrincipal'
-                    $attributeMatchForResolve = $MembershipAttribute -eq 'SamAccountName'
-
-                    if ($classMatchForResolve -and $attributeMatchForResolve)
+                    if ($adObject.objectClass -eq 'foreignSecurityPrincipal' -and
+                        $MembershipAttribute -eq 'SamAccountName')
                     {
                         Resolve-SamAccountName -ObjectSid $adObject.objectSid
                     }
                     else
                     {
-                        $adObject.$selectProperty
+                        if ($selectProperty -eq 'SamAccountName')
+                        {
+                            $adGroupDomain = ([RegEx]::Matches($adgroup.DistinguishedName, '(?i)DC=\w{1,}?\b') |
+                                ForEach-Object { $_.Value })
+                            $memberDomain = ([RegEx]::Matches($adobject.DistinguishedName, '(?i)DC=\w{1,}?\b') |
+                            ForEach-Object { $_.Value })
+
+                            if ($adGroupDomain -ne $memberDomain)
+                            {
+                                $forestDomains = (Get-ADForest).Domains
+                                foreach ($domain in $forestDomains)
+                                {
+                                    $domainDetails = Get-ADDomain -Identity $domain
+                                    $domainDN = $domainDetails.DistinguishedName
+                                    if ($memberDomain = $domainDN)
+                                    {
+                                        $domainNetBIOSName = (Get-ADDomain -Identity $domainDetails.DNSRoot).NetBIOSName
+                                        break
+                                    }
+                                }
+
+                                if (-not [System.String]::IsNullOrEmpty($domainNetBIOSName))
+                                {
+                                    "$domainNetBIOSName\$($adObject.SamAccountName)"
+                                }
+                                else
+                                {
+                                    $errorMessage = 'Domain $domain not found in Forest'
+                                    New-InvalidResultException -Message $errorMessage
+                                }
+                            }
+                        }
+                        else
+                        {
+                            $adObject.$selectProperty
+                        }
                     }
                 }
             }
@@ -153,6 +185,8 @@ function Get-TargetResource
                 New-InvalidOperationException -Message $errorMessage -ErrorRecord $_
             }
         }
+
+        Write-Debug -Message "Group Members: $($adGroupMembers -Join ',')"
 
         $targetResource = @{
             Ensure              = 'Present'
