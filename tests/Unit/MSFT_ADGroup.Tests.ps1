@@ -43,6 +43,7 @@ try
             Path        = 'OU=OU,DC=contoso,DC=com'
             Description = 'Test AD group description'
             DisplayName = 'Test display name'
+            SamAccountName = 'TestGroup'
             Ensure      = 'Present'
             Notes       = 'This is a test AD group'
             ManagedBy   = 'CN=User 1,CN=Users,DC=contoso,DC=com'
@@ -91,6 +92,7 @@ try
             Path              = $mockGroupPath
             Description       = 'Test AD group description'
             DisplayName       = 'Test display name'
+            SamAccountName    = $mockGroupName
             Info              = 'This is a test AD group'
             ManagedBy         = 'CN=User 1,CN=Users,DC=contoso,DC=com'
             DistinguishedName = "CN=$mockGroupName,$mockGroupPath"
@@ -101,6 +103,7 @@ try
             GroupScope  = 'Universal'
             Description = 'Test AD group description changed'
             DisplayName = 'Test display name changed'
+            SamAccountName = 'TestGroup2'
             ManagedBy   = 'CN=User 2,CN=Users,DC=contoso,DC=com'
         }
 
@@ -111,6 +114,7 @@ try
             Path              = $mockADGroup.Path
             Description       = $mockADGroup.Description
             DisplayName       = $mockADGroup.DisplayName
+            SamAccountName    = $mockAdGroup.SamAccountName
             Notes             = $mockADGroup.Info
             ManagedBy         = $mockADGroup.ManagedBy
             DistinguishedName = $mockADGroup.DistinguishedName
@@ -125,6 +129,7 @@ try
             Path              = $null
             Description       = $null
             DisplayName       = $null
+            SamAccountName    = $null
             Notes             = $null
             ManagedBy         = $null
             DistinguishedName = $null
@@ -162,6 +167,7 @@ try
                     $result.Path | Should -Be $mockADGroup.Path
                     $result.Description | Should -Be $mockADGroup.Description
                     $result.DisplayName | Should -Be $mockADGroup.DisplayName
+                    $result.SamAccountName | Should -Be $mockADGroup.SamAccountName
                     $result.MembersToInclude | Should -BeNullOrEmpty
                     $result.MembersToExclude | Should -BeNullOrEmpty
                     $result.MembershipAttribute | Should -Be 'SamAccountName'
@@ -338,6 +344,7 @@ try
                     $result.Path | Should -BeNullOrEmpty
                     $result.Description | Should -BeNullOrEmpty
                     $result.DisplayName | Should -BeNullOrEmpty
+                    $result.SamAccountName | Should -BeNullOrEmpty
                     $result.Members | Should -BeNullOrEmpty
                     $result.MembersToInclude | Should -BeNullOrEmpty
                     $result.MembersToExclude | Should -BeNullOrEmpty
@@ -369,6 +376,7 @@ try
                     Path        = $mockADGroup.Path
                     Description = $mockADGroup.Description
                     DisplayName = $mockADGroup.DisplayName
+                    SamAccountName = $mockADGroup.SamAccountName
                     ManagedBy   = $mockADGroup.ManagedBy
                     Notes       = $mockADGroup.Info
                     Members     = $mockADGroup.Members
@@ -552,6 +560,7 @@ try
                     Path        = $mockADGroup.Path
                     Description = $mockADGroup.Description
                     DisplayName = $mockADGroup.DisplayName
+                    SamAccountName = $mockADGroup.SamAccountName
                     ManagedBy   = $mockADGroup.ManagedBy
                     Notes       = $mockADGroup.Info
                     Members     = $mockADGroup.Members

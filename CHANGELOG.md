@@ -15,6 +15,7 @@ For older change log history see the [historic changelog](HISTORIC_CHANGELOG.md)
 - ADGroup
   - Refactored Module.
   - Refactored Unit and Integration Tests.
+  - Added SamAccountName property.
 
 ### Added
 

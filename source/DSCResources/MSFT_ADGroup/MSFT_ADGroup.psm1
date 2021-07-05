@@ -71,7 +71,7 @@ function Get-TargetResource
 
     Write-Verbose -Message ($script:localizedData.RetrievingGroup -f $GroupName)
 
-    $getADGroupProperties = ('Name', 'GroupScope', 'GroupCategory', 'DistinguishedName', 'Description', 'DisplayName',
+    $getADGroupProperties = ('Name', 'GroupScope', 'GroupCategory', 'DistinguishedName', 'Description', 'DisplayName', 'SamAccountName',
         'ManagedBy', 'Members', 'Info')
 
     try
@@ -163,6 +163,7 @@ function Get-TargetResource
             Path                = Get-ADObjectParentDN -DN $adGroup.DistinguishedName
             Description         = $adGroup.Description
             DisplayName         = $adGroup.DisplayName
+            SamAccountName      = $adGroup.SamAccountName
             Members             = $adGroupMembers
             MembersToInclude    = $null
             MembersToExclude    = $null
@@ -184,6 +185,7 @@ function Get-TargetResource
             Path                = $null
             Description         = $null
             DisplayName         = $null
+            SamAccountName      = $null
             Members             = @()
             MembersToInclude    = $null
             MembersToExclude    = $null
@@ -221,6 +223,9 @@ function Get-TargetResource
 
     .PARAMETER DisplayName
         Display name of the Active Directory group.
+
+    .PARAMETER SamAccountName
+        SamAccountName of the Active Directory group.
 
     .PARAMETER Credential
         The credential to be used to perform the operation on Active Directory.
@@ -298,6 +303,11 @@ function Test-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DisplayName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SamAccountName,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -474,6 +484,9 @@ function Test-TargetResource
     .PARAMETER DisplayName
         Display name of the Active Directory group.
 
+    .PARAMETER SamAccountName
+        SamAccountName of the Active Directory group.
+
     .PARAMETER Credential
         The credential to be used to perform the operation on Active Directory.
 
@@ -557,6 +570,11 @@ function Set-TargetResource
         [ValidateNotNullOrEmpty()]
         [System.String]
         $DisplayName,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [System.String]
+        $SamAccountName,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -904,6 +922,11 @@ function Set-TargetResource
             if ($PSBoundParameters.ContainsKey('DisplayName'))
             {
                 $newAdGroupParameters['DisplayName'] = $DisplayName
+            }
+
+            if ($PSBoundParameters.ContainsKey('SamAccountName'))
+            {
+                $newAdGroupParameters['SamAccountName'] = $SamAccountName
             }
 
             if ($PSBoundParameters.ContainsKey('ManagedBy'))

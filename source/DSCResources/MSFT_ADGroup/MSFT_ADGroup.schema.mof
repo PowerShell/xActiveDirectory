@@ -8,6 +8,7 @@ class MSFT_ADGroup : OMI_BaseResource
     [Write, Description("Specifies if this Active Directory group should be present or absent. Default value is 'Present'."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
     [Write, Description("Description of the Active Directory group.")] String Description;
     [Write, Description("Display name of the Active Directory group.")] String DisplayName;
+    [Write, Description("SamAccountName of the Active Directory group.")] String SamAccountName;
     [Write, Description("The credential to be used to perform the operation on Active Directory."), EmbeddedInstance("MSFT_Credential")] String Credential;
     [Write, Description("Active Directory domain controller to enact the change upon.")] String DomainController;
     [Write, Description("Active Directory group membership should match membership exactly.")] String Members[];
