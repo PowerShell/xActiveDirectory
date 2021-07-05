@@ -465,6 +465,24 @@ try
                         Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1
                     }
                 }
+                Context 'When property Ensure is set to "Absent" and in desired state' {
+                    BeforeAll {
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                DomainName = $correctDomainName
+                                Ensure     = $false
+                            }
+                        }
+                    }
+                    It 'Should return $true' {
+                        $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -Ensure 'Absent'
+                        $result | Should -Be $true
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1
+                    }
+                }
             }
 
             Context 'When the system is not in the desired state' {
@@ -490,6 +508,25 @@ try
                     It 'Should call the expected mocks' {
                         Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1
                         Assert-MockCalled -CommandName Test-ADReplicationSite -Exactly -Times 0
+                    }
+                }
+                Context 'When ensure is not in desired state' {
+                    BeforeAll {
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                DomainName = $correctDomainName
+                                Ensure     = $True
+                            }
+                        }
+                    }
+
+                    It 'Should return $false' {
+                        $result = Test-TargetResource @testDefaultParams -DomainName $correctDomainName -Ensure 'Absent'
+                        $result | Should -Be $false
+                    }
+
+                    It 'Should call the expected mocks' {
+                        Assert-MockCalled -CommandName Get-TargetResource -Exactly -Times 1
                     }
                 }
 
@@ -1181,6 +1218,84 @@ try
                         Assert-MockCalled -CommandName Get-ADDomain -Exactly -Times 0
                         Assert-MockCalled -CommandName Get-ADForest -Exactly -Times 1
                         Assert-MockCalled -CommandName Move-ADDirectoryServerOperationMasterRole -Exactly -Times 1
+                    }
+                }
+                Context 'When demoting a domain controller' {
+                    BeforeAll {
+                        Mock -CommandName Get-TargetResource -MockWith {
+                            return @{
+                                Ensure = $true
+                            }
+                        }
+                        Mock -CommandName Uninstall-ADDSDomainController -MockWith {
+                            return @{
+                                Status = 'Success'
+                            }
+                        }
+                    }
+                    Context 'When domain controller cannot be demoted' {
+                        BeforeAll {
+                            Mock -CommandName Test-ADDSDomainControllerUninstallation -MockWith {
+                                return @{
+                                    Status  = 'Error'
+                                    Message = 'mock message'
+                                }
+                            }
+                        }
+                        It 'Should throw' {
+                            { Set-TargetResource @testDefaultParams -DomainName $correctDomainName `
+                                    -Ensure 'Absent' } | Should -Throw
+                        }
+
+                        It 'Should call the expected mocks' {
+                            Assert-MockCalled -CommandName Test-ADDSDomainControllerUninstallation `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Uninstall-ADDSDomainController `
+                                -Exactly -Times 0
+                        }
+                    }
+                    Context 'When domain controller fails to be demoted' {
+                        BeforeAll {
+                            Mock -CommandName Test-ADDSDomainControllerUninstallation -MockWith {
+                                return @{
+                                    Status  = 'Success'
+                                    Message = 'Operation completed successfully'
+                                }
+                            }
+                            Mock -CommandName Uninstall-ADDSDomainController -MockWith { throw }
+                        }
+                        It 'Should throw' {
+                            { Set-TargetResource @testDefaultParams -DomainName $correctDomainName `
+                                    -Ensure 'Absent' } | Should -Throw
+                        }
+
+                        It 'Should call the expected mocks' {
+                            Assert-MockCalled -CommandName Test-ADDSDomainControllerUninstallation `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Uninstall-ADDSDomainController `
+                                -Exactly -Times 1
+                        }
+                    }
+                    Context 'When domain controller is demoted' {
+                        BeforeAll {
+                            Mock -CommandName Test-ADDSDomainControllerUninstallation -MockWith {
+                                return @{
+                                    Status  = 'Success'
+                                    Message = 'Operation completed successfully'
+                                }
+                            }
+                        }
+                        It 'Should not throw' {
+                            { Set-TargetResource @testDefaultParams -DomainName $correctDomainName `
+                                    -Ensure 'Absent' } | Should -Not -Throw
+                        }
+
+                        It 'Should call the expected mocks' {
+                            Assert-MockCalled -CommandName Test-ADDSDomainControllerUninstallation `
+                                -Exactly -Times 1
+                            Assert-MockCalled -CommandName Uninstall-ADDSDomainController `
+                                -Exactly -Times 1
+                        }
                     }
                 }
             }

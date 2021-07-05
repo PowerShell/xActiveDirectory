@@ -454,4 +454,62 @@ Configuration ADDomainController_AddDomainControllerUsingInstallDns_Config
     }
 }
 
+.EXAMPLE 7
+
+This configuration will demote an exiting domain controller from the domain contoso.com.
+
+Configuration ADDomainController_DemoteDomainController_Config
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $Credential,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCredential]
+        $SafeModePassword
+    )
+
+    Import-DscResource -ModuleName PSDesiredStateConfiguration
+    Import-DscResource -ModuleName ActiveDirectoryDsc
+
+    node localhost
+    {
+        WindowsFeature 'InstallADDomainServicesFeature'
+        {
+            Ensure = 'Present'
+            Name   = 'AD-Domain-Services'
+        }
+
+        WindowsFeature 'RSATADPowerShell'
+        {
+            Ensure    = 'Present'
+            Name      = 'RSAT-AD-PowerShell'
+
+            DependsOn = '[WindowsFeature]InstallADDomainServicesFeature'
+        }
+
+        WaitForADDomain 'WaitForestAvailability'
+        {
+            DomainName       = 'contoso.com'
+            Credential       = $Credential
+
+            DependsOn        = '[WindowsFeature]RSATADPowerShell'
+        }
+
+        ADDomainController 'DemoteDomainController'
+        {
+            Ensure                        = 'Absent'
+            DomainName                    = 'contoso.com'
+            Credential                    = $Credential
+            SafeModeAdministratorPassword = $SafeModePassword
+
+            DependsOn                     = '[WaitForADDomain]WaitForestAvailability'
+        }
+    }
+}
+
 

@@ -20,4 +20,8 @@ ConvertFrom-StringData @'
     CannotConvertToRODC                         = Cannot convert a existing domain controller to a Read-Only Domain Controller (RODC). (ADDC0023)
     NotOwnerOfFlexibleSingleMasterOperationRole = The domain controller was expected to be the owner of the Flexible Single Master Operation (FSMO) role '{0}', but it is not. (ADDC0024)
     MovingFlexibleSingleMasterOperationRole     = The Flexible Single Master Operation (FSMO) role '{0}' is being moved from domain controller '{1}' to this domain controller. (ADDC0025)
+    EnsureMismatch                              = The current domain controller ensure does not match. Got {0}, expected was {1}. (ADDC0026)
+    TestDemoteStatus                            = Received status: {0} with message {0}. (ADDC0027)
+    Demoted                                     = The current node '{0}' has been demoted from a domain controller to a member server. (ADDC0028)
+    FailedToDemote                              = Failed to demote the domain controller. (ADDC0029)
 '@

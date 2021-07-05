@@ -79,10 +79,10 @@ function Get-TargetResource
 
         $allowedPasswordReplicationAccountName = (
             Get-ADDomainControllerPasswordReplicationPolicy -Allowed -Identity $domainControllerObject |
-            ForEach-Object -MemberName sAMAccountName)
+                ForEach-Object -MemberName sAMAccountName)
         $deniedPasswordReplicationAccountName = (
             Get-ADDomainControllerPasswordReplicationPolicy -Denied -Identity $domainControllerObject |
-            ForEach-Object -MemberName sAMAccountName)
+                ForEach-Object -MemberName sAMAccountName)
         $serviceNTDS = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters'
         $serviceNETLOGON = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters'
         $installDns = [System.Boolean](Get-Service -Name dns -ErrorAction SilentlyContinue)
@@ -146,6 +146,9 @@ function Get-TargetResource
     .PARAMETER SafemodeAdministratorPassword
         Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
+    .PARAMETER Ensure
+        Specifies if the node will be configured as a domain controller
+
     .PARAMETER DatabasePath
         Provide the path where the NTDS.dit will be created and stored.
 
@@ -191,6 +194,8 @@ function Get-TargetResource
             Name                                               | Module
             ---------------------------------------------------|--------------------------
             Install-ADDSDomainController                       | ActiveDirectory
+            Test-ADDSDomainControllerUninstallation            | ActiveDirectory
+            Uninstall-ADDSDomainController                     | ActiveDirectory
             Get-ADDomain                                       | ActiveDirectory
             Get-ADForest                                       | ActiveDirectory
             Set-ADObject                                       | ActiveDirectory
@@ -225,6 +230,11 @@ function Set-TargetResource
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $SafemodeAdministratorPassword,
+
+        [Parameter()]
+        [ValidateSet('Absent', 'Present')]
+        [System.String]
+        $Ensure = 'Present',
 
         [Parameter()]
         [System.String]
@@ -280,7 +290,59 @@ function Set-TargetResource
 
     $targetResource = Get-TargetResource @getTargetResourceParameters
 
-    if ($targetResource.Ensure -eq $false)
+    if ($targetResource.Ensure)
+    {
+        $ensureValue = 'Present'
+    }
+    else
+    {
+        $ensureValue = 'Absent'
+    }
+
+
+    if ($Ensure -eq 'Absent')
+    {
+        if ($targetResource.Ensure -eq $false)
+        {
+            break
+        }
+
+        # Test to make sure the domain controller can be removed from the domain
+        $ADDSDomainUninstallationParameters = @{
+            LocalAdministratorPassword = $SafemodeAdministratorPassword.Password
+            Credential                 = $Credential
+            NoRebootOnCompletion       = $true
+            Force                      = $true
+        }
+        $testStatus = Test-ADDSDomainControllerUninstallation @ADDSDomainUninstallationParameters
+
+        if ($testStatus.Status -eq 'Error')
+        {
+            New-InvalidOperationException -Message ($script:localizedData.TestDemoteStatus -f $testStatus.Status, $testStatus.Message)
+        }
+        elseif ($testStatus.Status -eq 'Success')
+        {
+            # No issues found that will cause issues demoting the domain controller
+            try
+            {
+                Uninstall-ADDSDomainController @ADDSDomainUninstallationParameters -ErrorAction Stop
+                Write-Verbose -Message ($script:localizedData.Demoted -f $env:COMPUTERNAME)
+            }
+            catch
+            {
+                $errorMessage = $script:localizedData.FailedToDemote
+                New-InvalidResultException -Message $errorMessage -ErrorRecord $_
+            }
+            <#
+                Signal to the LCM to reboot the node to compensate for the one we
+                suppressed from Uninstall-ADDSDomainController
+            #>
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+                Justification = 'Set LCM DSCMachineStatus to indicate reboot required')]
+            $global:DSCMachineStatus = 1
+        }
+    }
+    elseif ($targetResource.Ensure -eq $false)
     {
         Write-Verbose -Message ($script:localizedData.Promoting -f $env:COMPUTERNAME, $DomainName)
 
@@ -560,6 +622,9 @@ function Set-TargetResource
     .PARAMETER SafemodeAdministratorPassword
         Provide a password that will be used to set the DSRM password. This is a PSCredential.
 
+    .PARAMETER Ensure
+        Specifies if the node will be configured as a domain controller
+
     .PARAMETER DatabasePath
         Provide the path where the NTDS.dit will be created and stored.
 
@@ -631,6 +696,11 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.PSCredential]
         $SafemodeAdministratorPassword,
+
+        [Parameter()]
+        [ValidateSet('Absent', 'Present')]
+        [System.String]
+        $Ensure = 'Present',
 
         [Parameter()]
         [System.String]
@@ -706,6 +776,22 @@ function Test-TargetResource
     $existingResource = Get-TargetResource @getTargetResourceParameters
 
     $testTargetResourceReturnValue = $existingResource.Ensure
+
+    if ($testTargetResourceReturnValue)
+    {
+        $ensureValue = 'Present'
+    }
+    else
+    {
+        $ensureValue = 'Absent'
+    }
+
+
+    if ($ensureValue -ne $Ensure)
+    {
+        Write-Verbose -Message ($script:localizedData.EnsureMismatch -f $ensureValue, $Ensure)
+        $testTargetResourceReturnValue = $false
+    }
 
     if ($PSBoundParameters.ContainsKey('ReadOnlyReplica') -and $ReadOnlyReplica)
     {
@@ -793,6 +879,15 @@ function Test-TargetResource
                 $testTargetResourceReturnValue = $false
             }
         }
+    }
+
+    <#
+        If the node is not a domain controller and ensure is set to Absent we need to return
+        True as it will fail if other options are set on the resource.
+    #>
+    if ($ensureValue -eq 'Absent' -and $Ensure -eq 'Absent')
+    {
+        $testTargetResourceReturnValue = $true
     }
 
     return $testTargetResourceReturnValue
