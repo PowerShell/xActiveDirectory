@@ -2,12 +2,13 @@
 class MSFT_ADUser : OMI_BaseResource
 {
     [Key, Description("Name of the domain where the user account is located (only used if password is managed).")] String DomainName;
-    [Key, Description("Specifies the Security Account Manager (SAM) account name of the user (ldapDisplayName 'sAMAccountName').")] String UserName;
+    [Key, Description("Specifies the account name of the user. (You can identify a user by its distinguished name (DN), GUID, security identifier (SID), or Security Accounts Manager (SAM) account name.)")] String UserName;
     [Write, Description("Specifies a new password value for the account."), EmbeddedInstance("MSFT_Credential")] String Password;
     [Write, Description("Specifies whether the user account should be present or absent. Default value is 'Present'."), ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] String Ensure;
     [Write, Description("Specifies the common name assigned to the user account (ldapDisplayName 'cn'). If not specified the default value will be the same value provided in parameter UserName.")] String CommonName;
     [Write, Description("Specifies the User Principal Name (UPN) assigned to the user account (ldapDisplayName 'userPrincipalName').")] String UserPrincipalName;
     [Write, Description("Specifies the display name of the object (ldapDisplayName 'displayName').")] String DisplayName;
+    [Write, Description("Specifies the SamAccountName of the object (ldapDisplayName 'SamAccountName').")] String SamAccountName;
     [Write, Description("Specifies the X.500 path of the Organizational Unit (OU) or container where the new object is created.")] String Path;
     [Write, Description("Specifies the user's given name (ldapDisplayName 'givenName').")] String GivenName;
     [Write, Description("Specifies the initials that represent part of a user's name (ldapDisplayName 'initials').")] String Initials;
@@ -40,7 +41,7 @@ class MSFT_ADUser : OMI_BaseResource
     [Write, Description("Specifies the user's pager number (ldapDisplayName 'pager').")] String Pager;
     [Write, Description("Specifies the user's IP telephony phone number (ldapDisplayName 'ipPhone').")] String IPPhone;
     [Write, Description("Specifies the user's manager specified as a Distinguished Name (ldapDisplayName 'manager').")] String Manager;
-    [Write, Description("Specifies the computers that the user can access. To specify more than one computer, create a single comma-separated list. You can identify a computer by using the Security Account Manager (SAM) account name (sAMAccountName) or the DNS host name of the computer. The SAM account name is the same as the NetBIOS name of the computer. The LDAP display name (ldapDisplayName) for this property is userWorkStations.")] String LogonWorkstations;
+    [Write, Description("Specifies the computers that the user can access. To specify more than one computer, create a single comma-separated list. You can identify a computer by using the Security Account Manager (SAM) account name (SamAccountName) or the DNS host name of the computer. The SAM account name is the same as the NetBIOS name of the computer. The LDAP display name (ldapDisplayName) for this property is userWorkStations.")] String LogonWorkstations;
     [Write, Description("Specifies the user's organization. This parameter sets the Organization property of a user object. The LDAP display name (ldapDisplayName) of this property is 'o'.")] String Organization;
     [Write, Description("Specifies a name in addition to a user's given name and surname, such as the user's middle name. This parameter sets the OtherName property of a user object. The LDAP display name (ldapDisplayName) of this property is 'middleName'.")] String OtherName;
     [Write, Description("Specifies if the account is enabled. Default value is $true.")] Boolean Enabled;

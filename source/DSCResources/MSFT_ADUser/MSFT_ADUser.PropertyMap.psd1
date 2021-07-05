@@ -19,6 +19,12 @@
             Array              = $false
         }
         @{
+            Parameter          = 'SamAccountName'
+            ADProperty         = 'SamAccountName'
+            UseCmdletParameter = $true
+            Array              = $false
+        }
+        @{
             Parameter          = 'Path'
             ADProperty         = 'distinguishedName'
             UseCmdletParameter = $true
